@@ -6,8 +6,8 @@ Windows is the target for v1. Nothing in the design blocks macOS, but these are 
 known touch points:
 
 - [ ] **PTY**: `@lydell/node-pty` ships darwin arm64/x64 prebuilds, so this should be a
-      no-op — but `defaultShell()` in `src/main/pty.ts` currently hard-codes the
-      PowerShell lookup on the non-win32 path to `$SHELL`. Verify against zsh.
+      no-op. `src/main/shells.ts` already has a POSIX candidate list (zsh/bash/sh) —
+      verify detection actually works on a Mac.
 - [ ] **Title bar**: `titleBarStyle: 'hidden'` + `titleBarOverlay` is Windows/Linux only.
       macOS needs `trafficLightPosition` and the `.titlebar-right` margin (which is
       currently reserving 140px for the Windows caption buttons) has to flip to the left.
@@ -18,12 +18,24 @@ known touch points:
 
 ## Terminal
 
-- [ ] Persist workspace + pane layout across restarts (respawn shells in saved cwds).
+- [x] Persist workspace + pane layout across restarts (respawn shells in saved cwds).
+- [x] Shell selection (cmd / PowerShell / Git Bash / WSL / Nushell).
+- [x] Smart pane naming from commands and agent topics.
+- [x] Drag tabs to reorder, move between workspaces, or combine into a split.
 - [ ] Scrollback search (`@xterm/addon-search`).
 - [ ] Copy-on-select and a proper right-click paste.
-- [ ] Configurable font / theme / keybindings via a config file.
+- [ ] Configurable font / theme / keybindings.
 - [ ] Pane navigation by direction (Ctrl+Shift+Arrow), not just close/zoom.
 - [ ] `Ctrl+Shift+P` command palette.
+- [ ] Restore scrollback on session restore (currently shells come back empty).
+
+## Dashboard
+
+- [x] Permanent AK Dashboard workspace (terminal + Claude + todos + conversation tracker).
+- [x] Claude controls it by editing `dashboard.json`; the app watches the file.
+- [ ] Auto-populate the conversation tracker from real Claude Code sessions
+      (`~/.claude/projects/**`) instead of only manual/agent entries.
+- [ ] Notify (toast / taskbar flash) when a pane finishes while the app is in the background.
 
 ## Worktree splitting
 

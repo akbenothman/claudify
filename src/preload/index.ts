@@ -1,7 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type {
+  AppState,
+  Dashboard,
   PtySpawnOptions,
   RepoInfo,
+  Session,
+  Settings,
+  ShellInfo,
   SplitPlan,
   SplitTask,
   Worktree,
@@ -53,7 +58,24 @@ const api = {
 
   pickFolder: (): Promise<string | null> => ipcRenderer.invoke('dialog:pickFolder'),
   home: (): Promise<string> => ipcRenderer.invoke('app:home'),
-  platform: process.platform
+  platform: process.platform,
+
+  getDashboard: (): Promise<Dashboard> => ipcRenderer.invoke('dashboard:get'),
+  saveDashboard: (data: Dashboard): Promise<void> => ipcRenderer.invoke('dashboard:save', data),
+  dashboardPath: (): Promise<string> => ipcRenderer.invoke('dashboard:path'),
+  /** Fires when the dashboard file changes on disk (i.e. an agent edited it). */
+  onDashboardChanged: (cb: (d: Dashboard) => void): (() => void) => {
+    const handler = (_e: unknown, d: Dashboard) => cb(d)
+    ipcRenderer.on('dashboard:changed', handler)
+    return () => ipcRenderer.off('dashboard:changed', handler)
+  },
+
+  loadState: (): Promise<AppState> => ipcRenderer.invoke('state:load'),
+  saveSession: (session: Session): Promise<void> => ipcRenderer.invoke('session:save', session),
+  saveSettings: (patch: Partial<Settings>): Promise<Settings> =>
+    ipcRenderer.invoke('settings:save', patch),
+  getSettings: (): Promise<Settings> => ipcRenderer.invoke('settings:get'),
+  detectShells: (): Promise<ShellInfo[]> => ipcRenderer.invoke('shells:detect')
 }
 
 contextBridge.exposeInMainWorld('claudify', api)

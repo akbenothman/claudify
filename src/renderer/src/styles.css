@@ -10,7 +10,8 @@
   --danger: #f85149;
   --add: #3fb950;
   --del: #f85149;
-  --titlebar-h: 36px;
+  --sidebar-w: 190px;
+  --topbar-h: 36px;
   --status-h: 22px;
 }
 
@@ -83,47 +84,203 @@ textarea:focus {
   border-color: var(--accent);
 }
 
+/* Shell: sidebar on the left, everything else to the right of it. */
 .app {
   display: flex;
-  flex-direction: column;
   height: 100%;
 }
 
-/* ------------------------------- titlebar ------------------------------- */
+/* -------------------------------- sidebar -------------------------------- */
 
-.titlebar {
-  height: var(--titlebar-h);
-  min-height: var(--titlebar-h);
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 8px 8px;
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border);
+}
+
+.sidebar-head {
+  height: var(--topbar-h);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 8px;
-  background: var(--bg-alt);
-  border-bottom: 1px solid var(--border);
-  /* Lets the window be dragged by the empty parts of the bar. */
+  /* The top strip of the sidebar is a window drag handle. */
   -webkit-app-region: drag;
 }
-.titlebar button,
-.titlebar .tab {
-  -webkit-app-region: no-drag;
-}
-
 .brand {
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--accent);
-  padding: 0 4px;
 }
 
-.tabs {
+.sidebar button {
+  -webkit-app-region: no-drag;
+}
+
+.split-btn {
+  width: 100%;
+  color: var(--accent);
+  border-color: #274b73;
+  background: rgba(88, 166, 255, 0.08);
+  padding: 7px;
+  font-weight: 600;
+  transition: background 90ms ease;
+}
+.split-btn:hover {
+  background: rgba(88, 166, 255, 0.18);
+}
+.split-glyph {
+  font-size: 14px;
+}
+
+.sidebar-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--dim);
+  padding: 0 2px;
+}
+
+.ws-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ws {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 90ms ease, border-color 90ms ease, color 90ms ease;
+}
+.ws:hover {
+  background: var(--panel);
+  color: var(--fg);
+}
+/* A left accent bar reads as "selected" faster than a border does. */
+.ws.active {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.ws.active {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--fg);
+}
+/* cmux's "blue ring": a workspace with a pane that wants you glows. */
+.ws.attention {
+  border-color: var(--attention);
+  color: var(--attention);
+}
+
+.ws-idx {
+  width: 12px;
+  font-size: 10px;
+  color: var(--dim);
+  flex: none;
+}
+.ws-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ws-count {
+  font-size: 10px;
+  color: var(--dim);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 5px;
+  flex: none;
+}
+.ws-x,
+.tab-x,
+.pane-x {
+  border: none;
+  padding: 0 3px;
+  color: var(--dim);
+  font-size: 14px;
+  line-height: 1;
+  background: transparent;
+  flex: none;
+}
+.ws-x:hover,
+.tab-x:hover,
+.pane-x:hover {
+  color: var(--danger) !important;
+  border-color: transparent !important;
+}
+/* Sits directly beneath the last workspace row, inside the scrolling list. */
+.ws-new {
+  width: 100%;
+  margin-top: 2px;
+  color: var(--dim);
+  border-style: dashed;
+  border-color: var(--border);
+  padding: 6px;
+  text-align: left;
+  padding-left: 24px;
+  flex: none;
+}
+.ws-new:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  border-style: solid;
+}
+
+.sidebar-foot {
+  font-size: 10px;
+  line-height: 1.35;
+  padding: 0 2px;
+  opacity: 0.65;
+}
+
+/* -------------------------------- content -------------------------------- */
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: var(--topbar-h);
+  min-height: var(--topbar-h);
+  display: flex;
+  align-items: stretch;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+}
+/* Empty part of the top bar drags the window; keep it clear of the Windows
+   caption buttons overlaid at the top-right. */
+.drag-space {
+  flex: 1;
+  min-width: 140px;
+  -webkit-app-region: drag;
+}
+
+.tabbar {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex: 1;
+  padding: 0 6px;
   overflow-x: auto;
   scrollbar-width: none;
 }
-.tabs::-webkit-scrollbar {
+.tabbar::-webkit-scrollbar {
   display: none;
 }
 
@@ -131,57 +288,50 @@ textarea:focus {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 6px 3px 10px;
+  padding: 3px 4px 3px 10px;
   border: 1px solid transparent;
   border-radius: 5px;
   color: var(--dim);
   white-space: nowrap;
   cursor: pointer;
+  font-size: 12px;
+  transition: background 90ms ease, border-color 90ms ease, color 90ms ease;
 }
 .tab:hover {
   background: var(--panel);
+  color: var(--fg);
 }
 .tab.active {
   background: var(--panel);
   border-color: var(--border);
   color: var(--fg);
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
-/* cmux's "blue ring": a workspace with a pane that wants you glows. */
 .tab.attention {
   border-color: var(--attention);
   color: var(--attention);
-  box-shadow: 0 0 0 1px var(--attention) inset;
 }
-
-.tab-x,
-.tab-new,
-.pane-x {
-  border: none;
-  padding: 0 4px;
+/* Auto-derived names can get long; keep the bar from stampeding. */
+.tab-name {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tab-panes {
+  font-size: 10px;
   color: var(--dim);
-  font-size: 14px;
-  line-height: 1;
-  background: transparent;
-}
-.tab-x:hover,
-.pane-x:hover {
-  color: var(--danger) !important;
-  border-color: transparent !important;
+  background: var(--bg-alt);
+  border-radius: 7px;
+  padding: 0 5px;
 }
 .tab-new {
-  font-size: 16px;
+  font-size: 15px;
+  border: none;
+  color: var(--dim);
+  padding: 0 6px;
 }
 
-.titlebar-right {
-  /* Clear of the Windows caption buttons overlaid at the top-right. */
-  margin-right: 140px;
-}
-.split-btn {
-  color: var(--accent);
-  border-color: var(--border);
-}
-
-/* -------------------------------- stage --------------------------------- */
+/* --------------------------------- stage --------------------------------- */
 
 .stage {
   position: relative;
@@ -189,42 +339,25 @@ textarea:focus {
   min-height: 0;
 }
 
-/* Inactive workspaces keep their box (and therefore their terminal geometry)
-   so switching back doesn't force a reflow + PTY resize storm. */
-.workspace {
+/* Hidden tabs keep their geometry (visibility, not display:none) so their
+   terminals never have to re-fit when you switch back. */
+.tab-view {
   position: absolute;
   inset: 0;
 }
-.workspace.inactive {
+.tab-view.hidden,
+.pane.hidden,
+.divider.hidden {
   visibility: hidden;
   pointer-events: none;
 }
 
-.tree {
-  position: relative;
-  height: 100%;
-}
-
-.split {
-  display: flex;
-  height: 100%;
-  width: 100%;
-}
-.split-row {
-  flex-direction: row;
-}
-.split-col {
-  flex-direction: column;
-}
-.split-child {
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-}
-
+/* Panes are absolutely positioned siblings, placed from the layout tree rather
+   than nested flex boxes. That's what lets a pane move between tabs without its
+   DOM node being torn down — which would kill the PTY inside it. */
 .divider {
+  position: absolute;
   background: var(--border);
-  flex: 0 0 3px;
   z-index: 2;
 }
 .divider:hover {
@@ -232,27 +365,47 @@ textarea:focus {
 }
 .divider-row {
   cursor: col-resize;
+  width: 7px;
+  transform: translateX(-3.5px);
 }
 .divider-col {
   cursor: row-resize;
+  height: 7px;
+  transform: translateY(-3.5px);
 }
 
-/* --------------------------------- pane --------------------------------- */
+/* --------------------------------- pane ---------------------------------- */
 
+/* The slot carries the computed rect; the card insets inside it. Keeping those
+   on separate elements means the % geometry and the px gutter never fight. */
+.pane-slot {
+  position: absolute;
+}
 .pane {
+  position: absolute;
+  inset: 3px;
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 6px;
-  margin: 3px;
   overflow: hidden;
 }
+/* The focused pane is where your keystrokes go — it should be obvious which. */
 .pane.focused {
-  border-color: #45505c;
+  border-color: #4c5a68;
+}
+.pane.focused .pane-head {
+  background: #1c2430;
+  color: var(--fg);
+}
+.pane.focused .pane-head::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
 }
 .pane.attention {
   border-color: var(--attention);
@@ -278,6 +431,7 @@ textarea:focus {
   border-bottom: 1px solid var(--border);
   font-size: 11px;
   color: var(--dim);
+  flex: none;
 }
 .pane-title {
   color: var(--fg);
@@ -314,7 +468,7 @@ textarea:focus {
   height: 100%;
 }
 
-/* -------------------------------- merge --------------------------------- */
+/* --------------------------------- merge --------------------------------- */
 
 .merge {
   position: absolute;
@@ -400,7 +554,7 @@ textarea:focus {
   color: var(--dim);
 }
 
-/* -------------------------------- modal --------------------------------- */
+/* --------------------------------- modal --------------------------------- */
 
 .modal-backdrop {
   position: fixed;
@@ -497,7 +651,7 @@ textarea:focus {
   color: var(--accent);
 }
 
-/* ------------------------------ statusbar -------------------------------- */
+/* ------------------------------- statusbar -------------------------------- */
 
 .statusbar {
   height: var(--status-h);
@@ -518,6 +672,432 @@ textarea:focus {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   height: 100%;
   color: var(--dim);
+}
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.empty-title {
+  font-size: 14px;
+}
+
+/* ----------------------------- context menu ------------------------------ */
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+.menu {
+  position: absolute;
+  min-width: 170px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+}
+.menu-item {
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  text-align: left;
+  padding: 6px 10px;
+  color: var(--fg);
+  font-size: 12px;
+}
+.menu-item:hover:not(:disabled) {
+  background: rgba(88, 166, 255, 0.14);
+  color: var(--accent);
+}
+.menu-item.danger:hover {
+  background: rgba(248, 81, 73, 0.14);
+  color: var(--danger);
+}
+.menu-item.sep {
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 5px 5px;
+  padding-top: 8px;
+}
+
+/* ------------------------------- renaming -------------------------------- */
+
+.rename {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 1px 4px;
+  font: inherit;
+  font-size: 12px;
+  background: var(--bg-alt);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--fg);
+}
+.rename-tab {
+  width: 110px;
+}
+
+/* ------------------------------ key hints -------------------------------- */
+
+.keys {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--dim);
+}
+.keys i {
+  display: inline-block;
+  width: 1px;
+  height: 10px;
+  margin: 0 6px;
+  background: var(--border);
+}
+kbd {
+  font: 10px/1 "Cascadia Mono", Consolas, monospace;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 2px 4px;
+  color: var(--fg);
+}
+
+.status-ws {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* -------------------------- dashboard boards ------------------------------ */
+
+.ws-pin {
+  color: var(--accent);
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+.board {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 12px;
+}
+.board-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+.board-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+.board-empty {
+  color: var(--dim);
+  padding: 10px;
+  line-height: 1.5;
+}
+.board-add {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-top: 1px solid var(--border);
+  flex: none;
+}
+.board-foot {
+  padding: 4px 8px 6px;
+  font-size: 10px;
+  border-top: 1px solid var(--border);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: none;
+}
+.board-foot code {
+  font-family: "Cascadia Mono", Consolas, monospace;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 5px;
+}
+.row:hover {
+  background: var(--panel);
+}
+.row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row-sub {
+  color: var(--dim);
+  font-size: 11px;
+}
+.row-ago {
+  font-size: 10px;
+  flex: none;
+}
+.row-done .row-text {
+  text-decoration: line-through;
+  color: var(--dim);
+}
+
+/* Status chips are buttons: clicking one advances it to the next status. */
+.chip {
+  flex: none;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  text-transform: lowercase;
+  min-width: 62px;
+}
+.chip-todo {
+  color: var(--dim);
+}
+.chip-doing,
+.chip-active {
+  color: var(--accent);
+  border-color: #274b73;
+  background: rgba(88, 166, 255, 0.1);
+}
+.chip-blocked,
+.chip-waiting {
+  color: #e3b341;
+  border-color: rgba(227, 179, 65, 0.4);
+  background: rgba(227, 179, 65, 0.1);
+}
+.chip-done {
+  color: var(--add);
+  border-color: rgba(63, 185, 80, 0.4);
+  background: rgba(63, 185, 80, 0.1);
+}
+
+/* ------------------------------ drag and drop ----------------------------- */
+
+/* Where the dragged tab will land if you let go now. */
+.drop-hint {
+  position: absolute;
+  background: rgba(88, 166, 255, 0.35);
+  border: 1px solid var(--accent);
+  pointer-events: none;
+  z-index: 10;
+}
+.drop-left {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+}
+.drop-right {
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+}
+.drop-top {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 50%;
+}
+.drop-bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 50%;
+}
+
+.tab-slot {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+/* Insertion caret between tabs while reordering. */
+.tab-caret {
+  width: 2px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 1px;
+  margin: 0 1px;
+  flex: none;
+}
+
+.ws.drop-target {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.12);
+}
+.tab[draggable="true"] {
+  cursor: grab;
+}
+.tab[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* --------------------------- working / finished --------------------------- */
+
+.dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+.dot::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+.dot-idle::before {
+  background: var(--border);
+}
+/* Working: a soft pulse. Deliberately calm — this can be on screen for minutes. */
+.dot-working::before {
+  background: var(--accent);
+  animation: pulse 1.25s ease-in-out infinite;
+}
+/* Finished AND unchecked: solid green with a halo. The one state that wants you. */
+.dot-finished::before {
+  background: var(--add);
+  box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.22);
+  animation: halo 1.8s ease-in-out infinite;
+}
+/* Finished and already looked at: a quiet hollow ring. Present, not shouting. */
+.dot-seen::before {
+  background: transparent;
+  border: 1.5px solid var(--dim);
+  opacity: 0.7;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+@keyframes halo {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(63, 185, 80, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(63, 185, 80, 0.32);
+  }
+}
+.dot-label {
+  font-size: 11px;
+  color: var(--dim);
+}
+.dot-finished .dot-label {
+  color: var(--add);
+}
+
+.pane-done {
+  color: var(--add);
+  font-weight: 600;
+}
+.pane-seen {
+  color: var(--dim);
+}
+
+/* An unchecked tab / workspace stands out; a checked one goes quiet again. */
+.tab.unseen {
+  color: var(--add);
+  font-weight: 600;
+}
+.tab.unseen.active {
+  box-shadow: inset 0 -2px 0 var(--add);
+}
+.ws.unseen {
+  color: var(--add);
+  font-weight: 600;
+}
+.unseen-badge {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #04101f;
+  background: var(--add);
+  border-radius: 8px;
+  padding: 1px 6px;
+}
+
+/* Don't double up: the focused pane's own marker is replaced by its status dot. */
+.pane.focused .pane-head:has(.dot)::before {
+  display: none;
+}
+
+/* --------------------------------- gear ---------------------------------- */
+
+.gear {
+  margin-left: auto;
+  border: none;
+  color: var(--dim);
+  font-size: 14px;
+  padding: 2px 4px;
+  -webkit-app-region: no-drag;
+}
+
+/* ------------------------------ shell picker ------------------------------ */
+
+.modal-sm {
+  width: 460px;
+}
+.shell-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.shell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--bg-alt);
+}
+.shell.active {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.1);
+}
+.shell-label {
+  font-weight: 600;
+  flex: none;
+}
+.shell-path {
+  font: 10px/1 "Cascadia Mono", Consolas, monospace;
+  color: var(--dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.shell-check {
+  color: var(--accent);
+  flex: none;
 }

@@ -12,7 +12,14 @@ import {
   removeWorktree
 } from './git'
 import { planSplit } from './split'
-import type { PtySpawnOptions, SplitTask } from '../shared/types'
+import { getSettings, loadState, saveSession, saveSettings } from './persist'
+import { detectShells } from './shells'
+import { dashboardPath, ensureDashboard, readDashboard, watchDashboard, writeDashboard } from './dashboard'
+import type { Dashboard, PtySpawnOptions, Session, Settings, SplitTask } from '../shared/types'
+
+// Must be set before anything reads app.getPath('userData'), or the session file
+// lands in %APPDATA%\Electron in dev and somewhere else once packaged.
+app.setName('Claudify')
 
 // Terminals are latency-sensitive: a frame budget capped at the monitor refresh
 // adds up to a frame of lag between keypress and glyph. Uncapping the renderer
@@ -46,6 +53,9 @@ function createWindow(): void {
   })
 
   win.on('ready-to-show', () => win?.show())
+
+  // Live-reload the dashboard when Claude (or anything else) edits the file.
+  watchDashboard(win)
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
@@ -114,6 +124,23 @@ ipcMain.handle('dialog:pickFolder', async () => {
 })
 
 ipcMain.handle('app:home', () => app.getPath('home'))
+
+/* ---------------------------- state / settings ---------------------------- */
+
+ipcMain.handle('state:load', () => loadState())
+ipcMain.handle('session:save', (_e, session: Session) => saveSession(session))
+ipcMain.handle('settings:save', (_e, patch: Partial<Settings>) => saveSettings(patch))
+ipcMain.handle('settings:get', () => getSettings())
+ipcMain.handle('shells:detect', () => detectShells())
+
+/* ------------------------------- dashboard -------------------------------- */
+
+ipcMain.handle('dashboard:get', () => {
+  ensureDashboard()
+  return readDashboard()
+})
+ipcMain.handle('dashboard:save', (_e, data: Dashboard) => writeDashboard(data))
+ipcMain.handle('dashboard:path', () => dashboardPath())
 
 /* ----------------------------- Lifecycle ------------------------------- */
 

@@ -13,7 +13,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "smoke": "electron scripts/smoke.cjs",
     "smoke:worktree": "electron scripts/smoke-worktree.cjs",
-    "test": "npm run build && npm run smoke && npm run smoke:worktree",
+    "smoke:session": "electron scripts/smoke-session.cjs phase1 && electron scripts/smoke-session.cjs phase2",
+    "smoke:dnd": "electron scripts/smoke-dnd.cjs",
+    "smoke:dashboard": "electron scripts/smoke-dashboard.cjs",
+    "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:session",
     "pack:win": "electron-vite build && electron-builder --win --publish never"
   },
   "dependencies": {

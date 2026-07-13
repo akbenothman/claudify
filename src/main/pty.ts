@@ -1,7 +1,8 @@
 import { spawn, type IPty } from '@lydell/node-pty'
 import type { MessagePortMain } from 'electron'
-import { existsSync } from 'node:fs'
 import type { PtySpawnOptions } from '../shared/types'
+import { getSettings } from './persist'
+import { resolveShell } from './shells'
 
 /**
  * Control messages ride the same MessagePort as terminal bytes. The hot path
@@ -20,19 +21,6 @@ interface Session {
 const sessions = new Map<string, Session>()
 let nextId = 1
 
-function defaultShell(): { shell: string; args: string[] } {
-  if (process.platform !== 'win32') {
-    return { shell: process.env.SHELL || '/bin/bash', args: [] }
-  }
-  // Prefer PowerShell 7 when the user has it; fall back to Windows PowerShell.
-  const pwsh = [
-    'C:\\Program Files\\PowerShell\\7\\pwsh.exe',
-    'C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe'
-  ].find((p) => existsSync(p))
-  if (pwsh) return { shell: pwsh, args: ['-NoLogo'] }
-  return { shell: 'powershell.exe', args: ['-NoLogo'] }
-}
-
 /**
  * Spawns a PTY and wires it directly to `port`.
  *
@@ -42,9 +30,10 @@ function defaultShell(): { shell: string; args: string[] } {
  */
 export function createSession(opts: PtySpawnOptions, port: MessagePortMain): string {
   const id = `pty-${nextId++}`
-  const fallback = defaultShell()
-  const shell = opts.shell || fallback.shell
-  const args = opts.args ?? (opts.shell ? [] : fallback.args)
+  // The user's chosen shell, unless this call names one explicitly.
+  const configured = resolveShell(getSettings().shellId)
+  const shell = opts.shell || configured.path
+  const args = opts.args ?? (opts.shell ? [] : configured.args)
 
   const pty = spawn(shell, args, {
     name: 'xterm-256color',

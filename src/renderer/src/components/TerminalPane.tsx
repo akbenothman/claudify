@@ -5,6 +5,7 @@ import { WebglAddon } from '@xterm/addon-webgl'
 import { WebLinksAddon } from '@xterm/addon-web-links'
 import { takePort } from '../ptyPorts'
 import { useStore, type Pane } from '../store'
+import { commandTitle, isAgentCommand, topicTitle } from '../titles'
 import '@xterm/xterm/css/xterm.css'
 
 const THEME = {
@@ -32,11 +33,12 @@ const THEME = {
 
 interface Props {
   wsId: string
+  tabId: string
   pane: Pane
   focused: boolean
 }
 
-export function TerminalPane({ wsId, pane, focused }: Props) {
+export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const termRef = useRef<Terminal | null>(null)
 
@@ -44,6 +46,9 @@ export function TerminalPane({ wsId, pane, focused }: Props) {
   // array would tear down and respawn the PTY on every unrelated re-render.
   const updatePane = useStore((s) => s.updatePane)
   const setActivePane = useStore((s) => s.setActivePane)
+  const autoNamePane = useStore((s) => s.autoNamePane)
+  const setPaneStatus = useStore((s) => s.setPaneStatus)
+  const raiseAttentionFor = useStore((s) => s.raiseAttention)
 
   useEffect(() => {
     const host = hostRef.current
@@ -81,12 +86,16 @@ export function TerminalPane({ wsId, pane, focused }: Props) {
       /* fall back to the DOM/canvas renderer */
     }
 
-    fit.fit()
+    try {
+      fit.fit()
+    } catch {
+      // Host has no size yet; the ResizeObserver below will fit it once it does.
+    }
 
     // cmux-style attention signals: an agent that wants you raises OSC 9 or
     // OSC 777, and most CLIs ring the bell when they need input.
     const raiseAttention = () => {
-      if (!disposed) updatePane(wsId, pane.id, { attention: true })
+      if (!disposed) raiseAttentionFor(wsId, tabId, pane.id)
     }
     term.parser.registerOscHandler(9, () => {
       raiseAttention()
@@ -97,6 +106,101 @@ export function TerminalPane({ wsId, pane, focused }: Props) {
       return true
     })
     term.onBell(raiseAttention)
+
+    /*
+     * Working / finished indicator.
+     *
+     * There's no API that tells us an agent is thinking, so we infer it from the
+     * PTY: output flowing means work is happening; output stopping means it has
+     * stopped. For an agent pane, going quiet means it's finished and waiting on
+     * you ("finished"); for a plain shell it just means we're back at a prompt
+     * ("idle").
+     *
+     * QUIET_MS has to clear the gaps an agent leaves while streaming tokens or
+     * running a tool, or the indicator flickers between working and finished.
+     */
+    const QUIET_MS = 1200
+    let status: 'idle' | 'working' | 'finished' = 'idle'
+    let quietTimer: ReturnType<typeof setTimeout> | undefined
+
+    // Name of the agent CLI running here, or null for a plain shell. Set either
+    // by the pane's initial command (worktree panes) or by the input sniffer
+    // below when you type `claude` yourself. Drives both naming and status.
+    let agent: string | null =
+      pane.initialCommand && isAgentCommand(pane.initialCommand)
+        ? pane.initialCommand.trim().split(/\s+/)[0]
+        : null
+
+    const setStatus = (next: typeof status) => {
+      if (disposed || status === next) return
+      status = next
+      // The store decides whether this counts as "unseen" — it's the only thing
+      // that knows which tab is on screen.
+      setPaneStatus(wsId, tabId, pane.id, next)
+    }
+
+    const markOutput = () => {
+      setStatus('working')
+      clearTimeout(quietTimer)
+      quietTimer = setTimeout(() => setStatus(agent ? 'finished' : 'idle'), QUIET_MS)
+    }
+
+    /*
+     * Smart naming. We reconstruct the line you're typing from the keystrokes
+     * on their way to the PTY, and name the pane from it when you hit Enter.
+     *
+     * Before an agent starts, a line is a shell command -> "npm dev", "git log".
+     * Once an agent CLI is running, a line is prose you're saying to it, so the
+     * name becomes the topic instead -> "claude: add dark mode".
+     */
+    let line = ''
+    let inEscape = false
+
+    const sniff = (chunk: string) => {
+      for (const ch of chunk) {
+        // Arrow keys and friends arrive as escape sequences; they'd otherwise
+        // land in the buffer as stray "[A" garbage.
+        if (inEscape) {
+          if (/[a-zA-Z~]/.test(ch)) inEscape = false
+          continue
+        }
+        if (ch === '\x1b') {
+          inEscape = true
+          continue
+        }
+
+        if (ch === '\r' || ch === '\n') {
+          const submitted = line.trim()
+          line = ''
+          if (!submitted) continue
+
+          if (agent) {
+            const topic = topicTitle(submitted)
+            if (topic) autoNamePane(wsId, tabId, pane.id, `${agent}: ${topic}`)
+          } else {
+            const title = commandTitle(submitted)
+            if (title) autoNamePane(wsId, tabId, pane.id, title)
+            if (isAgentCommand(submitted)) {
+              agent = submitted.split(/\s+/)[0]
+              updatePane(wsId, tabId, pane.id, { agent: true })
+            }
+          }
+          // You pressed Enter — whatever you asked for is now underway.
+          setStatus('working')
+        } else if (ch === '\x7f' || ch === '\b') {
+          line = line.slice(0, -1)
+        } else if (ch === '\x03' || ch === '\x15') {
+          line = '' // Ctrl+C / Ctrl+U discard the line
+        } else if (ch >= ' ') {
+          line += ch
+        }
+      }
+    }
+
+    if (pane.initialCommand) {
+      const title = commandTitle(pane.initialCommand)
+      if (title) autoNamePane(wsId, tabId, pane.id, title)
+    }
 
     ;(async () => {
       const id = await window.claudify.createTerminal({
@@ -125,13 +229,21 @@ export function TerminalPane({ wsId, pane, focused }: Props) {
         const data = e.data as string | { t: 'exit'; code: number }
         if (typeof data === 'string') {
           term.write(data)
+          markOutput()
         } else if (data?.t === 'exit') {
           term.write(`\r\n\x1b[90m[process exited with code ${data.code}]\x1b[0m\r\n`)
-          if (!disposed) updatePane(wsId, pane.id, { exited: true })
+          if (!disposed) {
+            clearTimeout(quietTimer)
+            setStatus('idle')
+            updatePane(wsId, tabId, pane.id, { exited: true })
+          }
         }
       }
       p.start()
-      term.onData((d) => p.postMessage(d))
+      term.onData((d) => {
+        p.postMessage(d)
+        sniff(d)
+      })
       term.focus()
     })()
 
@@ -150,6 +262,7 @@ export function TerminalPane({ wsId, pane, focused }: Props) {
 
     return () => {
       disposed = true
+      clearTimeout(quietTimer)
       ro.disconnect()
       try {
         port?.close()
@@ -169,10 +282,6 @@ export function TerminalPane({ wsId, pane, focused }: Props) {
   }, [focused])
 
   return (
-    <div
-      className="term-host"
-      ref={hostRef}
-      onMouseDown={() => setActivePane(wsId, pane.id)}
-    />
+    <div className="term-host" ref={hostRef} onMouseDown={() => setActivePane(wsId, tabId, pane.id)} />
   )
 }

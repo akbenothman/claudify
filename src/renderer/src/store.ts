@@ -1,7 +1,15 @@
 import { create } from 'zustand'
-import type { SplitPlan, Worktree } from '../../shared/types'
+import type { Session, SplitPlan, Worktree } from '../../shared/types'
 
 export type Direction = 'row' | 'col'
+
+/**
+ * What the pane is doing right now.
+ * - `idle`     nothing running; sitting at a prompt
+ * - `working`  output is actively flowing (a command, or an agent thinking)
+ * - `finished` an agent was working and has now gone quiet — it's your turn
+ */
+export type PaneStatus = 'idle' | 'working' | 'finished'
 
 /** Recursive split layout, same shape as tmux/wezterm pane trees. */
 export type LayoutNode =
@@ -10,28 +18,59 @@ export type LayoutNode =
 
 export interface Pane {
   id: string
-  kind: 'terminal' | 'merge'
+  kind: 'terminal' | 'merge' | 'todo' | 'tracker'
   title: string
   cwd: string
   /** Typed into the shell once it is ready (used to launch `claude`). */
   initialCommand?: string
+  /**
+   * Keep `initialCommand` across restarts. Only for panes whose command is
+   * merely "start the REPL" (the dashboard's Claude) — never for worktree task
+   * panes, which would re-run a real task on reboot.
+   */
+  persistCommand?: boolean
   /** Set when this pane is a worktree task pane. */
   branch?: string
   worktreePath?: string
   exited?: boolean
   /** cmux-style "needs you" ring, raised by OSC 9 / OSC 777 / bell. */
   attention?: boolean
+  /** The user renamed this by hand; stop auto-naming it. */
+  custom?: boolean
+  /** Working / finished indicator. */
+  status?: PaneStatus
+  /**
+   * Something happened here that you haven't looked at yet — it finished, or it
+   * rang the bell, while this pane was off screen. Cleared when you actually see
+   * it. This is what separates "done" from "done, and you still need to check it".
+   */
+  unseen?: boolean
+  /** True once an agent CLI (claude, codex, …) is running in this pane. */
+  agent?: boolean
+}
+
+/** A tab owns one split tree. Workspace > tabs > panes, like wezterm. */
+export interface Tab {
+  id: string
+  title: string
+  panes: Record<string, Pane>
+  layout: LayoutNode | null
+  activePaneId: string | null
+  zoomedPaneId: string | null
+  /** The user renamed this by hand; stop deriving it from the active pane. */
+  custom?: boolean
 }
 
 export interface Workspace {
   id: string
   name: string
-  panes: Record<string, Pane>
-  layout: LayoutNode | null
-  activePaneId: string | null
-  zoomedPaneId: string | null
+  cwd: string
+  tabs: Tab[]
+  activeTabId: string | null
   /** Present when this workspace was produced by a worktree split. */
   split?: { repoRoot: string; baseRef: string; worktrees: Worktree[] }
+  /** The AK Dashboard. Always first, cannot be deleted. */
+  permanent?: boolean
 }
 
 interface State {
@@ -40,20 +79,53 @@ interface State {
   defaultCwd: string
 
   setDefaultCwd: (cwd: string) => void
+
   newWorkspace: (name?: string, cwd?: string) => string
   closeWorkspace: (id: string) => void
   setActiveWorkspace: (id: string) => void
+  renameWorkspace: (id: string, name: string) => void
 
-  addPane: (wsId: string, pane: Omit<Pane, 'id'>) => string
-  splitPane: (wsId: string, paneId: string, dir: Direction) => void
-  closePane: (wsId: string, paneId: string) => void
-  setActivePane: (wsId: string, paneId: string) => void
-  toggleZoom: (wsId: string) => void
-  setRatio: (wsId: string, splitId: string, ratio: number) => void
-  updatePane: (wsId: string, paneId: string, patch: Partial<Pane>) => void
+  newTab: (wsId: string, cwd?: string) => void
+  closeTab: (wsId: string, tabId: string) => void
+  setActiveTab: (wsId: string, tabId: string) => void
+  renameTab: (wsId: string, tabId: string, title: string) => void
+  renamePane: (wsId: string, tabId: string, paneId: string, title: string) => void
+  autoNamePane: (wsId: string, tabId: string, paneId: string, title: string) => void
+
+  /** Reorder a tab, or move it to another workspace. */
+  moveTab: (srcWsId: string, tabId: string, dstWsId: string, index: number) => void
+  /** Drop a tab onto a pane: its panes join that tab as a new split. */
+  mergeTabIntoPane: (
+    srcWsId: string,
+    srcTabId: string,
+    dstWsId: string,
+    dstTabId: string,
+    dstPaneId: string,
+    edge: 'left' | 'right' | 'top' | 'bottom'
+  ) => void
+  moveWorkspace: (fromIndex: number, toIndex: number) => void
+
+  setPaneStatus: (wsId: string, tabId: string, paneId: string, status: PaneStatus) => void
+  raiseAttention: (wsId: string, tabId: string, paneId: string) => void
+  /** Mark everything in this tab as looked-at. */
+  acknowledgeTab: (wsId: string, tabId: string) => void
+
+  splitPane: (wsId: string, tabId: string, paneId: string, dir: Direction) => void
+  closePane: (wsId: string, tabId: string, paneId: string) => void
+  setActivePane: (wsId: string, tabId: string, paneId: string) => void
+  toggleZoom: (wsId: string, tabId: string) => void
+  setRatio: (wsId: string, tabId: string, splitId: string, ratio: number) => void
+  updatePane: (wsId: string, tabId: string, paneId: string, patch: Partial<Pane>) => void
 
   createSplitWorkspace: (plan: SplitPlan, worktrees: Worktree[]) => string
+
+  /** Restore a previously saved session. */
+  hydrate: (session: Session) => void
+  /** Create the permanent AK Dashboard workspace if it isn't already there. */
+  ensureDashboard: (cwd: string) => void
 }
+
+export const DASHBOARD_NAME = 'AK Dashboard'
 
 let seq = 1
 const uid = (p: string) => `${p}-${seq++}`
@@ -82,17 +154,13 @@ function firstLeaf(node: LayoutNode): string | null {
 function setRatioIn(node: LayoutNode, splitId: string, ratio: number): LayoutNode {
   if (node.kind === 'leaf') return node
   if (node.id === splitId) return { ...node, ratio }
-  return {
-    ...node,
-    a: setRatioIn(node.a, splitId, ratio),
-    b: setRatioIn(node.b, splitId, ratio)
-  }
+  return { ...node, a: setRatioIn(node.a, splitId, ratio), b: setRatioIn(node.b, splitId, ratio) }
 }
 
 /**
  * Builds a balanced grid from N panes by halving the list and alternating
- * direction with depth, which gives the tidy 2x2 / 2x3 layouts you want after
- * a split rather than a row of slivers.
+ * direction with depth, which gives tidy 2x2 / 2x3 layouts after a split rather
+ * than a row of slivers.
  */
 function buildGrid(paneIds: string[], depth = 0): LayoutNode {
   if (paneIds.length === 1) return { kind: 'leaf', paneId: paneIds[0] }
@@ -107,15 +175,51 @@ function buildGrid(paneIds: string[], depth = 0): LayoutNode {
   }
 }
 
+function makeTab(cwd: string, title = 'shell'): Tab {
+  const paneId = uid('pane')
+  return {
+    id: uid('tab'),
+    title,
+    panes: { [paneId]: { id: paneId, kind: 'terminal', title: 'shell', cwd } },
+    layout: { kind: 'leaf', paneId },
+    activePaneId: paneId,
+    zoomedPaneId: null
+  }
+}
+
 /* --------------------------------- store ---------------------------------- */
 
-function withWorkspace(
-  state: State,
-  wsId: string,
-  fn: (ws: Workspace) => Workspace
-): Partial<State> {
-  return { workspaces: state.workspaces.map((w) => (w.id === wsId ? fn(w) : w)) }
+const mapWs = (s: State, wsId: string, fn: (ws: Workspace) => Workspace): Partial<State> => ({
+  workspaces: s.workspaces.map((w) => (w.id === wsId ? fn(w) : w))
+})
+
+const mapTab = (ws: Workspace, tabId: string, fn: (t: Tab) => Tab): Workspace => ({
+  ...ws,
+  tabs: ws.tabs.map((t) => (t.id === tabId ? fn(t) : t))
+})
+
+/**
+ * Is this pane actually in front of the user right now?
+ *
+ * Its workspace and tab must both be active AND the window must have focus — a
+ * pane "finishing" while the app is minimised is precisely the thing you haven't
+ * checked on, even though it is nominally the active tab.
+ */
+function isOnScreen(s: State, wsId: string, tabId: string): boolean {
+  if (s.activeWorkspaceId !== wsId) return false
+  const ws = s.workspaces.find((w) => w.id === wsId)
+  if (ws?.activeTabId !== tabId) return false
+  return document.hasFocus()
 }
+
+const clearSeen = (t: Tab): Tab => ({
+  ...t,
+  panes: Object.fromEntries(
+    Object.entries(t.panes).map(([id, p]) =>
+      p.unseen || p.attention ? [id, { ...p, unseen: false, attention: false }] : [id, p]
+    )
+  )
+})
 
 export const useStore = create<State>((set, get) => ({
   workspaces: [],
@@ -126,20 +230,17 @@ export const useStore = create<State>((set, get) => ({
 
   newWorkspace: (name, cwd) => {
     const wsId = uid('ws')
-    const paneId = uid('pane')
     const dir = cwd || get().defaultCwd
-    const pane: Pane = { id: paneId, kind: 'terminal', title: 'shell', cwd: dir }
-
+    const tab = makeTab(dir)
     set((s) => ({
       workspaces: [
         ...s.workspaces,
         {
           id: wsId,
           name: name || `workspace ${s.workspaces.length + 1}`,
-          panes: { [paneId]: pane },
-          layout: { kind: 'leaf', paneId },
-          activePaneId: paneId,
-          zoomedPaneId: null
+          cwd: dir,
+          tabs: [tab],
+          activeTabId: tab.id
         }
       ],
       activeWorkspaceId: wsId
@@ -149,114 +250,307 @@ export const useStore = create<State>((set, get) => ({
 
   closeWorkspace: (id) =>
     set((s) => {
+      // The dashboard is permanent; deleting it is not on the menu.
+      if (s.workspaces.find((w) => w.id === id)?.permanent) return {}
       const workspaces = s.workspaces.filter((w) => w.id !== id)
-      const activeWorkspaceId =
-        s.activeWorkspaceId === id ? workspaces[workspaces.length - 1]?.id ?? null : s.activeWorkspaceId
-      return { workspaces, activeWorkspaceId }
+      return {
+        workspaces,
+        activeWorkspaceId:
+          s.activeWorkspaceId === id
+            ? workspaces[workspaces.length - 1]?.id ?? null
+            : s.activeWorkspaceId
+      }
     }),
 
   setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
 
-  addPane: (wsId, pane) => {
-    const paneId = uid('pane')
-    set((s) =>
-      withWorkspace(s, wsId, (ws) => {
-        const next: Pane = { ...pane, id: paneId }
-        const leaf: LayoutNode = { kind: 'leaf', paneId }
-        return {
-          ...ws,
-          panes: { ...ws.panes, [paneId]: next },
-          layout: ws.layout
-            ? { kind: 'split', id: uid('split'), dir: 'row', ratio: 0.5, a: ws.layout, b: leaf }
-            : leaf,
-          activePaneId: paneId
-        }
-      })
-    )
-    return paneId
-  },
+  renameWorkspace: (id, name) => set((s) => mapWs(s, id, (ws) => ({ ...ws, name }))),
 
-  splitPane: (wsId, paneId, dir) =>
+  newTab: (wsId, cwd) =>
     set((s) =>
-      withWorkspace(s, wsId, (ws) => {
-        const src = ws.panes[paneId]
-        if (!src || !ws.layout) return ws
-        const newId = uid('pane')
-        // A new pane inherits the cwd of the pane it was split from — the same
-        // thing tmux/wezterm do, and what you want when splitting off a worktree.
-        const pane: Pane = { id: newId, kind: 'terminal', title: 'shell', cwd: src.cwd }
-        const replacement: LayoutNode = {
-          kind: 'split',
-          id: uid('split'),
-          dir,
-          ratio: 0.5,
-          a: { kind: 'leaf', paneId },
-          b: { kind: 'leaf', paneId: newId }
-        }
+      mapWs(s, wsId, (ws) => {
+        const tab = makeTab(cwd || ws.cwd || s.defaultCwd)
+        return { ...ws, tabs: [...ws.tabs, tab], activeTabId: tab.id }
+      })
+    ),
+
+  closeTab: (wsId, tabId) =>
+    set((s) =>
+      mapWs(s, wsId, (ws) => {
+        const tabs = ws.tabs.filter((t) => t.id !== tabId)
         return {
           ...ws,
-          panes: { ...ws.panes, [newId]: pane },
-          layout: replaceLeaf(ws.layout, paneId, replacement),
-          activePaneId: newId,
-          zoomedPaneId: null
+          tabs,
+          activeTabId:
+            ws.activeTabId === tabId ? tabs[tabs.length - 1]?.id ?? null : ws.activeTabId
         }
       })
     ),
 
-  closePane: (wsId, paneId) => {
+  setActiveTab: (wsId, tabId) => set((s) => mapWs(s, wsId, (ws) => ({ ...ws, activeTabId: tabId }))),
+
+  renameTab: (wsId, tabId, title) =>
+    set((s) =>
+      mapWs(s, wsId, (ws) => mapTab(ws, tabId, (t) => ({ ...t, title, custom: true })))
+    ),
+
+  renamePane: (wsId, tabId, paneId, title) =>
+    set((s) =>
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (t) =>
+          t.panes[paneId]
+            ? { ...t, panes: { ...t.panes, [paneId]: { ...t.panes[paneId], title, custom: true } } }
+            : t
+        )
+      )
+    ),
+
+  moveTab: (srcWsId, tabId, dstWsId, index) =>
+    set((s) => {
+      const src = s.workspaces.find((w) => w.id === srcWsId)
+      const tab = src?.tabs.find((t) => t.id === tabId)
+      if (!src || !tab) return {}
+
+      const workspaces = s.workspaces.map((w) => {
+        let tabs = w.id === srcWsId ? w.tabs.filter((t) => t.id !== tabId) : w.tabs
+
+        if (w.id === dstWsId) {
+          // Clamp: after removing the tab from this same list, the old index may
+          // now be past the end.
+          const at = Math.max(0, Math.min(index, tabs.length))
+          tabs = [...tabs.slice(0, at), tab, ...tabs.slice(at)]
+        }
+        if (tabs === w.tabs) return w
+
+        const activeTabId =
+          w.id === dstWsId
+            ? tab.id
+            : w.activeTabId === tabId
+              ? tabs[tabs.length - 1]?.id ?? null
+              : w.activeTabId
+
+        return { ...w, tabs, activeTabId }
+      })
+
+      return { workspaces, activeWorkspaceId: dstWsId }
+    }),
+
+  mergeTabIntoPane: (srcWsId, srcTabId, dstWsId, dstTabId, dstPaneId, edge) =>
+    set((s) => {
+      const srcWs = s.workspaces.find((w) => w.id === srcWsId)
+      const srcTab = srcWs?.tabs.find((t) => t.id === srcTabId)
+      const dstWs = s.workspaces.find((w) => w.id === dstWsId)
+      const dstTab = dstWs?.tabs.find((t) => t.id === dstTabId)
+
+      // Dropping a tab onto a pane it already owns would splice the tree into
+      // itself.
+      if (!srcTab || !dstTab || !srcTab.layout || !dstTab.layout) return {}
+      if (srcTabId === dstTabId) return {}
+
+      const dir: Direction = edge === 'left' || edge === 'right' ? 'row' : 'col'
+      const incomingFirst = edge === 'left' || edge === 'top'
+      const target: LayoutNode = { kind: 'leaf', paneId: dstPaneId }
+
+      const combined: LayoutNode = {
+        kind: 'split',
+        id: uid('split'),
+        dir,
+        ratio: 0.5,
+        a: incomingFirst ? srcTab.layout : target,
+        b: incomingFirst ? target : srcTab.layout
+      }
+
+      const workspaces = s.workspaces
+        .map((w) => {
+          if (w.id !== srcWsId) return w
+          const tabs = w.tabs.filter((t) => t.id !== srcTabId)
+          return {
+            ...w,
+            tabs,
+            activeTabId:
+              w.activeTabId === srcTabId ? tabs[tabs.length - 1]?.id ?? null : w.activeTabId
+          }
+        })
+        .map((w) => {
+          if (w.id !== dstWsId) return w
+          return {
+            ...w,
+            activeTabId: dstTabId,
+            tabs: w.tabs.map((t) =>
+              t.id !== dstTabId
+                ? t
+                : {
+                    ...t,
+                    panes: { ...t.panes, ...srcTab.panes },
+                    layout: replaceLeaf(t.layout!, dstPaneId, combined),
+                    activePaneId: srcTab.activePaneId ?? t.activePaneId,
+                    zoomedPaneId: null
+                  }
+            )
+          }
+        })
+
+      return { workspaces, activeWorkspaceId: dstWsId }
+    }),
+
+  moveWorkspace: (fromIndex, toIndex) =>
+    set((s) => {
+      const workspaces = [...s.workspaces]
+      const [moved] = workspaces.splice(fromIndex, 1)
+      if (!moved) return {}
+      workspaces.splice(Math.max(0, Math.min(toIndex, workspaces.length)), 0, moved)
+      return { workspaces }
+    }),
+
+  setPaneStatus: (wsId, tabId, paneId, status) => {
+    // A pane that finishes off screen is unseen. One that finishes while you're
+    // watching it is not — you just saw it happen.
+    const offScreen = !isOnScreen(get(), wsId, tabId)
+    set((s) =>
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (t) => {
+          const p = t.panes[paneId]
+          if (!p) return t
+          const unseen = status === 'finished' ? p.unseen || offScreen : p.unseen
+          if (p.status === status && p.unseen === unseen) return t
+          return { ...t, panes: { ...t.panes, [paneId]: { ...p, status, unseen } } }
+        })
+      )
+    )
+  },
+
+  raiseAttention: (wsId, tabId, paneId) => {
+    const offScreen = !isOnScreen(get(), wsId, tabId)
+    set((s) =>
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (t) => {
+          const p = t.panes[paneId]
+          if (!p) return t
+          return {
+            ...t,
+            panes: { ...t.panes, [paneId]: { ...p, attention: true, unseen: p.unseen || offScreen } }
+          }
+        })
+      )
+    )
+  },
+
+  acknowledgeTab: (wsId, tabId) =>
+    set((s) => mapWs(s, wsId, (ws) => mapTab(ws, tabId, clearSeen))),
+
+  /** Derived name. Silently declines to overwrite a name the user chose. */
+  autoNamePane: (wsId, tabId, paneId, title) =>
+    set((s) =>
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (t) => {
+          const p = t.panes[paneId]
+          if (!p || p.custom || p.title === title) return t
+          return { ...t, panes: { ...t.panes, [paneId]: { ...p, title } } }
+        })
+      )
+    ),
+
+  splitPane: (wsId, tabId, paneId, dir) =>
+    set((s) =>
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (tab) => {
+          const src = tab.panes[paneId]
+          if (!src || !tab.layout) return tab
+          const newId = uid('pane')
+          // A new pane inherits the cwd of the pane it was split from — what
+          // tmux/wezterm do, and what you want when splitting off a worktree.
+          const pane: Pane = { id: newId, kind: 'terminal', title: 'shell', cwd: src.cwd }
+          const replacement: LayoutNode = {
+            kind: 'split',
+            id: uid('split'),
+            dir,
+            ratio: 0.5,
+            a: { kind: 'leaf', paneId },
+            b: { kind: 'leaf', paneId: newId }
+          }
+          return {
+            ...tab,
+            panes: { ...tab.panes, [newId]: pane },
+            layout: replaceLeaf(tab.layout, paneId, replacement),
+            activePaneId: newId,
+            zoomedPaneId: null
+          }
+        })
+      )
+    ),
+
+  closePane: (wsId, tabId, paneId) => {
     // The PTY is killed by TerminalPane's unmount cleanup, which owns the real
     // pty id (pane ids and pty ids are separate namespaces).
+    const ws = get().workspaces.find((w) => w.id === wsId)
+    const tab = ws?.tabs.find((t) => t.id === tabId)
+    // Closing the last pane in a tab closes the tab, rather than leaving an
+    // empty shell of a tab behind.
+    if (tab && Object.keys(tab.panes).length <= 1) {
+      get().closeTab(wsId, tabId)
+      return
+    }
     set((s) =>
-      withWorkspace(s, wsId, (ws) => {
-        if (!ws.layout) return ws
-        const layout = removeLeaf(ws.layout, paneId)
-        const panes = { ...ws.panes }
-        delete panes[paneId]
-        return {
-          ...ws,
-          panes,
-          layout,
-          activePaneId: layout ? firstLeaf(layout) : null,
-          zoomedPaneId: ws.zoomedPaneId === paneId ? null : ws.zoomedPaneId
-        }
-      })
+      mapWs(s, wsId, (w) =>
+        mapTab(w, tabId, (t) => {
+          if (!t.layout) return t
+          const layout = removeLeaf(t.layout, paneId)
+          const panes = { ...t.panes }
+          delete panes[paneId]
+          return {
+            ...t,
+            panes,
+            layout,
+            activePaneId: layout ? firstLeaf(layout) : null,
+            zoomedPaneId: t.zoomedPaneId === paneId ? null : t.zoomedPaneId
+          }
+        })
+      )
     )
   },
 
-  setActivePane: (wsId, paneId) =>
+  setActivePane: (wsId, tabId, paneId) =>
     set((s) =>
-      withWorkspace(s, wsId, (ws) => ({
-        ...ws,
-        activePaneId: paneId,
-        // Focusing a pane is an acknowledgement; clear its attention ring.
-        panes: ws.panes[paneId]
-          ? { ...ws.panes, [paneId]: { ...ws.panes[paneId], attention: false } }
-          : ws.panes
-      }))
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (t) => ({
+          ...t,
+          activePaneId: paneId,
+          // Clicking into a pane is the strongest possible "I've seen this".
+          panes: t.panes[paneId]
+            ? { ...t.panes, [paneId]: { ...t.panes[paneId], attention: false, unseen: false } }
+            : t.panes
+        }))
+      )
     ),
 
-  toggleZoom: (wsId) =>
+  toggleZoom: (wsId, tabId) =>
     set((s) =>
-      withWorkspace(s, wsId, (ws) => ({
-        ...ws,
-        zoomedPaneId: ws.zoomedPaneId ? null : ws.activePaneId
-      }))
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (t) => ({
+          ...t,
+          zoomedPaneId: t.zoomedPaneId ? null : t.activePaneId
+        }))
+      )
     ),
 
-  setRatio: (wsId, splitId, ratio) =>
+  setRatio: (wsId, tabId, splitId, ratio) =>
     set((s) =>
-      withWorkspace(s, wsId, (ws) => ({
-        ...ws,
-        layout: ws.layout ? setRatioIn(ws.layout, splitId, ratio) : ws.layout
-      }))
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (t) => ({
+          ...t,
+          layout: t.layout ? setRatioIn(t.layout, splitId, ratio) : t.layout
+        }))
+      )
     ),
 
-  updatePane: (wsId, paneId, patch) =>
+  updatePane: (wsId, tabId, paneId, patch) =>
     set((s) =>
-      withWorkspace(s, wsId, (ws) =>
-        ws.panes[paneId]
-          ? { ...ws, panes: { ...ws.panes, [paneId]: { ...ws.panes[paneId], ...patch } } }
-          : ws
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (t) =>
+          t.panes[paneId]
+            ? { ...t, panes: { ...t.panes, [paneId]: { ...t.panes[paneId], ...patch } } }
+            : t
+        )
       )
     ),
 
@@ -276,8 +570,8 @@ export const useStore = create<State>((set, get) => ({
         cwd: wt.path,
         branch: wt.branch,
         worktreePath: wt.path,
-        // The whole point: each pane comes up with Claude already working on
-        // its own task, in its own worktree.
+        // The whole point: each pane comes up with Claude already working on its
+        // own task, in its own worktree.
         initialCommand: task ? `claude ${JSON.stringify(task.prompt)}` : undefined
       }
     }
@@ -287,24 +581,237 @@ export const useStore = create<State>((set, get) => ({
     panes[mergeId] = { id: mergeId, kind: 'merge', title: 'merge', cwd: plan.repoRoot }
     ids.push(mergeId)
 
+    const tab: Tab = {
+      id: uid('tab'),
+      title: 'agents',
+      panes,
+      layout: buildGrid(ids),
+      activePaneId: ids[0],
+      zoomedPaneId: null
+    }
+
     set((s) => ({
       workspaces: [
         ...s.workspaces,
         {
           id: wsId,
           name: `split · ${worktrees.length} tasks`,
-          panes,
-          layout: buildGrid(ids),
-          activePaneId: ids[0],
-          zoomedPaneId: null,
+          cwd: plan.repoRoot,
+          tabs: [tab],
+          activeTabId: tab.id,
           split: { repoRoot: plan.repoRoot, baseRef: plan.baseRef, worktrees }
         }
       ],
       activeWorkspaceId: wsId
     }))
     return wsId
+  },
+
+  ensureDashboard: (cwd) => {
+    if (get().workspaces.some((w) => w.permanent)) return
+
+    const mk = (p: Omit<Pane, 'id'>): Pane => ({ ...p, id: uid('pane') })
+
+    const term = mk({ kind: 'terminal', title: 'shell', cwd })
+    const claude = mk({
+      kind: 'terminal',
+      title: 'claude',
+      cwd,
+      // Just opens the REPL — no task — so it's safe to bring back on every boot.
+      initialCommand: 'claude',
+      persistCommand: true
+    })
+    const todo = mk({ kind: 'todo', title: 'todo', cwd })
+    const tracker = mk({ kind: 'tracker', title: 'conversations', cwd })
+
+    // Small terminal down the left; Claude filling the right; todo + tracker
+    // sharing the bottom of that column.
+    const layout: LayoutNode = {
+      kind: 'split',
+      id: uid('split'),
+      dir: 'row',
+      ratio: 0.24,
+      a: { kind: 'leaf', paneId: term.id },
+      b: {
+        kind: 'split',
+        id: uid('split'),
+        dir: 'col',
+        ratio: 0.58,
+        a: { kind: 'leaf', paneId: claude.id },
+        b: {
+          kind: 'split',
+          id: uid('split'),
+          dir: 'row',
+          ratio: 0.5,
+          a: { kind: 'leaf', paneId: todo.id },
+          b: { kind: 'leaf', paneId: tracker.id }
+        }
+      }
+    }
+
+    const tab: Tab = {
+      id: uid('tab'),
+      title: 'dashboard',
+      custom: true,
+      panes: Object.fromEntries([term, claude, todo, tracker].map((p) => [p.id, p])),
+      layout,
+      activePaneId: claude.id,
+      zoomedPaneId: null
+    }
+
+    const ws: Workspace = {
+      id: uid('ws'),
+      name: DASHBOARD_NAME,
+      cwd,
+      tabs: [tab],
+      activeTabId: tab.id,
+      permanent: true
+    }
+
+    // Always first in the sidebar.
+    set((s) => ({
+      workspaces: [ws, ...s.workspaces],
+      activeWorkspaceId: s.activeWorkspaceId ?? ws.id
+    }))
+  },
+
+  hydrate: (session) => {
+    // Restored ids were minted by a previous run's counter. If we don't advance
+    // `seq` past them, the next new pane reuses an existing id and React starts
+    // rendering two panes with the same key.
+    let max = 0
+    for (const m of JSON.stringify(session).matchAll(/"(?:ws|tab|pane|split)-(\d+)"/g)) {
+      max = Math.max(max, parseInt(m[1], 10))
+    }
+    seq = max + 1
+
+    const workspaces: Workspace[] = session.workspaces.map((w) => ({
+      id: w.id,
+      name: w.name,
+      cwd: w.cwd,
+      activeTabId: w.activeTabId,
+      split: w.split,
+      permanent: w.permanent,
+      tabs: w.tabs.map((t) => ({
+        id: t.id,
+        title: t.title,
+        custom: t.custom,
+        layout: t.layout as LayoutNode | null,
+        activePaneId: t.activePaneId,
+        zoomedPaneId: null,
+        panes: Object.fromEntries(
+          t.panes.map((p) => [
+            p.id,
+            {
+              id: p.id,
+              kind: p.kind,
+              title: p.title,
+              cwd: p.cwd,
+              custom: p.custom,
+              branch: p.branch,
+              worktreePath: p.worktreePath,
+              // Only the dashboard's Claude comes back running; see persistCommand.
+              initialCommand: p.persistCommand ? p.initialCommand : undefined,
+              persistCommand: p.persistCommand,
+              status: 'idle' as PaneStatus
+            }
+          ])
+        )
+      }))
+    }))
+
+    set({
+      workspaces,
+      activeWorkspaceId:
+        session.activeWorkspaceId && workspaces.some((w) => w.id === session.activeWorkspaceId)
+          ? session.activeWorkspaceId
+          : workspaces[0]?.id ?? null
+    })
   }
 }))
 
+/**
+ * Snapshot for disk. Drops everything transient, and deliberately drops
+ * `initialCommand`: restoring a worktree pane must not silently re-run an agent
+ * on a task days after the fact. Shells come back in their saved cwd, empty.
+ */
+export const serialize = (s: State): Session => ({
+  activeWorkspaceId: s.activeWorkspaceId,
+  workspaces: s.workspaces.map((w) => ({
+    id: w.id,
+    name: w.name,
+    cwd: w.cwd,
+    activeTabId: w.activeTabId,
+    split: w.split,
+    permanent: w.permanent,
+    tabs: w.tabs.map((t) => ({
+      id: t.id,
+      title: t.title,
+      custom: t.custom,
+      layout: t.layout,
+      activePaneId: t.activePaneId,
+      panes: Object.values(t.panes).map((p) => ({
+        id: p.id,
+        kind: p.kind,
+        title: p.title,
+        cwd: p.cwd,
+        custom: p.custom,
+        branch: p.branch,
+        worktreePath: p.worktreePath,
+        // Persisted only for panes that opted in — i.e. the dashboard's Claude
+        // REPL, never a worktree task pane.
+        initialCommand: p.persistCommand ? p.initialCommand : undefined,
+        persistCommand: p.persistCommand
+      }))
+    }))
+  }))
+})
+
 export const activeWorkspace = (s: State): Workspace | undefined =>
   s.workspaces.find((w) => w.id === s.activeWorkspaceId)
+
+/** True when any pane in the tab is asking for attention. */
+export const tabNeedsAttention = (t: Tab): boolean =>
+  Object.values(t.panes).some((p) => p.attention)
+
+export const workspaceNeedsAttention = (w: Workspace): boolean => w.tabs.some(tabNeedsAttention)
+
+/**
+ * What a tab is called. Unless the user renamed it, a tab borrows the name of
+ * its active pane — which is itself auto-derived from what's running there. So
+ * running `npm run dev` in a pane renames its tab to "npm dev" for free.
+ */
+export const tabTitle = (t: Tab): string => {
+  if (t.custom) return t.title
+  const active = t.activePaneId ? t.panes[t.activePaneId] : undefined
+  return active?.title || t.title
+}
+
+/**
+ * Roll-up status for a tab / workspace. "Something in here is still working"
+ * outranks "something in here has finished", because the finished thing can
+ * wait and the working thing tells you not to bother looking yet.
+ */
+const rollUp = (statuses: (PaneStatus | undefined)[]): PaneStatus => {
+  if (statuses.includes('working')) return 'working'
+  if (statuses.includes('finished')) return 'finished'
+  return 'idle'
+}
+
+export const tabStatus = (t: Tab): PaneStatus =>
+  rollUp(Object.values(t.panes).map((p) => p.status))
+
+export const workspaceStatus = (w: Workspace): PaneStatus => rollUp(w.tabs.map(tabStatus))
+
+/** Something in here finished (or rang) while you weren't looking. */
+export const tabUnseen = (t: Tab): boolean => Object.values(t.panes).some((p) => p.unseen)
+
+export const workspaceUnseen = (w: Workspace): boolean => w.tabs.some(tabUnseen)
+
+/** How many panes across everything are still waiting to be checked on. */
+export const unseenCount = (s: State): number =>
+  s.workspaces.reduce(
+    (n, w) =>
+      n + w.tabs.reduce((m, t) => m + Object.values(t.panes).filter((p) => p.unseen).length, 0),
+    0
+  )
