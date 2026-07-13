@@ -1,0 +1,68 @@
+{
+  "name": "claudify",
+  "version": "0.1.0",
+  "description": "A terminal built for Claude. Workspaces, split panes, and seamless git-worktree task splitting.",
+  "main": "./out/main/index.js",
+  "author": "akbenothman",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "smoke": "electron scripts/smoke.cjs",
+    "smoke:worktree": "electron scripts/smoke-worktree.cjs",
+    "test": "npm run build && npm run smoke && npm run smoke:worktree",
+    "pack:win": "electron-vite build && electron-builder --win --publish never"
+  },
+  "dependencies": {
+    "@lydell/node-pty": "^1.2.0-beta.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/addon-web-links": "^0.11.0",
+    "@xterm/addon-webgl": "^0.18.0",
+    "@xterm/xterm": "^5.5.0",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "zustand": "^5.0.2"
+  },
+  "build": {
+    "appId": "dev.akbenothman.claudify",
+    "productName": "Claudify",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "asarUnpack": [
+      "**/node_modules/@lydell/node-pty*/**"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "allowScripts": {
+    "electron@33.4.11": true,
+    "esbuild@0.21.5": true
+  }
+}
