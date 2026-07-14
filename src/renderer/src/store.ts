@@ -47,6 +47,12 @@ export interface Pane {
   unseen?: boolean
   /** True once an agent CLI (claude, codex, …) is running in this pane. */
   agent?: boolean
+  /**
+   * Buffer restored from the last session, replayed into xterm when the pane
+   * mounts. Only ever read at mount; the live buffer is owned by xterm itself
+   * and snapshotted through the scrollback registry, never kept in the store.
+   */
+  scrollback?: string
 }
 
 /** A tab owns one split tree. Workspace > tabs > panes, like wezterm. */
@@ -713,6 +719,7 @@ export const useStore = create<State>((set, get) => ({
               // Only the dashboard's Claude comes back running; see persistCommand.
               initialCommand: p.persistCommand ? p.initialCommand : undefined,
               persistCommand: p.persistCommand,
+              scrollback: p.scrollback,
               status: 'idle' as PaneStatus
             }
           ])
@@ -733,7 +740,13 @@ export const useStore = create<State>((set, get) => ({
 /**
  * Snapshot for disk. Drops everything transient, and deliberately drops
  * `initialCommand`: restoring a worktree pane must not silently re-run an agent
- * on a task days after the fact. Shells come back in their saved cwd, empty.
+ * on a task days after the fact. Shells come back in their saved cwd, freshly
+ * spawned, showing the buffer they had when you quit.
+ *
+ * `scrollback` here is only the value we restored with — the *live* buffer lives
+ * in xterm and is merged in by the persistence layer, which can reach the
+ * mounted terminals. Carrying the old value through matters for a pane that
+ * hasn't mounted yet, whose history would otherwise be erased by the first save.
  */
 export const serialize = (s: State): Session => ({
   activeWorkspaceId: s.activeWorkspaceId,
@@ -761,7 +774,8 @@ export const serialize = (s: State): Session => ({
         // Persisted only for panes that opted in — i.e. the dashboard's Claude
         // REPL, never a worktree task pane.
         initialCommand: p.persistCommand ? p.initialCommand : undefined,
-        persistCommand: p.persistCommand
+        persistCommand: p.persistCommand,
+        scrollback: p.scrollback
       }))
     }))
   }))

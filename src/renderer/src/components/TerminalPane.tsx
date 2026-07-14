@@ -3,6 +3,8 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { WebglAddon } from '@xterm/addon-webgl'
 import { WebLinksAddon } from '@xterm/addon-web-links'
+import { SerializeAddon } from '@xterm/addon-serialize'
+import { registerScrollback, unregisterScrollback } from '../scrollback'
 import { takePort } from '../ptyPorts'
 import { useStore, type Pane } from '../store'
 import { commandTitle, isAgentCommand, topicTitle } from '../titles'
@@ -74,7 +76,15 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
     const fit = new FitAddon()
     term.loadAddon(fit)
     term.loadAddon(new WebLinksAddon())
+
+    // Lets the session survive a restart: persistence asks this for the pane's
+    // buffer, and we replay whatever it saved last time (below).
+    const serializer = new SerializeAddon()
+    term.loadAddon(serializer)
+
     term.open(host)
+
+    registerScrollback(pane.id, () => serializer.serialize({ scrollback: 1200 }))
 
     // WebGL is the reason large outputs stay smooth. It can fail on some GPUs /
     // in software rendering, in which case xterm silently falls back to canvas.
@@ -90,6 +100,25 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       fit.fit()
     } catch {
       // Host has no size yet; the ResizeObserver below will fit it once it does.
+    }
+
+    /*
+     * Replay the previous session's buffer, so the pane comes back holding what
+     * it held when you quit. This is history, not a live process: the shell
+     * below is brand new, and an agent that was mid-thought when you closed the
+     * app is not resumed by painting its words back.
+     *
+     * The trailing newlines are load-bearing. ConPTY opens by sending ESC[2J,
+     * which erases whatever is on the visible grid — i.e. precisely what we just
+     * wrote. Scrolling the history up into the scrollback buffer first puts it
+     * out of reach: 2J clears the screen, and ConPTY never sends 3J (which is
+     * what would clear scrollback). The pane therefore opens on a clean prompt
+     * with the previous session sitting directly above it.
+     */
+    if (pane.scrollback) {
+      term.write(pane.scrollback)
+      term.write('\r\n\x1b[90m── restored from previous session ──\x1b[0m\r\n')
+      term.write('\n'.repeat(term.rows))
     }
 
     // cmux-style attention signals: an agent that wants you raises OSC 9 or
@@ -263,6 +292,7 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
     return () => {
       disposed = true
       clearTimeout(quietTimer)
+      unregisterScrollback(pane.id)
       ro.disconnect()
       try {
         port?.close()

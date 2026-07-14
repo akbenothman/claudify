@@ -14,10 +14,12 @@
     "smoke": "electron scripts/smoke.cjs",
     "smoke:worktree": "electron scripts/smoke-worktree.cjs",
     "smoke:session": "electron scripts/smoke-session.cjs phase1 && electron scripts/smoke-session.cjs phase2",
+    "smoke:restore": "electron scripts/smoke-restore.cjs phase1 && electron scripts/smoke-restore.cjs phase2",
     "smoke:dnd": "electron scripts/smoke-dnd.cjs",
     "smoke:dashboard": "electron scripts/smoke-dashboard.cjs",
-    "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:session",
-    "pack:win": "electron-vite build && electron-builder --win --publish never"
+    "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:session && npm run smoke:restore",
+    "pack:win": "electron-vite build && electron-builder --win --publish never",
+    "pack:dir": "electron-vite build && electron-builder --win --dir"
   },
   "dependencies": {
     "@lydell/node-pty": "^1.2.0-beta.12"
@@ -28,6 +30,7 @@
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
     "@xterm/addon-fit": "^0.10.0",
+    "@xterm/addon-serialize": "^0.14.0",
     "@xterm/addon-web-links": "^0.11.0",
     "@xterm/addon-webgl": "^0.18.0",
     "@xterm/xterm": "^5.5.0",
@@ -53,7 +56,15 @@
     "asarUnpack": [
       "**/node_modules/@lydell/node-pty*/**"
     ],
+    "extraResources": [
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      }
+    ],
     "win": {
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false,
       "target": [
         "nsis",
         "portable"
@@ -61,7 +72,10 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Claudify",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   },
   "allowScripts": {

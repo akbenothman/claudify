@@ -93,6 +93,12 @@ export interface PersistedPane {
   /** Only ever set for opted-in panes (the dashboard's Claude REPL). */
   initialCommand?: string
   persistCommand?: boolean
+  /**
+   * The pane's terminal buffer as of the last save, ANSI escapes and all, so a
+   * restarted pane comes back showing what it showed before. Cosmetic: the
+   * shell underneath is a new process.
+   */
+  scrollback?: string
 }
 
 export interface PersistedTab {

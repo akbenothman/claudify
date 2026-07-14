@@ -21,6 +21,18 @@ import type { Dashboard, PtySpawnOptions, Session, Settings, SplitTask } from '.
 // lands in %APPDATA%\Electron in dev and somewhere else once packaged.
 app.setName('Claudify')
 
+/*
+ * Deliberately NOT calling app.setAppUserModelId().
+ *
+ * Windows groups taskbar buttons by AppUserModelID. Setting an explicit one
+ * here would only pay off if every shortcut carried the same ID — and we ship
+ * unsigned, hand-made shortcuts rather than an NSIS installer that stamps it.
+ * A window whose ID doesn't match the shortcut you pinned splits into a second,
+ * un-pinnable taskbar button, which is the exact symptom we're fixing. With no
+ * explicit ID, Windows derives one from the exe path, so the pinned shortcut and
+ * the running window (both Claudify.exe) are one and the same button.
+ */
+
 // Terminals are latency-sensitive: a frame budget capped at the monitor refresh
 // adds up to a frame of lag between keypress and glyph. Uncapping the renderer
 // is the single cheapest input-latency win available to an Electron app.
@@ -28,6 +40,18 @@ app.commandLine.appendSwitch('disable-frame-rate-limit')
 app.commandLine.appendSwitch('disable-renderer-backgrounding')
 
 let win: BrowserWindow | null = null
+
+/**
+ * We ship unsigned, which means electron-builder never stamps the icon into the
+ * exe itself (that step needs a code-signing toolchain we don't have). Handing
+ * the icon to the window directly gets us the right taskbar and alt-tab icon
+ * regardless.
+ */
+function iconPath(): string {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'icon.ico')
+    : path.join(__dirname, '../../build/icon.ico')
+}
 
 function createWindow(): void {
   win = new BrowserWindow({
@@ -38,6 +62,7 @@ function createWindow(): void {
     show: false,
     backgroundColor: '#0d1117',
     title: 'Claudify',
+    icon: iconPath(),
     titleBarStyle: 'hidden',
     titleBarOverlay: { color: '#0d1117', symbolColor: '#8b949e', height: 36 },
     webPreferences: {

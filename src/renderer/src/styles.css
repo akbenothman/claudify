@@ -345,7 +345,11 @@ textarea:focus {
   position: absolute;
   inset: 0;
 }
+/* `.pane-slot` is what Stage marks hidden — it carries the geometry, and the
+   `.pane` card lives inside it. Hiding only `.pane` would leave every inactive
+   tab's panes stacked on top of the active one. */
 .tab-view.hidden,
+.pane-slot.hidden,
 .pane.hidden,
 .divider.hidden {
   visibility: hidden;

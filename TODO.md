@@ -14,6 +14,11 @@ known touch points:
 - [ ] **Keybindings**: `Ctrl+Shift+*` should become `Cmd+Shift+*`. The handler in
       `App.tsx` checks `e.ctrlKey` directly; needs a platform-aware modifier.
 - [ ] **Packaging**: add a `mac` target (dmg + zip), plus notarization/codesigning.
+      Note the Windows side ships unsigned: `npm run pack:win` (NSIS) currently fails
+      because electron-builder's winCodeSign bundle contains macOS symlinks, and
+      unpacking those needs admin or Developer Mode. `npm run pack:dir` sidesteps it
+      (`signAndEditExecutable: false`), at the cost of the exe carrying Electron's
+      own icon/metadata — the window icon is set at runtime instead.
 - [ ] **CI**: add a macOS runner to the build matrix.
 
 ## Terminal
@@ -27,7 +32,10 @@ known touch points:
 - [ ] Configurable font / theme / keybindings.
 - [ ] Pane navigation by direction (Ctrl+Shift+Arrow), not just close/zoom.
 - [ ] `Ctrl+Shift+P` command palette.
-- [ ] Restore scrollback on session restore (currently shells come back empty).
+- [x] Restore scrollback on session restore. The buffer is snapshotted with
+      `@xterm/addon-serialize` and replayed at mount. It has to be scrolled up into
+      the scrollback buffer first, because ConPTY opens a new shell with `ESC[2J`
+      and would otherwise wipe it off the screen.
 
 ## Dashboard
 

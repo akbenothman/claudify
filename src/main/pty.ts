@@ -21,6 +21,8 @@ interface Session {
 const sessions = new Map<string, Session>()
 let nextId = 1
 
+const isCmd = (shellPath: string): boolean => /(^|[\\/])cmd\.exe$/i.test(shellPath)
+
 /**
  * Spawns a PTY and wires it directly to `port`.
  *
@@ -35,18 +37,28 @@ export function createSession(opts: PtySpawnOptions, port: MessagePortMain): str
   const shell = opts.shell || configured.path
   const args = opts.args ?? (opts.shell ? [] : configured.args)
 
+  const env: Record<string, string> = {
+    ...(process.env as Record<string, string>),
+    ...(opts.env ?? {}),
+    TERM: 'xterm-256color',
+    // Lets a Claude running inside a pane detect (and later, address) its host.
+    CLAUDIFY_PANE: id
+  }
+
+  // cmd renders `C:\dir>` with nothing after the `>`, so what you type collides
+  // with the path. `$S` is cmd's escape for a space. Appended rather than
+  // assigned, so a PROMPT the user set themselves survives.
+  if (isCmd(shell)) {
+    const current = env.PROMPT || '$P$G'
+    env.PROMPT = /\$s$/i.test(current) ? current : `${current}$S`
+  }
+
   const pty = spawn(shell, args, {
     name: 'xterm-256color',
     cwd: opts.cwd,
     cols: Math.max(2, opts.cols),
     rows: Math.max(1, opts.rows),
-    env: {
-      ...(process.env as Record<string, string>),
-      ...(opts.env ?? {}),
-      TERM: 'xterm-256color',
-      // Lets a Claude running inside a pane detect (and later, address) its host.
-      CLAUDIFY_PANE: id
-    }
+    env
   })
 
   const toRenderer = (msg: ControlToRenderer) => port.postMessage(msg)
