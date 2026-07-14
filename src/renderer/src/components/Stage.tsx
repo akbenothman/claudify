@@ -4,6 +4,7 @@ import { computePlacements, edgeFor, type Edge, type Rect } from '../layout'
 import { TerminalPane } from './TerminalPane'
 import { MergeView } from './MergeView'
 import { TodoPane } from './TodoPane'
+import { NotesPane } from './NotesPane'
 import { TrackerPane } from './TrackerPane'
 import { StatusDot } from './StatusDot'
 import { PANE_MIME, TAB_MIME, type PaneDrag, type TabDrag } from '../dnd'
@@ -134,6 +135,8 @@ function PaneFrame({
             <MergeView ws={ws} />
           ) : pane.kind === 'todo' ? (
             <TodoPane />
+          ) : pane.kind === 'notes' ? (
+            <NotesPane />
           ) : pane.kind === 'tracker' ? (
             <TrackerPane />
           ) : (

@@ -26,9 +26,8 @@ const fail = (msg) => {
   app.exit(1)
 }
 
-app.setName('Claudify')
-
-const stateFile = path.join(app.getPath('userData'), 'claudify-state.json')
+// Own userData dir, shared by both phases. See sandbox.cjs.
+const { stateFile } = require('./sandbox.cjs')('restore')
 if (phase === 'phase1' && fs.existsSync(stateFile)) fs.rmSync(stateFile)
 
 // Snapshot the file BEFORE the app boots: once the renderer is alive it starts

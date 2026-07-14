@@ -802,10 +802,113 @@ kbd {
 .board-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   padding: 6px 10px;
   border-bottom: 1px solid var(--border);
   flex: none;
+}
+
+/* Topic / note tabs. Same idea as the terminal tab bar, scaled down to fit a
+   pane: the pane is narrow, so the strip scrolls rather than wrapping. */
+.board-tabs {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 5px;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: none;
+}
+.board-tabs::-webkit-scrollbar {
+  display: none;
+}
+.board-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  max-width: 140px;
+  padding: 3px 6px 3px 9px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--dim);
+  cursor: pointer;
+  user-select: none;
+}
+.board-tab:hover {
+  background: var(--panel);
+}
+.board-tab.active {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--fg);
+}
+.board-tab-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The open-item count. Reads as a quiet badge, not a second title. */
+.board-tab-count {
+  font-size: 10px;
+  color: var(--dim);
+  background: var(--bg);
+  border-radius: 7px;
+  padding: 0 5px;
+  flex: none;
+}
+.board-tab.active .board-tab-count {
+  color: var(--accent);
+}
+.board-tab-new {
+  border: none;
+  color: var(--dim);
+  font-size: 14px;
+  padding: 0 6px;
+  flex: none;
+}
+
+/* Progress across the active topic. A hairline, so it informs without shouting. */
+.board-meter {
+  height: 2px;
+  background: var(--bg-alt);
+  flex: none;
+}
+.board-meter-fill {
+  height: 100%;
+  background: var(--ok, #3fb950);
+  transition: width 160ms ease;
+}
+
+.board-clear {
+  font-size: 10px;
+  padding: 2px 7px;
+  color: var(--dim);
+  flex: none;
+}
+.board-clear:hover {
+  color: var(--danger);
+}
+
+/* --------------------------------- notepad -------------------------------- */
+
+.notes-body {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: var(--bg);
+  color: var(--fg);
+  font: 12px/1.6 "Cascadia Mono", Consolas, monospace;
+  padding: 10px 12px;
+  user-select: text;
+}
+.notes-body::placeholder {
+  color: var(--dim);
 }
 .board-list {
   flex: 1;

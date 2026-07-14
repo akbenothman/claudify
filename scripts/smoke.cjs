@@ -12,6 +12,10 @@
  */
 const { app, BrowserWindow } = require('electron')
 
+// Booting the app starts session persistence, which would otherwise save this
+// test's throwaway workspaces over the user's real session. See sandbox.cjs.
+require('./sandbox.cjs')('smoke')
+
 require('../out/main/index.js')
 
 const MARKER = 'SMOKE_OK_12345'

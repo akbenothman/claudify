@@ -23,11 +23,11 @@ const fail = (msg) => {
   app.exit(1)
 }
 
-// Match the app's own name so we resolve the SAME userData dir it will use.
-app.setName('Claudify')
+// Own userData dir, shared by both phases — phase2's whole job is to read back
+// what phase1 saved. Under the app's real profile this wiped the user's session.
+const { stateFile } = require('./sandbox.cjs')('session')
 
 // Wipe any previous state BEFORE the app module loads it into its cache.
-const stateFile = path.join(app.getPath('userData'), 'claudify-state.json')
 if (phase === 'phase1' && fs.existsSync(stateFile)) fs.rmSync(stateFile)
 
 require('../out/main/index.js')

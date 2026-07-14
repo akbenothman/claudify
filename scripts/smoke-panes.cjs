@@ -11,9 +11,8 @@ const { app, BrowserWindow } = require('electron')
 const fs = require('node:fs')
 const path = require('node:path')
 
-app.setName('Claudify')
-
-const stateFile = path.join(app.getPath('userData'), 'claudify-state.json')
+// Own userData dir — never the user's real session. See sandbox.cjs.
+const { stateFile } = require('./sandbox.cjs')('panes')
 if (fs.existsSync(stateFile)) fs.rmSync(stateFile)
 
 require('../out/main/index.js')
@@ -169,6 +168,42 @@ app.whenReady().then(async () => {
   panes = await js(`document.querySelectorAll('.pane-slot:not(.hidden) .pane').length`)
   if (panes !== 3) return fail(`a merged-in pane should still split; expected 3 panes, got ${panes}`)
   console.log('  a pane that was merged in is still splittable ✓')
+
+  /* ------- 2b. renaming a tab renames the pane header beneath it ----------- */
+
+  // Do this in a tab that holds ONE pane, which is the case the rename covers.
+  await js(`document.querySelector('.tab-new').click(); true`)
+  await sleep(2000)
+
+  const renamed = await js(`(async () => {
+    const tabs = [...document.querySelectorAll('.tabbar .tab')];
+    const tab = tabs[tabs.length - 1];
+    tab.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 400));
+
+    const input = document.querySelector('.tabbar .rename');
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    setter.call(input, 'my-renamed-tab');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await new Promise(r => setTimeout(r, 600));
+
+    const heads = [...document.querySelectorAll('.pane-slot:not(.hidden) .pane-title')]
+      .map(e => e.textContent);
+    const bar = [...document.querySelectorAll('.tabbar .tab .tab-name')].map(e => e.textContent);
+    return { heads, tabNames: bar };
+  })()`)
+
+  if (!renamed.tabNames.includes('my-renamed-tab')) {
+    return fail(`the tab itself did not rename: ${JSON.stringify(renamed.tabNames)}`)
+  }
+  if (!renamed.heads.includes('my-renamed-tab')) {
+    return fail(
+      `renaming a single-pane tab must rename the pane header under it; header still says ` +
+        JSON.stringify(renamed.heads)
+    )
+  }
+  console.log(`  renaming a tab renames the pane header beneath it (${renamed.heads.join(', ')}) ✓`)
 
   /* --------------------- 3. new tab inherits the cwd ----------------------- */
 

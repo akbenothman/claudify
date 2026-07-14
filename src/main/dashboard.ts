@@ -13,14 +13,17 @@ import type { Dashboard } from '../shared/types'
 const INSTRUCTIONS = [
   'This file is the live state of the Claudify "AK Dashboard". Claude may edit it directly.',
   'Edit this file and the dashboard UI updates immediately — no restart needed.',
-  'todos[].status must be one of: todo | doing | blocked | done',
+  'topics[] are the tabs of the todo pane; each has its own todos[].',
+  'topics[].todos[].status must be one of: todo | doing | blocked | done',
+  'notes[] are the tabs of the notepad pane; body is plain text (newlines allowed).',
   'conversations[].status must be one of: active | waiting | done',
   'Keep ids stable. Set updated to an ISO-8601 timestamp when you change a row.'
 ].join(' ')
 
 const EMPTY: Dashboard = {
   _instructions: INSTRUCTIONS,
-  todos: [],
+  topics: [{ id: 'general', name: 'General', todos: [] }],
+  notes: [{ id: 'scratch', name: 'Scratch', body: '' }],
   conversations: []
 }
 
@@ -38,9 +41,33 @@ export function readDashboard(): Dashboard {
   try {
     const raw = readFileSync(file, 'utf8')
     const parsed = JSON.parse(raw) as Partial<Dashboard>
+
+    const topics = Array.isArray(parsed.topics) ? parsed.topics.filter((t) => t && t.id) : []
+
+    /*
+     * A dashboard written before topics existed has a flat `todos` array. Fold
+     * it into a topic rather than dropping it on the floor — this file is the
+     * user's actual list, and an agent may still write the old shape.
+     */
+    const legacy = Array.isArray(parsed.todos) ? parsed.todos : []
+    if (legacy.length > 0) {
+      const general = topics.find((t) => t.id === 'general')
+      if (general) {
+        const known = new Set(general.todos?.map((t) => t.id))
+        general.todos = [...(general.todos ?? []), ...legacy.filter((t) => !known.has(t.id))]
+      } else {
+        topics.unshift({ id: 'general', name: 'General', todos: legacy })
+      }
+    }
+
+    const notes = Array.isArray(parsed.notes) ? parsed.notes.filter((n) => n && n.id) : []
+
     return {
       _instructions: INSTRUCTIONS,
-      todos: Array.isArray(parsed.todos) ? parsed.todos : [],
+      // Never hand back an empty tab strip: a pane with no tabs has nothing to
+      // click, and no way back to a usable state.
+      topics: topics.length > 0 ? topics.map((t) => ({ ...t, todos: t.todos ?? [] })) : EMPTY.topics,
+      notes: notes.length > 0 ? notes.map((n) => ({ ...n, body: n.body ?? '' })) : EMPTY.notes,
       conversations: Array.isArray(parsed.conversations) ? parsed.conversations : []
     }
   } catch {
@@ -52,7 +79,10 @@ export function readDashboard(): Dashboard {
 
 export function writeDashboard(data: Dashboard): void {
   const file = dashboardPath()
-  const body = JSON.stringify({ ...data, _instructions: INSTRUCTIONS }, null, 2)
+  // `todos` is read-only legacy: fold it in on read, never write it back, or the
+  // two copies drift and the pane shows a list nobody edited.
+  const { todos: _legacy, ...rest } = data
+  const body = JSON.stringify({ ...rest, _instructions: INSTRUCTIONS }, null, 2)
   lastWritten = body
   const tmp = `${file}.tmp`
   writeFileSync(tmp, body, 'utf8')

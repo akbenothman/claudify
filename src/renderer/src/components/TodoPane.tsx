@@ -14,48 +14,150 @@ const GLYPH: Record<TodoStatus, string> = {
 export function TodoPane() {
   const { data, update } = useDashboard()
   const [draft, setDraft] = useState('')
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [editing, setEditing] = useState<string | null>(null)
 
   if (!data) return <div className="board empty">loading…</div>
 
-  const add = () => {
-    const text = draft.trim()
-    if (!text) return
-    setDraft('')
+  const topics = data.topics
+  // The selected topic can vanish under us — an agent editing the file may
+  // delete it — so fall back rather than render an empty pane.
+  const topic = topics.find((t) => t.id === activeId) ?? topics[0]
+
+  const patchTopic = (id: string, fn: (todos: typeof topic.todos) => typeof topic.todos) =>
     update((d) => ({
       ...d,
-      todos: [...d.todos, { id: newId(), text, status: 'todo', updated: nowIso() }]
+      topics: d.topics.map((t) => (t.id === id ? { ...t, todos: fn(t.todos) } : t))
     }))
+
+  const add = () => {
+    const text = draft.trim()
+    if (!text || !topic) return
+    setDraft('')
+    patchTopic(topic.id, (todos) => [
+      ...todos,
+      { id: newId(), text, status: 'todo', updated: nowIso() }
+    ])
   }
 
   const cycle = (id: string) =>
-    update((d) => ({
-      ...d,
-      todos: d.todos.map((t) =>
+    topic &&
+    patchTopic(topic.id, (todos) =>
+      todos.map((t) =>
         t.id === id
-          ? {
-              ...t,
-              status: CYCLE[(CYCLE.indexOf(t.status) + 1) % CYCLE.length],
-              updated: nowIso()
-            }
+          ? { ...t, status: CYCLE[(CYCLE.indexOf(t.status) + 1) % CYCLE.length], updated: nowIso() }
           : t
       )
-    }))
+    )
 
   const remove = (id: string) =>
-    update((d) => ({ ...d, todos: d.todos.filter((t) => t.id !== id) }))
+    topic && patchTopic(topic.id, (todos) => todos.filter((t) => t.id !== id))
 
-  const open = data.todos.filter((t) => t.status !== 'done').length
+  const clearDone = () =>
+    topic && patchTopic(topic.id, (todos) => todos.filter((t) => t.status !== 'done'))
+
+  const addTopic = () => {
+    const t = { id: newId(), name: 'new topic', todos: [] }
+    update((d) => ({ ...d, topics: [...d.topics, t] }))
+    setActiveId(t.id)
+    setEditing(t.id)
+  }
+
+  const renameTopic = (id: string, name: string) =>
+    update((d) => ({ ...d, topics: d.topics.map((t) => (t.id === id ? { ...t, name } : t)) }))
+
+  const removeTopic = (id: string) => {
+    // Never leave the pane with no tabs at all.
+    if (topics.length <= 1) return
+    update((d) => ({ ...d, topics: d.topics.filter((t) => t.id !== id) }))
+    if (activeId === id) setActiveId(null)
+  }
+
+  const done = topic ? topic.todos.filter((t) => t.status === 'done').length : 0
+  const total = topic ? topic.todos.length : 0
+  const pct = total ? Math.round((done / total) * 100) : 0
 
   return (
-    <div className="board">
+    <div className="board todo">
+      <div className="board-tabs">
+        {topics.map((t) => (
+          <div
+            key={t.id}
+            className={`board-tab${t.id === topic?.id ? ' active' : ''}`}
+            onClick={() => setActiveId(t.id)}
+            onDoubleClick={() => setEditing(t.id)}
+          >
+            {editing === t.id ? (
+              <input
+                className="rename"
+                autoFocus
+                defaultValue={t.name}
+                onClick={(e) => e.stopPropagation()}
+                onBlur={(e) => {
+                  const v = e.target.value.trim()
+                  if (v) renameTopic(t.id, v)
+                  setEditing(null)
+                }}
+                onKeyDown={(e) => {
+                  e.stopPropagation()
+                  // Commit on Enter outright rather than leaning on blur: the
+                  // input isn't always focused (nothing to blur), and a rename
+                  // that silently doesn't happen is worse than one that does.
+                  if (e.key === 'Enter') {
+                    const v = (e.target as HTMLInputElement).value.trim()
+                    if (v) renameTopic(t.id, v)
+                    setEditing(null)
+                  }
+                  if (e.key === 'Escape') setEditing(null)
+                }}
+              />
+            ) : (
+              <>
+                <span className="board-tab-name">{t.name}</span>
+                <span className="board-tab-count">
+                  {t.todos.filter((x) => x.status !== 'done').length}
+                </span>
+                {topics.length > 1 && (
+                  <button
+                    className="pane-x"
+                    title="Delete topic"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeTopic(t.id)
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        ))}
+        <button className="board-tab-new" onClick={addTopic} title="New topic">
+          +
+        </button>
+      </div>
+
+      <div className="board-meter">
+        <div className="board-meter-fill" style={{ width: `${pct}%` }} />
+      </div>
+
       <div className="board-head">
-        <strong>todo</strong>
-        <span className="dim">{open} open</span>
+        <strong>{topic?.name ?? 'todo'}</strong>
+        <span className="dim">
+          {total - done} open · {done}/{total} done
+        </span>
+        <span className="spacer" />
+        {done > 0 && (
+          <button className="board-clear" onClick={clearDone} title="Remove completed items">
+            clear done
+          </button>
+        )}
       </div>
 
       <div className="board-list">
-        {data.todos.length === 0 && <div className="board-empty">Nothing yet. Add one below.</div>}
-        {data.todos.map((t) => (
+        {total === 0 && <div className="board-empty">Nothing here yet. Add one below.</div>}
+        {topic?.todos.map((t) => (
           <div key={t.id} className={`row row-${t.status}`}>
             <button
               className={`chip chip-${t.status}`}
@@ -75,7 +177,7 @@ export function TodoPane() {
       <div className="board-add">
         <input
           value={draft}
-          placeholder="new todo…"
+          placeholder={topic ? `add to ${topic.name}…` : 'new todo…'}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             e.stopPropagation()

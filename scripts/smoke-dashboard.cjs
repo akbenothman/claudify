@@ -12,11 +12,9 @@ const { app, BrowserWindow } = require('electron')
 const fs = require('node:fs')
 const path = require('node:path')
 
-app.setName('Claudify')
-
-const userData = app.getPath('userData')
-const stateFile = path.join(userData, 'claudify-state.json')
-const dashFile = path.join(userData, 'dashboard.json')
+// Own userData dir: this test wipes both state files, and those are the user's
+// real session and real todo list under the app's normal profile.
+const { stateFile, dashFile } = require('./sandbox.cjs')('dashboard')
 if (fs.existsSync(stateFile)) fs.rmSync(stateFile)
 if (fs.existsSync(dashFile)) fs.rmSync(dashFile)
 
@@ -50,7 +48,13 @@ app.whenReady().then(async () => {
     return fail(`first workspace is '${boot.firstWs}', expected 'AK Dashboard'`)
   }
   if (!boot.pinned) return fail('dashboard is not marked permanent')
-  if (boot.boards !== 2) return fail(`expected 2 boards (todo + tracker), got ${boot.boards}`)
+  // notes + todo + tracker are all boards now; the shell down the left is gone.
+  if (boot.boards !== 3) {
+    return fail(`expected 3 boards (notes + todo + tracker), got ${boot.boards}`)
+  }
+  if (!boot.paneTitles.includes('notes')) {
+    return fail(`the dashboard should carry a notepad, not a shell: ${JSON.stringify(boot.paneTitles)}`)
+  }
   console.log(`  workspace: ${boot.firstWs} (permanent)`)
   console.log(`  panes: ${boot.paneTitles.join(', ')}`)
 
@@ -71,8 +75,7 @@ app.whenReady().then(async () => {
 
   // --- add a todo through the UI, and check it lands in the file ---
   await js(`(() => {
-    const board = document.querySelectorAll('.board')[0];
-    const input = board.querySelector('.board-add input');
+    const input = document.querySelector('.board.todo .board-add input');
     const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     setter.call(input, 'ship claudify');
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -81,19 +84,134 @@ app.whenReady().then(async () => {
   })()`)
   await sleep(800)
 
-  const onDisk = JSON.parse(fs.readFileSync(dashFile, 'utf8'))
-  if (onDisk.todos?.[0]?.text !== 'ship claudify') {
-    return fail(`todo did not reach the file: ${JSON.stringify(onDisk.todos)}`)
+  let onDisk = JSON.parse(fs.readFileSync(dashFile, 'utf8'))
+  if (onDisk.topics?.[0]?.todos?.[0]?.text !== 'ship claudify') {
+    return fail(`todo did not reach the file: ${JSON.stringify(onDisk.topics)}`)
   }
-  console.log(`  added a todo in the UI -> it appears in dashboard.json ✓`)
+  console.log(`  added a todo in the UI -> it appears in dashboard.json under a topic ✓`)
+
+  /* ------------------------- topics are tabs ------------------------------- */
+
+  const topics = await js(`(async () => {
+    const board = document.querySelector('.board.todo');
+    board.querySelector('.board-tab-new').click();
+    await new Promise(r => setTimeout(r, 400));
+
+    const input = board.querySelector('.board-tab .rename');
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    setter.call(input, 'errands');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await new Promise(r => setTimeout(r, 500));
+
+    // Add an item — it must land in the NEW topic, not the first one.
+    const add = board.querySelector('.board-add input');
+    setter.call(add, 'buy milk');
+    add.dispatchEvent(new Event('input', { bubbles: true }));
+    add.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await new Promise(r => setTimeout(r, 600));
+
+    return {
+      tabs: [...board.querySelectorAll('.board-tab-name')].map(e => e.textContent),
+      rows: [...board.querySelectorAll('.row-text')].map(e => e.textContent)
+    };
+  })()`)
+
+  if (!topics.tabs.includes('errands')) {
+    return fail(`new topic tab did not appear: ${JSON.stringify(topics.tabs)}`)
+  }
+  if (topics.rows.includes('ship claudify')) {
+    return fail(`switching topic must switch lists; still showing the other topic's items: ${JSON.stringify(topics.rows)}`)
+  }
+
+  onDisk = JSON.parse(fs.readFileSync(dashFile, 'utf8'))
+  const errands = onDisk.topics.find((t) => t.name === 'errands')
+  if (!errands || errands.todos[0]?.text !== 'buy milk') {
+    return fail(`the item did not land in its own topic: ${JSON.stringify(onDisk.topics)}`)
+  }
+  console.log(`  topics are tabs, each with its own list: ${JSON.stringify(topics.tabs)} ✓`)
+
+  /* ----------------------- clearing completed items ------------------------ */
+
+  const cleared = await js(`(async () => {
+    const board = document.querySelector('.board.todo');
+    // Cycle the item to 'done' (todo -> doing -> blocked -> done).
+    for (let i = 0; i < 3; i++) {
+      board.querySelector('.row .chip').click();
+      await new Promise(r => setTimeout(r, 250));
+    }
+    const before = board.querySelectorAll('.row').length;
+    const clear = board.querySelector('.board-clear');
+    if (!clear) return { ok: false, why: 'no "clear done" button appeared for a completed item' };
+    clear.click();
+    await new Promise(r => setTimeout(r, 600));
+    return { ok: true, before, after: board.querySelectorAll('.row').length };
+  })()`)
+
+  if (!cleared.ok) return fail(cleared.why)
+  if (cleared.after !== 0) {
+    return fail(`clear done should have removed the completed item (${cleared.before} -> ${cleared.after})`)
+  }
+  console.log('  marking an item done and clearing it removes it ✓')
+
+  /* ------------------------------ the notepad ------------------------------ */
+
+  const notes = await js(`(async () => {
+    const board = document.querySelector('.board.notes');
+    if (!board) return { ok: false, why: 'no notepad pane on the dashboard' };
+
+    const ta = board.querySelector('.notes-body');
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    setter.call(ta, 'first line\\nsecond line');
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 900));   // past the save debounce
+
+    // A second page, named, with its own body.
+    board.querySelector('.board-tab-new').click();
+    await new Promise(r => setTimeout(r, 400));
+    const rename = board.querySelector('.board-tab .rename');
+    const nameSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    nameSetter.call(rename, 'page 2');
+    rename.dispatchEvent(new Event('input', { bubbles: true }));
+    rename.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await new Promise(r => setTimeout(r, 500));
+
+    const ta2 = board.querySelector('.notes-body');
+    setter.call(ta2, 'other page');
+    ta2.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 900));
+
+    return { ok: true, tabs: [...board.querySelectorAll('.board-tab-name')].map(e => e.textContent) };
+  })()`)
+
+  if (!notes.ok) return fail(notes.why)
+  if (notes.tabs.length < 2) return fail(`notepad should have 2 tabs, got ${JSON.stringify(notes.tabs)}`)
+
+  onDisk = JSON.parse(fs.readFileSync(dashFile, 'utf8'))
+  const bodies = (onDisk.notes || []).map((n) => n.body)
+  if (!bodies.includes('first line\nsecond line')) {
+    return fail(`note body (with its newline) did not reach the file: ${JSON.stringify(bodies)}`)
+  }
+  if (!bodies.includes('other page')) {
+    return fail(`the second note page was not saved separately: ${JSON.stringify(bodies)}`)
+  }
+  console.log(`  notepad: ${notes.tabs.length} pages, each saved to dashboard.json ✓`)
 
   // --- THE ONE THAT MATTERS: edit the file the way Claude would ---
   const edited = {
     ...onDisk,
-    todos: [
-      { ...onDisk.todos[0], status: 'done', updated: new Date().toISOString() },
-      { id: 'x1', text: 'added by claude', status: 'doing', updated: new Date().toISOString() }
+    topics: [
+      {
+        id: 'general',
+        name: 'General',
+        todos: [
+          { id: 'x0', text: 'ship claudify', status: 'done', updated: new Date().toISOString() },
+          { id: 'x1', text: 'added by claude', status: 'doing', updated: new Date().toISOString() }
+        ]
+      },
+      { id: 'later', name: 'later', todos: [] }
     ],
+    notes: [{ id: 'n1', name: 'from claude', body: 'written by an agent' }],
     conversations: [
       { id: 'c1', title: 'worktree split design', status: 'waiting', updated: new Date().toISOString() }
     ]
@@ -101,12 +219,21 @@ app.whenReady().then(async () => {
   fs.writeFileSync(dashFile, JSON.stringify(edited, null, 2), 'utf8')
 
   // No reload, no IPC from us — the app must notice the file changed by itself.
-  await sleep(1500)
+  await sleep(1800)
 
   const live = await js(`(() => ({
     chips: [...document.querySelectorAll('.board .chip')].map(c => c.textContent.trim()),
-    texts: [...document.querySelectorAll('.board .row-text')].map(c => c.textContent.trim())
+    texts: [...document.querySelectorAll('.board .row-text')].map(c => c.textContent.trim()),
+    topicTabs: [...document.querySelectorAll('.board.todo .board-tab-name')].map(e => e.textContent),
+    noteBody: document.querySelector('.board.notes .notes-body')?.value
   }))()`)
+
+  if (!live.topicTabs.includes('later')) {
+    return fail(`a topic added by an agent did not appear as a tab: ${JSON.stringify(live.topicTabs)}`)
+  }
+  if (live.noteBody !== 'written by an agent') {
+    return fail(`the notepad did not pick up the agent's edit: ${JSON.stringify(live.noteBody)}`)
+  }
 
   if (!live.texts.includes('added by claude')) {
     return fail(`UI did not pick up the agent's file edit. Rows: ${JSON.stringify(live.texts)}`)
@@ -119,6 +246,7 @@ app.whenReady().then(async () => {
   }
 
   console.log(`  edited dashboard.json from outside the app (as Claude would)`)
+  console.log(`  agent-added topic tab + note body landed live ✓`)
   console.log(`  UI live-updated: ${JSON.stringify(live.texts)}`)
   console.log(`  statuses now: ${JSON.stringify(live.chips)}`)
   console.log('DASHBOARD PASS')

@@ -13,11 +13,10 @@ const { app, BrowserWindow } = require('electron')
 const fs = require('node:fs')
 const path = require('node:path')
 
-app.setName('Claudify')
-
 // Start from a clean slate: session persistence would otherwise restore whatever
 // layout the last run left behind, and the assertions below assume one pane.
-const stateFile = path.join(app.getPath('userData'), 'claudify-state.json')
+// In its own userData dir, so "clean slate" never means the user's session.
+const { stateFile } = require('./sandbox.cjs')('dnd')
 if (fs.existsSync(stateFile)) fs.rmSync(stateFile)
 
 require('../out/main/index.js')

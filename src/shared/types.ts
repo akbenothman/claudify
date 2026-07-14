@@ -84,7 +84,7 @@ export interface Settings {
  */
 export interface PersistedPane {
   id: string
-  kind: 'terminal' | 'merge' | 'todo' | 'tracker'
+  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes'
   title: string
   cwd: string
   custom?: boolean
@@ -152,9 +152,31 @@ export interface Conversation {
   updated?: string
 }
 
+/** A named todo list. Topics are the tabs across the top of the todo pane. */
+export interface Topic {
+  id: string
+  name: string
+  todos: Todo[]
+}
+
+/** One page of the notepad. Also tabs; the body is plain text. */
+export interface Note {
+  id: string
+  name: string
+  body: string
+  updated?: string
+}
+
 export interface Dashboard {
   /** Schema note written into the file so an agent editing it knows the rules. */
   _instructions: string
-  todos: Todo[]
+  topics: Topic[]
+  notes: Note[]
   conversations: Conversation[]
+  /**
+   * Superseded by `topics`, kept so an older dashboard.json (and anything still
+   * writing one) is read rather than silently dropped. On load these are folded
+   * into a topic; we never write it back.
+   */
+  todos?: Todo[]
 }

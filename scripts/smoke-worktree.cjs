@@ -16,6 +16,10 @@ const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
 
+// Booting the app starts session persistence; keep it off the user's real
+// session file. See sandbox.cjs.
+require('./sandbox.cjs')('worktree')
+
 require('../out/main/index.js')
 
 const fail = (msg) => {

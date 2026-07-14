@@ -18,7 +18,7 @@ export type LayoutNode =
 
 export interface Pane {
   id: string
-  kind: 'terminal' | 'merge' | 'todo' | 'tracker'
+  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes'
   title: string
   cwd: string
   /** Typed into the shell once it is ready (used to launch `claude`). */
@@ -320,7 +320,29 @@ export const useStore = create<State>((set, get) => ({
 
   renameTab: (wsId, tabId, title) =>
     set((s) =>
-      mapWs(s, wsId, (ws) => mapTab(ws, tabId, (t) => ({ ...t, title, custom: true })))
+      mapWs(s, wsId, (ws) =>
+        mapTab(ws, tabId, (t) => {
+          const renamed: Tab = { ...t, title, custom: true }
+
+          /*
+           * A tab holding one pane IS that pane as far as anyone looking at the
+           * screen is concerned — the tab and the pane header sit inches apart
+           * and say the same thing. So renaming the tab renames the pane with
+           * it, custom, which also stops the auto-namer from putting "shell"
+           * back the next time you run something.
+           *
+           * A split is different: those panes are separate terminals with names
+           * of their own, and one tab name can't stand in for all of them.
+           */
+          const ids = Object.keys(t.panes)
+          if (ids.length !== 1) return renamed
+          const only = t.panes[ids[0]]
+          return {
+            ...renamed,
+            panes: { [only.id]: { ...only, title, custom: true } }
+          }
+        })
+      )
     ),
 
   renamePane: (wsId, tabId, paneId, title) =>
@@ -791,11 +813,56 @@ export const useStore = create<State>((set, get) => ({
   },
 
   ensureDashboard: (cwd) => {
-    if (get().workspaces.some((w) => w.permanent)) return
+    /*
+     * A dashboard saved before the notepad existed has a plain shell down the
+     * left. Convert it in place rather than leaving long-standing users with the
+     * old layout — the pane keeps its id and slot, so nothing else moves.
+     *
+     * The dashboard's Claude is a terminal too; it's the one with persistCommand
+     * set, and it is emphatically not the pane to replace.
+     */
+    const existing = get().workspaces.find((w) => w.permanent)
+    if (existing) {
+      const hasNotes = existing.tabs.some((t) =>
+        Object.values(t.panes).some((p) => p.kind === 'notes')
+      )
+      if (hasNotes) return
+
+      set((s) => ({
+        workspaces: s.workspaces.map((w) => {
+          if (!w.permanent) return w
+          let converted = false
+          return {
+            ...w,
+            tabs: w.tabs.map((t) => {
+              const target = Object.values(t.panes).find(
+                (p) => !converted && p.kind === 'terminal' && !p.persistCommand
+              )
+              if (!target) return t
+              converted = true
+              return {
+                ...t,
+                panes: {
+                  ...t.panes,
+                  [target.id]: {
+                    ...target,
+                    kind: 'notes' as const,
+                    title: 'notes',
+                    custom: false,
+                    status: 'idle' as PaneStatus
+                  }
+                }
+              }
+            })
+          }
+        })
+      }))
+      return
+    }
 
     const mk = (p: Omit<Pane, 'id'>): Pane => ({ ...p, id: uid('pane') })
 
-    const term = mk({ kind: 'terminal', title: 'shell', cwd })
+    const notes = mk({ kind: 'notes', title: 'notes', cwd })
     const claude = mk({
       kind: 'terminal',
       title: 'claude',
@@ -807,14 +874,14 @@ export const useStore = create<State>((set, get) => ({
     const todo = mk({ kind: 'todo', title: 'todo', cwd })
     const tracker = mk({ kind: 'tracker', title: 'conversations', cwd })
 
-    // Small terminal down the left; Claude filling the right; todo + tracker
-    // sharing the bottom of that column.
+    // Notepad down the left; Claude filling the right; todo + tracker sharing
+    // the bottom of that column.
     const layout: LayoutNode = {
       kind: 'split',
       id: uid('split'),
       dir: 'row',
       ratio: 0.24,
-      a: { kind: 'leaf', paneId: term.id },
+      a: { kind: 'leaf', paneId: notes.id },
       b: {
         kind: 'split',
         id: uid('split'),
@@ -836,7 +903,7 @@ export const useStore = create<State>((set, get) => ({
       id: uid('tab'),
       title: 'dashboard',
       custom: true,
-      panes: Object.fromEntries([term, claude, todo, tracker].map((p) => [p.id, p])),
+      panes: Object.fromEntries([notes, claude, todo, tracker].map((p) => [p.id, p])),
       layout,
       activePaneId: claude.id,
       zoomedPaneId: null
