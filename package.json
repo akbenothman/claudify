@@ -16,9 +16,10 @@
     "smoke:session": "electron scripts/smoke-session.cjs phase1 && electron scripts/smoke-session.cjs phase2",
     "smoke:restore": "electron scripts/smoke-restore.cjs phase1 && electron scripts/smoke-restore.cjs phase2",
     "smoke:panes": "electron scripts/smoke-panes.cjs",
+    "smoke:status": "electron scripts/smoke-status.cjs",
     "smoke:dnd": "electron scripts/smoke-dnd.cjs",
     "smoke:dashboard": "electron scripts/smoke-dashboard.cjs",
-    "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:session && npm run smoke:restore && npm run smoke:panes",
+    "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:session && npm run smoke:restore && npm run smoke:panes && npm run smoke:status",
     "pack:win": "electron-vite build && electron-builder --win --publish never",
     "pack:dir": "electron-vite build && electron-builder --win --dir"
   },

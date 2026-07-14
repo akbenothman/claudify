@@ -105,6 +105,8 @@ export interface PersistedTab {
   id: string
   title: string
   custom?: boolean
+  /** Marked unread by hand; unlike a pane's `unseen`, viewing it doesn't clear it. */
+  flagged?: boolean
   panes: PersistedPane[]
   /** Serialized layout tree; shape matches the renderer's LayoutNode. */
   layout: unknown

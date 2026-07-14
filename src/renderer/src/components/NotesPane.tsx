@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { dropIndex, NOTE_MIME, reorder } from '../boardDnd'
 import { newId, nowIso, useDashboard } from '../useDashboard'
 
 /**
@@ -16,6 +17,8 @@ export function NotesPane() {
   const { data, update } = useDashboard()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
+  /** Index the dragged page would land at, for the insertion caret. */
+  const [dropAt, setDropAt] = useState<number | null>(null)
   const [body, setBody] = useState<string | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -76,10 +79,33 @@ export function NotesPane() {
   return (
     <div className="board notes">
       <div className="board-tabs">
-        {notes.map((n) => (
+        {notes.map((n, i) => (
           <div
             key={n.id}
-            className={`board-tab${n.id === note?.id ? ' active' : ''}`}
+            className={`board-tab${n.id === note?.id ? ' active' : ''}${
+              dropAt === i ? ' drop-before' : ''
+            }`}
+            draggable={editing !== n.id}
+            onDragStart={(e) => {
+              e.dataTransfer.setData(NOTE_MIME, String(i))
+              e.dataTransfer.effectAllowed = 'move'
+            }}
+            onDragOver={(e) => {
+              if (!e.dataTransfer.types.includes(NOTE_MIME)) return
+              e.preventDefault()
+              e.dataTransfer.dropEffect = 'move'
+              setDropAt(dropIndex(e.currentTarget.getBoundingClientRect(), e.clientX, i))
+            }}
+            onDragLeave={() => setDropAt(null)}
+            onDrop={(e) => {
+              const raw = e.dataTransfer.getData(NOTE_MIME)
+              setDropAt(null)
+              if (!raw) return
+              e.preventDefault()
+              const from = parseInt(raw, 10)
+              const to = dropIndex(e.currentTarget.getBoundingClientRect(), e.clientX, i)
+              update((d) => ({ ...d, notes: reorder(d.notes, from, to > from ? to - 1 : to) }))
+            }}
             onClick={() => {
               // Don't carry unsaved text across to another page.
               clearTimeout(timer.current)

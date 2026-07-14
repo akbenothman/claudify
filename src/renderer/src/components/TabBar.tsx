@@ -45,6 +45,7 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
   const newTab = useStore((s) => s.newTab)
   const moveTab = useStore((s) => s.moveTab)
   const movePaneToTab = useStore((s) => s.movePaneToTab)
+  const setTabFlagged = useStore((s) => s.setTabFlagged)
 
   const [editing, setEditing] = useState<string | null>(null)
   /** Index the dragged tab would land at, for the insertion caret. */
@@ -126,6 +127,10 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
                   items: [
                     { label: 'Rename', onClick: () => setEditing(t.id) },
                     {
+                      label: t.flagged ? 'Mark read' : 'Mark unread',
+                      onClick: () => setTabFlagged(ws.id, t.id, !t.flagged)
+                    },
+                    {
                       label: 'Close tab',
                       danger: true,
                       separated: true,
@@ -146,7 +151,26 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
                 />
               ) : (
                 <>
-                  <StatusDot status={tabStatus(t)} unseen={unseen} />
+                  {/* The dot is the button: click it to keep a tab lit as
+                      unread, click again to clear it. A flagged tab shows the
+                      same green you get from a pane that finished unwatched —
+                      it's the same message ("look at this"), just yours. */}
+                  <button
+                    className={`tab-flag${t.flagged ? ' flagged' : ''}`}
+                    title={t.flagged ? 'Marked unread — click to clear' : 'Mark unread'}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setTabFlagged(ws.id, t.id, !t.flagged)
+                    }}
+                  >
+                    {t.flagged || unseen || tabStatus(t) !== 'idle' ? (
+                      <StatusDot status={t.flagged ? 'finished' : tabStatus(t)} unseen={unseen} />
+                    ) : (
+                      // Nothing to report — but the button still has to be there
+                      // to click. It surfaces on hover.
+                      <span className="dot dot-seen mark-hint" />
+                    )}
+                  </button>
                   <span className="tab-name">{tabTitle(t)}</span>
                   {panes > 1 && <span className="tab-panes">{panes}</span>}
                   <button

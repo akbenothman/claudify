@@ -161,10 +161,38 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
      *
      * QUIET_MS has to clear the gaps an agent leaves while streaming tokens or
      * running a tool, or the indicator flickers between working and finished.
+     *
+     * But bytes arriving is NOT the same as work happening. A TUI like Claude's
+     * repaints itself on a timer — the footer, the hint line, the cursor — and
+     * an idle agent therefore dribbles output forever. Taking that at face value
+     * flashed the dot blue and then green again, over and over, for an agent
+     * that had been done for ten minutes.
+     *
+     * So we require the SCREEN to have changed, not merely the byte count: hold
+     * the "working" claim for WORK_DELAY_MS, then compare what's on the grid
+     * against how it looked when we last settled. A repaint of identical content
+     * is not work, and is now correctly ignored. A spinner tick changes a glyph,
+     * so genuine activity still registers.
      */
     const QUIET_MS = 1200
+    const WORK_DELAY_MS = 250
     let status: 'idle' | 'working' | 'finished' = 'idle'
     let quietTimer: ReturnType<typeof setTimeout> | undefined
+    let workTimer: ReturnType<typeof setTimeout> | undefined
+
+    /** What the visible grid says right now. Cheap: rows, not scrollback. */
+    const screen = (): string => {
+      const buf = term.buffer.active
+      let out = ''
+      for (let i = 0; i < term.rows; i++) {
+        out += buf.getLine(buf.viewportY + i)?.translateToString(true) ?? ''
+        out += '\n'
+      }
+      return out
+    }
+
+    /** The screen as of the last time this pane went quiet. */
+    let settled = ''
 
     // Name of the agent CLI running here, or null for a plain shell. Set either
     // by the pane's initial command (worktree panes) or by the input sniffer
@@ -182,10 +210,26 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       setPaneStatus(wsId, tabId, pane.id, next)
     }
 
+    const settle = () => {
+      clearTimeout(workTimer)
+      workTimer = undefined
+      settled = screen()
+      setStatus(agent ? 'finished' : 'idle')
+    }
+
     const markOutput = () => {
-      setStatus('working')
+      // Don't claim "working" on the strength of a byte arriving. Wait, then
+      // look: if the grid is identical to how it settled, that was a repaint of
+      // unchanged content and nothing is happening.
+      if (status !== 'working' && workTimer === undefined) {
+        workTimer = setTimeout(() => {
+          workTimer = undefined
+          if (!disposed && screen() !== settled) setStatus('working')
+        }, WORK_DELAY_MS)
+      }
+
       clearTimeout(quietTimer)
-      quietTimer = setTimeout(() => setStatus(agent ? 'finished' : 'idle'), QUIET_MS)
+      quietTimer = setTimeout(settle, QUIET_MS)
     }
 
     /*
@@ -271,8 +315,11 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       p.onmessage = (e: MessageEvent) => {
         const data = e.data as string | { t: 'exit'; code: number }
         if (typeof data === 'string') {
-          term.write(data)
-          markOutput()
+          // Assess the status only once xterm has actually PARSED the bytes.
+          // write() is asynchronous; reading the grid straight after it returns
+          // sees the screen as it was a moment ago, so a repaint of unchanged
+          // content compares against a stale snapshot and looks like a change.
+          term.write(data, markOutput)
         } else if (data?.t === 'exit') {
           term.write(`\r\n\x1b[90m[process exited with code ${data.code}]\x1b[0m\r\n`)
           if (!disposed) {
@@ -325,6 +372,7 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
     return () => {
       disposed = true
       clearTimeout(quietTimer)
+      clearTimeout(workTimer)
       unregisterScrollback(pane.id)
       ro.disconnect()
       try {

@@ -65,6 +65,12 @@ export interface Tab {
   zoomedPaneId: string | null
   /** The user renamed this by hand; stop deriving it from the active pane. */
   custom?: boolean
+  /**
+   * Marked unread by hand. Distinct from a pane's `unseen`, which the app clears
+   * the moment you look at the tab — this one is yours, and survives being
+   * looked at. It goes away when you clear it, and not before.
+   */
+  flagged?: boolean
 }
 
 export interface Workspace {
@@ -133,6 +139,8 @@ interface State {
   raiseAttention: (wsId: string, tabId: string, paneId: string) => void
   /** Mark everything in this tab as looked-at. */
   acknowledgeTab: (wsId: string, tabId: string) => void
+  /** Flag/unflag a tab as unread by hand. Survives looking at it. */
+  setTabFlagged: (wsId: string, tabId: string, flagged: boolean) => void
 
   splitPane: (wsId: string, tabId: string, paneId: string, dir: Direction) => void
   closePane: (wsId: string, tabId: string, paneId: string) => void
@@ -640,8 +648,14 @@ export const useStore = create<State>((set, get) => ({
     )
   },
 
+  // Note this clears the panes' `unseen`, never the tab's `flagged`: looking at
+  // a tab is what clears the app's notion of unseen, and precisely NOT what
+  // clears yours.
   acknowledgeTab: (wsId, tabId) =>
     set((s) => mapWs(s, wsId, (ws) => mapTab(ws, tabId, clearSeen))),
+
+  setTabFlagged: (wsId, tabId, flagged) =>
+    set((s) => mapWs(s, wsId, (ws) => mapTab(ws, tabId, (t) => ({ ...t, flagged })))),
 
   /** Derived name. Silently declines to overwrite a name the user chose. */
   autoNamePane: (wsId, tabId, paneId, title) =>
@@ -946,6 +960,9 @@ export const useStore = create<State>((set, get) => ({
         id: t.id,
         title: t.title,
         custom: t.custom,
+        // A tab you flagged is still flagged tomorrow — that's what makes it a
+        // reminder rather than a highlight.
+        flagged: t.flagged,
         layout: t.layout as LayoutNode | null,
         activePaneId: t.activePaneId,
         zoomedPaneId: null,
@@ -1005,6 +1022,7 @@ export const serialize = (s: State): Session => ({
       id: t.id,
       title: t.title,
       custom: t.custom,
+      flagged: t.flagged,
       layout: t.layout,
       activePaneId: t.activePaneId,
       panes: Object.values(t.panes).map((p) => ({
@@ -1061,15 +1079,27 @@ export const tabStatus = (t: Tab): PaneStatus =>
 
 export const workspaceStatus = (w: Workspace): PaneStatus => rollUp(w.tabs.map(tabStatus))
 
-/** Something in here finished (or rang) while you weren't looking. */
-export const tabUnseen = (t: Tab): boolean => Object.values(t.panes).some((p) => p.unseen)
+/**
+ * Something in here finished (or rang) while you weren't looking — or you said
+ * so yourself. A hand-flagged tab stays lit whether or not you're looking at it;
+ * that is the entire point of flagging it.
+ */
+export const tabUnseen = (t: Tab): boolean =>
+  !!t.flagged || Object.values(t.panes).some((p) => p.unseen)
 
 export const workspaceUnseen = (w: Workspace): boolean => w.tabs.some(tabUnseen)
 
-/** How many panes across everything are still waiting to be checked on. */
+/** How many things across everything are still waiting to be checked on. */
 export const unseenCount = (s: State): number =>
   s.workspaces.reduce(
     (n, w) =>
-      n + w.tabs.reduce((m, t) => m + Object.values(t.panes).filter((p) => p.unseen).length, 0),
+      n +
+      w.tabs.reduce(
+        (m, t) =>
+          m +
+          (t.flagged ? 1 : 0) +
+          Object.values(t.panes).filter((p) => p.unseen).length,
+        0
+      ),
     0
   )

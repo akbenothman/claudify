@@ -131,6 +131,45 @@ app.whenReady().then(async () => {
   }
   console.log(`  topics are tabs, each with its own list: ${JSON.stringify(topics.tabs)} ✓`)
 
+  /* --------------------- topic tabs can be reordered ----------------------- */
+
+  const reordered = await js(`(async () => {
+    const board = document.querySelector('.board.todo');
+    const tabs = [...board.querySelectorAll('.board-tab')];
+    const before = tabs.map(t => t.querySelector('.board-tab-name').textContent);
+
+    // Drag the LAST tab (errands) to the front, dropping on the left half of the
+    // first tab so it lands before it.
+    const target = tabs[0];
+    const box = target.getBoundingClientRect();
+    const dt = new DataTransfer();
+    dt.setData('application/x-claudify-topic', String(tabs.length - 1));
+    target.dispatchEvent(new DragEvent('drop', {
+      bubbles: true, cancelable: true, dataTransfer: dt,
+      clientX: box.left + 2, clientY: box.top + box.height / 2
+    }));
+    await new Promise(r => setTimeout(r, 700));
+
+    return {
+      before,
+      after: [...board.querySelectorAll('.board-tab-name')].map(t => t.textContent)
+    };
+  })()`)
+
+  if (reordered.after[0] !== 'errands') {
+    return fail(
+      `dragging a topic tab to the front should reorder it: ${JSON.stringify(reordered.before)} -> ` +
+        JSON.stringify(reordered.after)
+    )
+  }
+  onDisk = JSON.parse(fs.readFileSync(dashFile, 'utf8'))
+  if (onDisk.topics[0].name !== 'errands') {
+    return fail(`the new topic order did not persist: ${JSON.stringify(onDisk.topics.map((t) => t.name))}`)
+  }
+  console.log(
+    `  topic tabs reorder by drag: ${JSON.stringify(reordered.before)} -> ${JSON.stringify(reordered.after)} ✓`
+  )
+
   /* ----------------------- clearing completed items ------------------------ */
 
   const cleared = await js(`(async () => {
@@ -186,6 +225,27 @@ app.whenReady().then(async () => {
 
   if (!notes.ok) return fail(notes.why)
   if (notes.tabs.length < 2) return fail(`notepad should have 2 tabs, got ${JSON.stringify(notes.tabs)}`)
+
+  // Note pages reorder the same way.
+  const notesMoved = await js(`(async () => {
+    const board = document.querySelector('.board.notes');
+    const tabs = [...board.querySelectorAll('.board-tab')];
+    const target = tabs[0];
+    const box = target.getBoundingClientRect();
+    const dt = new DataTransfer();
+    dt.setData('application/x-claudify-note', String(tabs.length - 1));
+    target.dispatchEvent(new DragEvent('drop', {
+      bubbles: true, cancelable: true, dataTransfer: dt,
+      clientX: box.left + 2, clientY: box.top + box.height / 2
+    }));
+    await new Promise(r => setTimeout(r, 700));
+    return [...board.querySelectorAll('.board-tab-name')].map(t => t.textContent);
+  })()`)
+
+  if (notesMoved[0] !== 'page 2') {
+    return fail(`note pages should reorder by drag, got ${JSON.stringify(notesMoved)}`)
+  }
+  console.log(`  note pages reorder by drag: ${JSON.stringify(notesMoved)} ✓`)
 
   onDisk = JSON.parse(fs.readFileSync(dashFile, 'utf8'))
   const bodies = (onDisk.notes || []).map((n) => n.body)

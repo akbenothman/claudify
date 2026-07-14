@@ -840,6 +840,10 @@ kbd {
 .board-tab:hover {
   background: var(--panel);
 }
+/* Insertion caret while dragging a tab to reorder it. */
+.board-tab.drop-before {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
 .board-tab.active {
   background: var(--panel);
   border-color: var(--border);
@@ -1135,6 +1139,25 @@ kbd {
 }
 
 /* An unchecked tab / workspace stands out; a checked one goes quiet again. */
+/* The unread toggle. Invisible until there's something to say — or until you
+   hover the tab looking for somewhere to click. */
+.tab-flag {
+  border: none;
+  background: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex: none;
+  cursor: pointer;
+}
+.mark-hint {
+  opacity: 0;
+  transition: opacity 90ms ease;
+}
+.tab:hover .mark-hint {
+  opacity: 0.55;
+}
+
 .tab.unseen {
   color: var(--add);
   font-weight: 600;

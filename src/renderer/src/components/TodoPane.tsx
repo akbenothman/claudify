@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { TodoStatus } from '../../../shared/types'
+import { dropIndex, reorder, TOPIC_MIME } from '../boardDnd'
 import { newId, nowIso, useDashboard } from '../useDashboard'
 
 const CYCLE: TodoStatus[] = ['todo', 'doing', 'blocked', 'done']
@@ -16,6 +17,8 @@ export function TodoPane() {
   const [draft, setDraft] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
+  /** Index the dragged topic would land at, for the insertion caret. */
+  const [dropAt, setDropAt] = useState<number | null>(null)
 
   if (!data) return <div className="board empty">loading…</div>
 
@@ -80,10 +83,35 @@ export function TodoPane() {
   return (
     <div className="board todo">
       <div className="board-tabs">
-        {topics.map((t) => (
+        {topics.map((t, i) => (
           <div
             key={t.id}
-            className={`board-tab${t.id === topic?.id ? ' active' : ''}`}
+            className={`board-tab${t.id === topic?.id ? ' active' : ''}${
+              dropAt === i ? ' drop-before' : ''
+            }`}
+            draggable={editing !== t.id}
+            onDragStart={(e) => {
+              e.dataTransfer.setData(TOPIC_MIME, String(i))
+              e.dataTransfer.effectAllowed = 'move'
+            }}
+            onDragOver={(e) => {
+              if (!e.dataTransfer.types.includes(TOPIC_MIME)) return
+              e.preventDefault()
+              e.dataTransfer.dropEffect = 'move'
+              setDropAt(dropIndex(e.currentTarget.getBoundingClientRect(), e.clientX, i))
+            }}
+            onDragLeave={() => setDropAt(null)}
+            onDrop={(e) => {
+              const raw = e.dataTransfer.getData(TOPIC_MIME)
+              setDropAt(null)
+              if (!raw) return
+              e.preventDefault()
+              const from = parseInt(raw, 10)
+              const to = dropIndex(e.currentTarget.getBoundingClientRect(), e.clientX, i)
+              // Dropping to the right of yourself: the list closes up behind you,
+              // so the target index shifts down by one.
+              update((d) => ({ ...d, topics: reorder(d.topics, from, to > from ? to - 1 : to) }))
+            }}
             onClick={() => setActiveId(t.id)}
             onDoubleClick={() => setEditing(t.id)}
           >
