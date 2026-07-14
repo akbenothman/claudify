@@ -72,6 +72,13 @@ const api = {
 
   loadState: (): Promise<AppState> => ipcRenderer.invoke('state:load'),
   saveSession: (session: Session): Promise<void> => ipcRenderer.invoke('session:save', session),
+  /**
+   * The last save, on the way out. Synchronous on purpose: an `invoke` issued
+   * from `beforeunload` races the renderer's own teardown and routinely loses.
+   */
+  saveSessionNow: (session: Session): void => {
+    ipcRenderer.sendSync('session:save-now', session)
+  },
   saveSettings: (patch: Partial<Settings>): Promise<Settings> =>
     ipcRenderer.invoke('settings:save', patch),
   getSettings: (): Promise<Settings> => ipcRenderer.invoke('settings:get'),

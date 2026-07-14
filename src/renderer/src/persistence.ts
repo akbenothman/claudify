@@ -1,5 +1,5 @@
 import { serialize, useStore } from './store'
-import { snapshotScrollback } from './scrollback'
+import { peekScrollback, snapshotScrollback } from './scrollback'
 import type { Session } from '../../shared/types'
 
 const DEBOUNCE_MS = 400
@@ -12,9 +12,12 @@ const DEBOUNCE_MS = 400
  * themselves. A pane that hasn't mounted yet has no live buffer; it keeps the
  * scrollback it was restored with rather than being blanked.
  */
-function withScrollback(session: Session, force: boolean): Session {
-  const capture = (p: Session['workspaces'][number]['tabs'][number]['panes'][number]) => {
-    const live = snapshotScrollback(p.id, force)
+function withScrollback(session: Session, capture: boolean, force: boolean): Session {
+  const take = (p: Session['workspaces'][number]['tabs'][number]['panes'][number]) => {
+    // Only re-read the terminals when we mean to (the sweep, and shutdown).
+    // Otherwise reuse the last snapshot: serializing every buffer on the
+    // keystroke path is what made typing lag.
+    const live = capture ? snapshotScrollback(p.id, force) : peekScrollback(p.id)
     /*
      * An empty buffer is never worth saving, and on boot it is actively
      * harmful: a pane that has mounted but not yet been painted serializes to
@@ -30,9 +33,7 @@ function withScrollback(session: Session, force: boolean): Session {
       ...w,
       tabs: w.tabs.map((t) => ({
         ...t,
-        panes: t.panes.map((p) =>
-          p.kind === 'terminal' ? { ...p, scrollback: capture(p) } : p
-        )
+        panes: t.panes.map((p) => (p.kind === 'terminal' ? { ...p, scrollback: take(p) } : p))
       }))
     }))
   }
@@ -51,18 +52,29 @@ export function startPersistence(): void {
   let dirty = false
   let lastWritten = ''
 
-  const flush = (force = false) => {
-    if (!dirty && !force) return
+  /**
+   * `capture` re-reads the terminals; without it we reuse the last snapshot.
+   * Store-change saves never capture — pressing a key flips a pane's status,
+   * which is a store change, and serializing every buffer on that path is a
+   * lot of work to do between a keystroke and its echo.
+   */
+  const flush = ({ capture = false, sync = false } = {}) => {
+    if (!dirty && !capture) return
     dirty = false
 
-    const session = withScrollback(serialize(useStore.getState()), force)
+    const session = withScrollback(serialize(useStore.getState()), capture, sync)
 
-    // The sweep below runs whether or not anything happened. Skipping identical
-    // writes keeps an idle app from rewriting a megabyte of scrollback forever.
+    // Identical writes are worth skipping: with scrollback reused rather than
+    // re-serialized, a burst of typing produces the same session object every
+    // time, and this turns those saves into nothing at all.
     const json = JSON.stringify(session)
     if (json === lastWritten) return
     lastWritten = json
 
+    if (sync) {
+      window.claudify.saveSessionNow(session)
+      return
+    }
     window.claudify.saveSession(session).catch(() => {
       /* nothing useful to do if the disk write fails */
     })
@@ -71,7 +83,7 @@ export function startPersistence(): void {
   useStore.subscribe(() => {
     dirty = true
     clearTimeout(timer)
-    timer = setTimeout(flush, DEBOUNCE_MS)
+    timer = setTimeout(() => flush(), DEBOUNCE_MS)
   })
 
   /*
@@ -79,11 +91,11 @@ export function startPersistence(): void {
    * produces no store updates and would never be saved. Sweep on a timer to
    * catch it, and take a final, uncached snapshot on the way out.
    */
-  const sweep = setInterval(() => flush(true), 10_000)
+  const sweep = setInterval(() => flush({ capture: true }), 10_000)
 
   window.addEventListener('beforeunload', () => {
     clearTimeout(timer)
     clearInterval(sweep)
-    flush(true)
+    flush({ capture: true, sync: true })
   })
 }

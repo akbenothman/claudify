@@ -430,6 +430,9 @@ textarea:focus {
   display: flex;
   align-items: center;
   gap: 8px;
+  /* It's a drag handle: drop the pane on another pane to re-split, or on the
+     tab bar to pop it back out into its own tab. */
+  cursor: grab;
   padding: 3px 6px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);

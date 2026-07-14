@@ -12,7 +12,7 @@ import {
   removeWorktree
 } from './git'
 import { planSplit } from './split'
-import { getSettings, loadState, saveSession, saveSettings } from './persist'
+import { getSettings, loadState, saveSession, saveSessionNow, saveSettings } from './persist'
 import { detectShells } from './shells'
 import { dashboardPath, ensureDashboard, readDashboard, watchDashboard, writeDashboard } from './dashboard'
 import type { Dashboard, PtySpawnOptions, Session, Settings, SplitTask } from '../shared/types'
@@ -154,6 +154,10 @@ ipcMain.handle('app:home', () => app.getPath('home'))
 
 ipcMain.handle('state:load', () => loadState())
 ipcMain.handle('session:save', (_e, session: Session) => saveSession(session))
+ipcMain.on('session:save-now', (e, session: Session) => {
+  saveSessionNow(session)
+  e.returnValue = true
+})
 ipcMain.handle('settings:save', (_e, patch: Partial<Settings>) => saveSettings(patch))
 ipcMain.handle('settings:get', () => getSettings())
 ipcMain.handle('shells:detect', () => detectShells())

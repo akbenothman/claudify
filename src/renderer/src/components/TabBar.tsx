@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { tabNeedsAttention, tabStatus, tabTitle, tabUnseen, useStore, type Workspace } from '../store'
 import { StatusDot } from './StatusDot'
-import { TAB_MIME, type TabDrag } from '../dnd'
+import { PANE_MIME, TAB_MIME, type PaneDrag, type TabDrag } from '../dnd'
 import type { MenuState } from './ContextMenu'
 
 function RenameField({
@@ -44,6 +44,7 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
   const renameTab = useStore((s) => s.renameTab)
   const newTab = useStore((s) => s.newTab)
   const moveTab = useStore((s) => s.moveTab)
+  const movePaneToTab = useStore((s) => s.movePaneToTab)
 
   const [editing, setEditing] = useState<string | null>(null)
   /** Index the dragged tab would land at, for the insertion caret. */
@@ -62,15 +63,26 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
   }
 
   const onDragOver = (e: React.DragEvent) => {
-    if (!e.dataTransfer.types.includes(TAB_MIME)) return
+    const types = e.dataTransfer.types
+    if (!types.includes(TAB_MIME) && !types.includes(PANE_MIME)) return
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
     setDropAt(indexFor(e.clientX))
   }
 
   const onDrop = (e: React.DragEvent) => {
-    const raw = e.dataTransfer.getData(TAB_MIME)
     setDropAt(null)
+
+    // A pane dropped up here wants out of its split: give it its own tab again.
+    const paneRaw = e.dataTransfer.getData(PANE_MIME)
+    if (paneRaw) {
+      e.preventDefault()
+      const drag = JSON.parse(paneRaw) as PaneDrag
+      movePaneToTab(drag.wsId, drag.tabId, drag.paneId, ws.id, indexFor(e.clientX))
+      return
+    }
+
+    const raw = e.dataTransfer.getData(TAB_MIME)
     if (!raw) return
     e.preventDefault()
     const drag = JSON.parse(raw) as TabDrag

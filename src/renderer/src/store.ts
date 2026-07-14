@@ -109,6 +109,24 @@ interface State {
     dstPaneId: string,
     edge: 'left' | 'right' | 'top' | 'bottom'
   ) => void
+  /** Pop a pane out of its tab and back into a tab of its own. */
+  movePaneToTab: (
+    srcWsId: string,
+    srcTabId: string,
+    paneId: string,
+    dstWsId: string,
+    index: number
+  ) => void
+  /** Drop a pane onto another pane: it re-splits there, wherever it came from. */
+  movePaneIntoPane: (
+    srcWsId: string,
+    srcTabId: string,
+    paneId: string,
+    dstWsId: string,
+    dstTabId: string,
+    dstPaneId: string,
+    edge: 'left' | 'right' | 'top' | 'bottom'
+  ) => void
   moveWorkspace: (fromIndex: number, toIndex: number) => void
 
   setPaneStatus: (wsId: string, tabId: string, paneId: string, status: PaneStatus) => void
@@ -275,7 +293,12 @@ export const useStore = create<State>((set, get) => ({
   newTab: (wsId, cwd) =>
     set((s) =>
       mapWs(s, wsId, (ws) => {
-        const tab = makeTab(cwd || ws.cwd || s.defaultCwd)
+        // A new tab opens where you are, not where the workspace began. The
+        // active pane's cwd tracks `cd` (see the OSC 9;9 handler), so this is
+        // the directory you were actually looking at.
+        const active = ws.tabs.find((t) => t.id === ws.activeTabId)
+        const here = active?.activePaneId ? active.panes[active.activePaneId]?.cwd : undefined
+        const tab = makeTab(cwd || here || ws.cwd || s.defaultCwd)
         return { ...ws, tabs: [...ws.tabs, tab], activeTabId: tab.id }
       })
     ),
@@ -395,6 +418,160 @@ export const useStore = create<State>((set, get) => ({
             )
           }
         })
+
+      return { workspaces, activeWorkspaceId: dstWsId }
+    }),
+
+  /*
+   * Both pane moves below are pure data edits. Stage renders every pane of every
+   * workspace as one flat list keyed by pane id, so relocating a pane in the
+   * tree does NOT unmount its React node — the terminal, and the process inside
+   * it, carry on through the move. That is the whole reason the layout lives in
+   * the store instead of in nested DOM.
+   */
+
+  movePaneToTab: (srcWsId, srcTabId, paneId, dstWsId, index) =>
+    set((s) => {
+      const srcWs = s.workspaces.find((w) => w.id === srcWsId)
+      const srcTab = srcWs?.tabs.find((t) => t.id === srcTabId)
+      const pane = srcTab?.panes[paneId]
+      if (!srcTab || !pane || !srcTab.layout) return {}
+
+      // A tab with one pane is already "its own tab" — popping it out would just
+      // destroy and recreate the same thing.
+      if (Object.keys(srcTab.panes).length <= 1 && srcWsId === dstWsId) return {}
+
+      const newTab: Tab = {
+        id: uid('tab'),
+        title: pane.title,
+        panes: { [paneId]: pane },
+        layout: { kind: 'leaf', paneId },
+        activePaneId: paneId,
+        zoomedPaneId: null
+      }
+
+      const workspaces = s.workspaces
+        .map((w) => {
+          if (w.id !== srcWsId) return w
+          const tabs = w.tabs
+            .map((t) => {
+              if (t.id !== srcTabId || !t.layout) return t
+              const panes = { ...t.panes }
+              delete panes[paneId]
+              const layout = removeLeaf(t.layout, paneId)
+              return {
+                ...t,
+                panes,
+                layout,
+                activePaneId: layout ? firstLeaf(layout) : null,
+                zoomedPaneId: t.zoomedPaneId === paneId ? null : t.zoomedPaneId
+              }
+            })
+            // The pane it held was the last one: the tab goes with it.
+            .filter((t) => Object.keys(t.panes).length > 0)
+          return { ...w, tabs }
+        })
+        .map((w) => {
+          if (w.id !== dstWsId) return w
+          const at = Math.max(0, Math.min(index, w.tabs.length))
+          const tabs = [...w.tabs.slice(0, at), newTab, ...w.tabs.slice(at)]
+          return { ...w, tabs, activeTabId: newTab.id }
+        })
+        .map((w) => ({
+          ...w,
+          activeTabId:
+            w.tabs.some((t) => t.id === w.activeTabId)
+              ? w.activeTabId
+              : w.tabs[w.tabs.length - 1]?.id ?? null
+        }))
+
+      return { workspaces, activeWorkspaceId: dstWsId }
+    }),
+
+  movePaneIntoPane: (srcWsId, srcTabId, paneId, dstWsId, dstTabId, dstPaneId, edge) =>
+    set((s) => {
+      if (paneId === dstPaneId) return {}
+
+      const srcWs = s.workspaces.find((w) => w.id === srcWsId)
+      const srcTab = srcWs?.tabs.find((t) => t.id === srcTabId)
+      const pane = srcTab?.panes[paneId]
+      const dstWs = s.workspaces.find((w) => w.id === dstWsId)
+      const dstTab = dstWs?.tabs.find((t) => t.id === dstTabId)
+      if (!srcTab || !pane || !srcTab.layout || !dstTab || !dstTab.layout) return {}
+
+      const dir: Direction = edge === 'left' || edge === 'right' ? 'row' : 'col'
+      const incomingFirst = edge === 'left' || edge === 'top'
+      const splice = (layout: LayoutNode): LayoutNode =>
+        replaceLeaf(layout, dstPaneId, {
+          kind: 'split',
+          id: uid('split'),
+          dir,
+          ratio: 0.5,
+          a: incomingFirst ? { kind: 'leaf', paneId } : { kind: 'leaf', paneId: dstPaneId },
+          b: incomingFirst ? { kind: 'leaf', paneId: dstPaneId } : { kind: 'leaf', paneId }
+        })
+
+      // Within one tab this is a single edit: pull the leaf out, then splice it
+      // back in next to the target. Doing it as remove-then-add across two
+      // copies of the tab would lose whichever edit landed second.
+      if (srcTabId === dstTabId) {
+        const pruned = removeLeaf(srcTab.layout, paneId)
+        if (!pruned) return {}
+        return mapWs(s, dstWsId, (ws) =>
+          mapTab(ws, dstTabId, (t) => ({
+            ...t,
+            layout: splice(pruned),
+            activePaneId: paneId,
+            zoomedPaneId: null
+          }))
+        )
+      }
+
+      const workspaces = s.workspaces
+        .map((w) => {
+          if (w.id !== srcWsId) return w
+          const tabs = w.tabs
+            .map((t) => {
+              if (t.id !== srcTabId || !t.layout) return t
+              const panes = { ...t.panes }
+              delete panes[paneId]
+              const layout = removeLeaf(t.layout, paneId)
+              return {
+                ...t,
+                panes,
+                layout,
+                activePaneId: layout ? firstLeaf(layout) : null,
+                zoomedPaneId: t.zoomedPaneId === paneId ? null : t.zoomedPaneId
+              }
+            })
+            .filter((t) => Object.keys(t.panes).length > 0)
+          return { ...w, tabs }
+        })
+        .map((w) => {
+          if (w.id !== dstWsId) return w
+          return {
+            ...w,
+            activeTabId: dstTabId,
+            tabs: w.tabs.map((t) =>
+              t.id !== dstTabId || !t.layout
+                ? t
+                : {
+                    ...t,
+                    panes: { ...t.panes, [paneId]: pane },
+                    layout: splice(t.layout),
+                    activePaneId: paneId,
+                    zoomedPaneId: null
+                  }
+            )
+          }
+        })
+        .map((w) => ({
+          ...w,
+          activeTabId:
+            w.tabs.some((t) => t.id === w.activeTabId)
+              ? w.activeTabId
+              : w.tabs[w.tabs.length - 1]?.id ?? null
+        }))
 
       return { workspaces, activeWorkspaceId: dstWsId }
     }),

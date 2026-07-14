@@ -6,7 +6,7 @@ import { MergeView } from './MergeView'
 import { TodoPane } from './TodoPane'
 import { TrackerPane } from './TrackerPane'
 import { StatusDot } from './StatusDot'
-import { TAB_MIME, type TabDrag } from '../dnd'
+import { PANE_MIME, TAB_MIME, type PaneDrag, type TabDrag } from '../dnd'
 
 const pct = (r: Rect) => ({
   left: `${r.x}%`,
@@ -32,6 +32,7 @@ function PaneFrame({
 }) {
   const closePane = useStore((s) => s.closePane)
   const mergeTabIntoPane = useStore((s) => s.mergeTabIntoPane)
+  const movePaneIntoPane = useStore((s) => s.movePaneIntoPane)
   const [dropEdge, setDropEdge] = useState<Edge | null>(null)
 
   const focused = tab.activePaneId === pane.id
@@ -57,24 +58,61 @@ function PaneFrame({
         onDragOver={(e) => {
           // `types` is the only thing readable during dragover — the payload is
           // withheld until drop.
-          if (!e.dataTransfer.types.includes(TAB_MIME)) return
+          const types = e.dataTransfer.types
+          if (!types.includes(TAB_MIME) && !types.includes(PANE_MIME)) return
           e.preventDefault()
           e.dataTransfer.dropEffect = 'move'
           setDropEdge(edgeFor(e.currentTarget.getBoundingClientRect(), e.clientX, e.clientY))
         }}
         onDragLeave={() => setDropEdge(null)}
         onDrop={(e) => {
-          const raw = e.dataTransfer.getData(TAB_MIME)
           setDropEdge(null)
+          const box = e.currentTarget.getBoundingClientRect()
+
+          const paneRaw = e.dataTransfer.getData(PANE_MIME)
+          if (paneRaw) {
+            e.preventDefault()
+            const drag = JSON.parse(paneRaw) as PaneDrag
+            if (drag.paneId === pane.id) return
+            movePaneIntoPane(
+              drag.wsId,
+              drag.tabId,
+              drag.paneId,
+              ws.id,
+              tab.id,
+              pane.id,
+              edgeFor(box, e.clientX, e.clientY)
+            )
+            return
+          }
+
+          const raw = e.dataTransfer.getData(TAB_MIME)
           if (!raw) return
           e.preventDefault()
           const drag = JSON.parse(raw) as TabDrag
           if (drag.tabId === tab.id) return
-          const edge = edgeFor(e.currentTarget.getBoundingClientRect(), e.clientX, e.clientY)
-          mergeTabIntoPane(drag.wsId, drag.tabId, ws.id, tab.id, pane.id, edge)
+          mergeTabIntoPane(
+            drag.wsId,
+            drag.tabId,
+            ws.id,
+            tab.id,
+            pane.id,
+            edgeFor(box, e.clientX, e.clientY)
+          )
         }}
       >
-        <div className="pane-head">
+        {/* The head is the pane's drag handle — dragging the body would fight
+            with selecting text in the terminal. Drop it on another pane to
+            re-split there, or on the tab bar to give it a tab of its own. */}
+        <div
+          className="pane-head"
+          draggable
+          onDragStart={(e) => {
+            const payload: PaneDrag = { wsId: ws.id, tabId: tab.id, paneId: pane.id }
+            e.dataTransfer.setData(PANE_MIME, JSON.stringify(payload))
+            e.dataTransfer.effectAllowed = 'move'
+          }}
+        >
           <StatusDot status={pane.status} unseen={pane.unseen} />
           <span className="pane-title">{pane.title}</span>
           {pane.branch && <span className="pane-branch">{pane.branch}</span>}

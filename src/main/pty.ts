@@ -45,12 +45,24 @@ export function createSession(opts: PtySpawnOptions, port: MessagePortMain): str
     CLAUDIFY_PANE: id
   }
 
-  // cmd renders `C:\dir>` with nothing after the `>`, so what you type collides
-  // with the path. `$S` is cmd's escape for a space. Appended rather than
-  // assigned, so a PROMPT the user set themselves survives.
+  /*
+   * Two things wrong with cmd's default prompt, both fixed here.
+   *
+   * It renders `C:\dir>` with nothing after the `>`, so what you type collides
+   * with the path — `$S` is cmd's escape for a space.
+   *
+   * And it never says where it is, so a `cd` is invisible to us and a new tab
+   * would open in the directory the shell STARTED in. The `$E]9;9;<path>$E\`
+   * preamble is Windows Terminal's convention for reporting the working
+   * directory; the renderer listens for it (see the OSC 9 handler) and follows
+   * the shell as it moves.
+   *
+   * The user's own PROMPT is preserved if they set one — we only add to it.
+   */
   if (isCmd(shell)) {
-    const current = env.PROMPT || '$P$G'
-    env.PROMPT = /\$s$/i.test(current) ? current : `${current}$S`
+    const base = env.PROMPT || '$P$G'
+    const spaced = /\$s$/i.test(base) ? base : `${base}$S`
+    env.PROMPT = spaced.includes('$E]9;9;') ? spaced : `$E]9;9;$P$E\\${spaced}`
   }
 
   const pty = spawn(shell, args, {

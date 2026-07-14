@@ -49,6 +49,18 @@ function clamp(text: string): string {
 }
 
 /**
+ * The last snapshot we took, without taking a new one.
+ *
+ * Saves fire on any store change — including the status flag that flips every
+ * time you press a key. Re-serializing every terminal on that path is what made
+ * typing feel laggy, and it buys nothing: the buffer is captured on the periodic
+ * sweep and again on the way out.
+ */
+export function peekScrollback(paneId: string): string | undefined {
+  return panes.get(paneId)?.cached
+}
+
+/**
  * Current scrollback for a pane, or undefined if it isn't mounted.
  * `force` bypasses the cache — used on the final save during shutdown, where
  * a 4-second-stale buffer would drop whatever just happened.

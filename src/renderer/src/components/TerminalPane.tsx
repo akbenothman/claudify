@@ -126,7 +126,21 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
     const raiseAttention = () => {
       if (!disposed) raiseAttentionFor(wsId, tabId, pane.id)
     }
-    term.parser.registerOscHandler(9, () => {
+    /*
+     * OSC 9 carries two different things on Windows. `ESC ] 9 ; <text>` is the
+     * notification an agent raises when it wants you. `ESC ] 9 ; 9 ; <path>` is
+     * Windows Terminal's convention for "my working directory is now this",
+     * which our cmd prompt emits (see PROMPT in pty.ts). Same opcode, so the
+     * payload has to be told apart here — otherwise every prompt would flash the
+     * attention ring.
+     */
+    term.parser.registerOscHandler(9, (data) => {
+      const cwd = /^9;(.+)$/.exec(data)?.[1]
+      if (cwd) {
+        // Follows `cd`, so a new tab or split opens where you actually are.
+        if (!disposed) updatePane(wsId, tabId, pane.id, { cwd: cwd.trim() })
+        return true
+      }
       raiseAttention()
       return true
     })
@@ -274,6 +288,25 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
         sniff(d)
       })
       term.focus()
+
+      /*
+       * Shift+Enter should open a new line in an agent's prompt, not submit it.
+       * xterm sends a bare CR for Enter regardless of Shift, which every REPL
+       * reads as "go". Claude (like most of them) takes ESC+CR as a literal
+       * newline, so send that instead and keep it away from the command sniffer
+       * — the line isn't finished, so the pane shouldn't be renamed off it.
+       */
+      term.attachCustomKeyEventHandler((e) => {
+        if (e.type !== 'keydown' || e.key !== 'Enter') return true
+        if (!e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return true
+        // preventDefault is not optional here. Returning false only tells xterm
+        // to keep its hands off the keydown — the browser still raises the
+        // keypress, and xterm's keypress path would then send a plain CR and
+        // submit the line, which is the very thing we're preventing.
+        e.preventDefault()
+        p.postMessage('\x1b\r')
+        return false
+      })
     })()
 
     const resize = () => {
