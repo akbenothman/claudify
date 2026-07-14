@@ -202,6 +202,25 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
         ? pane.initialCommand.trim().split(/\s+/)[0]
         : null
 
+    /*
+     * Has this agent actually been ASKED for anything?
+     *
+     * "Finished" is a claim that something you wanted is now done and waiting on
+     * you — it lights the tab green and counts as unchecked. An agent that has
+     * merely been launched has finished nothing: the dashboard's Claude boots,
+     * paints its prompt, goes quiet, and used to announce itself as a job you
+     * hadn't checked, in a pane where you had never typed a thing.
+     *
+     * A worktree pane is the opposite case: it starts with a task on the command
+     * line (`claude "add dark mode"`), so it IS working for you from birth. A
+     * bare `claude` with no argument is not.
+     */
+    const startedOnATask =
+      !!pane.initialCommand &&
+      isAgentCommand(pane.initialCommand) &&
+      pane.initialCommand.trim().split(/\s+/).length > 1
+    let asked = startedOnATask
+
     const setStatus = (next: typeof status) => {
       if (disposed || status === next) return
       status = next
@@ -214,7 +233,8 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       clearTimeout(workTimer)
       workTimer = undefined
       settled = screen()
-      setStatus(agent ? 'finished' : 'idle')
+      // Only an agent that was actually asked for something can be "finished".
+      setStatus(agent && asked ? 'finished' : 'idle')
     }
 
     const markOutput = () => {
@@ -260,6 +280,10 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
           const submitted = line.trim()
           line = ''
           if (!submitted) continue
+
+          // You asked it for something: from here on, going quiet means it has
+          // finished YOUR request, and is worth telling you about.
+          asked = true
 
           if (agent) {
             const topic = topicTitle(submitted)

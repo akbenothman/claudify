@@ -174,6 +174,41 @@ app.whenReady().then(async () => {
   }
   console.log('  clicking it again clears the flag ✓')
 
+  /* ---- 4. a freshly-booted agent has not "finished" anything -------------- */
+
+  /*
+   * The dashboard's Claude is launched with a bare `claude` — no task. It boots,
+   * paints its prompt and goes quiet, and that used to register as FINISHED:
+   * the tab went green and the badge said "1 unchecked", in a pane where nothing
+   * had ever been asked. Starting a REPL is not completing a job.
+   *
+   * The window is deliberately blurred first: "finished while you weren't
+   * looking" is exactly the condition that marks a pane unseen, so this is the
+   * case that used to fire.
+   */
+  await js(`window.dispatchEvent(new Event('blur')); true`)
+
+  // Back to the dashboard (workspace 1), where the Claude pane lives.
+  await js(`document.querySelectorAll('.ws')[0].click(); true`)
+  await sleep(1000)
+  await js(`document.querySelectorAll('.ws')[1].click(); true`) // look away from it
+  await sleep(12000) // ...while it boots and settles
+
+  const boot = await js(`(() => ({
+    badge: document.querySelector('.unseen-badge')?.textContent?.trim() || '',
+    litPanes: [...document.querySelectorAll('.pane')]
+      .filter(p => /\\bunseen\\b/.test(p.className))
+      .map(p => p.querySelector('.pane-title')?.textContent)
+  }))()`)
+
+  if (boot.litPanes.length > 0) {
+    return fail(
+      `an agent that was merely STARTED reported itself finished/unchecked: ` +
+        `${JSON.stringify(boot.litPanes)} (badge: "${boot.badge}")`
+    )
+  }
+  console.log('  a freshly-booted agent does not raise an unchecked notification ✓')
+
   console.log('STATUS PASS')
   app.exit(0)
 })
