@@ -42,7 +42,11 @@ app.whenReady().then(async () => {
 
   /* ---- the one that matters: an agent fills calendar.json, UI reflects it --- */
 
-  const start = new Date(Date.now() + 2 * 3600_000).toISOString()
+  // Noon today (local), so it always lands on the calendar's default-selected
+  // day (today) no matter what time the test runs.
+  const noon = new Date()
+  noon.setHours(12, 0, 0, 0)
+  const start = noon.toISOString()
   fs.writeFileSync(
     calFile,
     JSON.stringify({

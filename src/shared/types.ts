@@ -302,6 +302,12 @@ export interface Calendar {
   requests: CalRequest[]
   /** ISO time the events list was last refreshed by an agent. */
   syncedAt?: string
+  /**
+   * A short natural-language digest of what's coming up, written by the calendar
+   * agent and shown beneath the month grid ("3 meetings tomorrow; nothing after
+   * Thursday"). Plain text; the app never generates it.
+   */
+  summary?: string
 }
 
 export interface Dashboard {

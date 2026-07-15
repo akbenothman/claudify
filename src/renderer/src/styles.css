@@ -1569,3 +1569,194 @@ kbd {
   flex: 1;
   text-align: left;
 }
+
+/* -------------------------- dashboard rows ------------------------------- */
+
+/* A quiet status accent down the left edge, so a list scans at a glance. */
+.row {
+  transition: background 90ms ease, box-shadow 90ms ease;
+}
+.row-doing,
+.row-active {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.row-blocked,
+.row-waiting {
+  box-shadow: inset 3px 0 0 var(--warn);
+}
+.row-done {
+  box-shadow: inset 3px 0 0 var(--add);
+}
+
+/* Row text is editable (double-click); the delete only appears on hover so the
+   list isn't a wall of × buttons. */
+.row-text {
+  cursor: text;
+}
+.row-edit {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 2px 6px;
+  font: inherit;
+  background: var(--bg-alt);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--fg);
+}
+.row .row-del,
+.cal-event .row-del {
+  opacity: 0;
+  transition: opacity 90ms ease;
+}
+.row:hover .row-del,
+.cal-event:hover .row-del {
+  opacity: 0.65;
+}
+.row-del:hover {
+  opacity: 1 !important;
+}
+
+.board-empty {
+  text-align: center;
+  opacity: 0.85;
+}
+
+/* ------------------------- calendar month grid --------------------------- */
+
+.cal-monthhead {
+  gap: 4px;
+}
+.cal-nav {
+  border: none;
+  padding: 0 5px;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--dim);
+}
+.cal-nav:hover {
+  color: var(--accent);
+  border-color: transparent;
+}
+.cal-monthname {
+  font-size: 13px;
+  min-width: 108px;
+}
+.cal-today-btn {
+  font-size: 10px;
+  padding: 2px 8px;
+  margin-left: 2px;
+}
+.cal-sync {
+  font-size: 10px;
+}
+
+.cal-grid {
+  flex: none;
+  padding: 5px 7px 7px;
+}
+.cal-weekrow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.cal-weekday {
+  text-align: center;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--dim);
+  padding: 2px 0 4px;
+}
+.cal-weeks {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(38px, auto);
+  gap: 3px;
+}
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 3px 4px;
+  background: var(--bg-alt);
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background 90ms ease, border-color 90ms ease;
+}
+.cal-cell:hover {
+  background: var(--panel);
+  border-color: var(--border);
+}
+.cal-out {
+  opacity: 0.32;
+}
+.cal-daynum {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+/* Today's number gets the filled accent chip Google-style. */
+.cal-today .cal-daynum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #04101f;
+  font-weight: 700;
+}
+.cal-sel {
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.08);
+}
+.cal-daydots {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.cal-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Claude's written digest of the week, under the grid. */
+.cal-summary {
+  flex: none;
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+  padding: 7px 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.cal-summary-label {
+  flex: none;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+.cal-summary-text {
+  color: var(--fg);
+  user-select: text;
+}
+
+.cal-agenda-head {
+  flex: none;
+  padding: 5px 10px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  border-top: 1px solid var(--border);
+}
+.cal-agenda {
+  flex: 1;
+}

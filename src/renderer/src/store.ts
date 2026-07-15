@@ -876,138 +876,130 @@ export const useStore = create<State>((set, get) => ({
   },
 
   ensureDashboard: (cwd) => {
+    const mk = (p: Omit<Pane, 'id'>): Pane => ({ ...p, id: uid('pane') })
+
     /*
-     * A dashboard saved before the notepad existed has a plain shell down the
-     * left. Convert it in place rather than leaving long-standing users with the
-     * old layout — the pane keeps its id and slot, so nothing else moves.
+     * Assemble the single dashboard tab from whatever panes we already have,
+     * building any that are missing. Layout: notepad down the left, Claude and
+     * the todo/tracker pair in the middle, and the calendar as a full column on
+     * the right — a Google-Calendar-style month grid rather than its own tab.
      *
-     * The dashboard's Claude is a terminal too; it's the one with persistCommand
-     * set, and it is emphatically not the pane to replace.
+     * Existing pane objects are reused by id (especially the dashboard's Claude,
+     * the one with persistCommand), so folding the old two-tab layout into this
+     * one never tears a running terminal down. Todos/notes/events live in their
+     * JSON files, so reshaping the layout loses nothing.
      */
-    // A standalone tab holding one board pane. Used for the calendar, which
-    // lives beside the dashboard tab rather than crowding into its grid.
-    const boardTab = (kind: Pane['kind'], title: string): Tab => {
-      const paneId = uid('pane')
+    const buildDashTab = (have: {
+      tabId?: string
+      notes?: Pane
+      claude?: Pane
+      todo?: Pane
+      tracker?: Pane
+      calendar?: Pane
+    }): Tab => {
+      const notes = have.notes ?? mk({ kind: 'notes', title: 'notes', cwd })
+      const claude =
+        have.claude ??
+        mk({
+          kind: 'terminal',
+          title: 'claude',
+          cwd,
+          // Just the REPL — no task — so it's safe to bring back on every boot.
+          initialCommand: claudeCommand(),
+          persistCommand: true
+        })
+      const todo = have.todo ?? mk({ kind: 'todo', title: 'todo', cwd })
+      const tracker = have.tracker ?? mk({ kind: 'tracker', title: 'conversations', cwd })
+      const calendar = have.calendar ?? mk({ kind: 'calendar', title: 'calendar', cwd })
+
+      const layout: LayoutNode = {
+        kind: 'split',
+        id: uid('split'),
+        dir: 'row',
+        ratio: 0.2,
+        a: { kind: 'leaf', paneId: notes.id },
+        b: {
+          kind: 'split',
+          id: uid('split'),
+          dir: 'row',
+          ratio: 0.55,
+          a: {
+            kind: 'split',
+            id: uid('split'),
+            dir: 'col',
+            ratio: 0.56,
+            a: { kind: 'leaf', paneId: claude.id },
+            b: {
+              kind: 'split',
+              id: uid('split'),
+              dir: 'row',
+              ratio: 0.5,
+              a: { kind: 'leaf', paneId: todo.id },
+              b: { kind: 'leaf', paneId: tracker.id }
+            }
+          },
+          b: { kind: 'leaf', paneId: calendar.id }
+        }
+      }
+
       return {
-        id: uid('tab'),
-        title,
+        id: have.tabId ?? uid('tab'),
+        title: 'dashboard',
         custom: true,
-        panes: { [paneId]: { id: paneId, kind, title, cwd } },
-        layout: { kind: 'leaf', paneId },
-        activePaneId: paneId,
+        panes: Object.fromEntries(
+          [notes, claude, todo, tracker, calendar].map((p) => [p.id, p])
+        ),
+        layout,
+        activePaneId: claude.id,
         zoomedPaneId: null
       }
     }
 
     const existing = get().workspaces.find((w) => w.permanent)
+
     if (existing) {
-      const hasKind = (k: Pane['kind']) =>
-        existing.tabs.some((t) => Object.values(t.panes).some((p) => p.kind === k))
+      const main = existing.tabs[0]
+      const calInMain = !!main && Object.values(main.panes).some((p) => p.kind === 'calendar')
+      // Already the new single-tab shape with the calendar column — nothing to do.
+      if (existing.tabs.length === 1 && calInMain) return
 
-      // The calendar is a newer addition — give long-standing dashboards one.
-      if (!hasKind('calendar')) {
-        const tab = boardTab('calendar', 'calendar')
-        set((s) => ({
-          workspaces: s.workspaces.map((w) =>
-            w.permanent ? { ...w, tabs: [...w.tabs, tab] } : w
-          )
-        }))
+      // Otherwise migrate: collect the existing panes by kind (reusing their
+      // ids) and rebuild as one tab. This folds an old separate calendar tab,
+      // and converts a pre-notepad shell, into the new layout.
+      const pick = (match: (p: Pane) => boolean): Pane | undefined => {
+        for (const t of existing.tabs) {
+          for (const p of Object.values(t.panes)) if (match(p)) return p
+        }
+        return undefined
       }
-
-      if (hasKind('notes')) return
-
+      const tab = buildDashTab({
+        tabId: main?.id,
+        notes: pick((p) => p.kind === 'notes'),
+        claude:
+          pick((p) => p.kind === 'terminal' && !!p.persistCommand) ??
+          pick((p) => p.kind === 'terminal'),
+        todo: pick((p) => p.kind === 'todo'),
+        tracker: pick((p) => p.kind === 'tracker'),
+        calendar: pick((p) => p.kind === 'calendar')
+      })
       set((s) => ({
-        workspaces: s.workspaces.map((w) => {
-          if (!w.permanent) return w
-          let converted = false
-          return {
-            ...w,
-            tabs: w.tabs.map((t) => {
-              const target = Object.values(t.panes).find(
-                (p) => !converted && p.kind === 'terminal' && !p.persistCommand
-              )
-              if (!target) return t
-              converted = true
-              return {
-                ...t,
-                panes: {
-                  ...t.panes,
-                  [target.id]: {
-                    ...target,
-                    kind: 'notes' as const,
-                    title: 'notes',
-                    custom: false,
-                    status: 'idle' as PaneStatus
-                  }
-                }
-              }
-            })
-          }
-        })
+        workspaces: s.workspaces.map((w) =>
+          w.permanent ? { ...w, tabs: [tab], activeTabId: tab.id } : w
+        )
       }))
       return
     }
 
-    const mk = (p: Omit<Pane, 'id'>): Pane => ({ ...p, id: uid('pane') })
-
-    const notes = mk({ kind: 'notes', title: 'notes', cwd })
-    const claude = mk({
-      kind: 'terminal',
-      title: 'claude',
-      cwd,
-      // Just opens the REPL — no task — so it's safe to bring back on every boot.
-      initialCommand: claudeCommand(),
-      persistCommand: true
-    })
-    const todo = mk({ kind: 'todo', title: 'todo', cwd })
-    const tracker = mk({ kind: 'tracker', title: 'conversations', cwd })
-
-    // Notepad down the left; Claude filling the right; todo + tracker sharing
-    // the bottom of that column.
-    const layout: LayoutNode = {
-      kind: 'split',
-      id: uid('split'),
-      dir: 'row',
-      ratio: 0.24,
-      a: { kind: 'leaf', paneId: notes.id },
-      b: {
-        kind: 'split',
-        id: uid('split'),
-        dir: 'col',
-        ratio: 0.58,
-        a: { kind: 'leaf', paneId: claude.id },
-        b: {
-          kind: 'split',
-          id: uid('split'),
-          dir: 'row',
-          ratio: 0.5,
-          a: { kind: 'leaf', paneId: todo.id },
-          b: { kind: 'leaf', paneId: tracker.id }
-        }
-      }
-    }
-
-    const tab: Tab = {
-      id: uid('tab'),
-      title: 'dashboard',
-      custom: true,
-      panes: Object.fromEntries([notes, claude, todo, tracker].map((p) => [p.id, p])),
-      layout,
-      activePaneId: claude.id,
-      zoomedPaneId: null
-    }
-
+    // First run: build the dashboard fresh, always first in the sidebar.
+    const tab = buildDashTab({})
     const ws: Workspace = {
       id: uid('ws'),
       name: DASHBOARD_NAME,
       cwd,
-      // The main dashboard, plus a calendar tab beside it.
-      tabs: [tab, boardTab('calendar', 'calendar')],
+      tabs: [tab],
       activeTabId: tab.id,
       permanent: true
     }
-
-    // Always first in the sidebar.
     set((s) => ({
       workspaces: [ws, ...s.workspaces],
       activeWorkspaceId: s.activeWorkspaceId ?? ws.id

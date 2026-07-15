@@ -16,7 +16,8 @@ const INSTRUCTIONS = [
   'requests[] are user asks to fulfil via the MCP, then mark status "done"/"error":',
   '{"id":"..","action":"add","title":"..","start":"ISO","end":"ISO?","location":"?"} — create it in Google Calendar, then append it to events[].',
   '{"id":"..","action":"delete","eventId":".."} — remove it from Google Calendar and from events[].',
-  'Set syncedAt to an ISO timestamp whenever you refresh events[].'
+  'Set syncedAt to an ISO timestamp whenever you refresh events[].',
+  'summary: a short plain-text digest of what is coming up, shown under the month grid. Refresh it when events change.'
 ].join(' ')
 
 const EMPTY: Calendar = { _instructions: INSTRUCTIONS, events: [], requests: [] }
@@ -36,7 +37,8 @@ export function readCalendar(): Calendar {
       _instructions: INSTRUCTIONS,
       events: Array.isArray(parsed.events) ? parsed.events.filter((e) => e && e.id) : [],
       requests: Array.isArray(parsed.requests) ? parsed.requests.filter((r) => r && r.id) : [],
-      syncedAt: parsed.syncedAt
+      syncedAt: parsed.syncedAt,
+      summary: typeof parsed.summary === 'string' ? parsed.summary : undefined
     }
   } catch {
     return structuredClone(EMPTY)
