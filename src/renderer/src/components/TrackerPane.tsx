@@ -20,6 +20,7 @@ function ago(iso?: string): string {
 export function TrackerPane() {
   const { data, update } = useDashboard()
   const [draft, setDraft] = useState('')
+  const [editRow, setEditRow] = useState<string | null>(null)
   const [path, setPath] = useState('')
 
   useEffect(() => {
@@ -58,6 +59,14 @@ export function TrackerPane() {
   const remove = (id: string) =>
     update((d) => ({ ...d, conversations: d.conversations.filter((c) => c.id !== id) }))
 
+  const editTitle = (id: string, title: string) =>
+    update((d) => ({
+      ...d,
+      conversations: d.conversations.map((c) =>
+        c.id === id ? { ...c, title, updated: nowIso() } : c
+      )
+    }))
+
   return (
     <div className="board">
       <div className="board-head">
@@ -80,12 +89,39 @@ export function TrackerPane() {
             >
               {c.status}
             </button>
-            <span className="row-text">
-              {c.title}
-              {c.summary && <span className="row-sub">{c.summary}</span>}
-            </span>
+            {editRow === c.id ? (
+              <input
+                className="row-edit"
+                autoFocus
+                defaultValue={c.title}
+                onClick={(e) => e.stopPropagation()}
+                onBlur={(e) => {
+                  const v = e.target.value.trim()
+                  if (v) editTitle(c.id, v)
+                  setEditRow(null)
+                }}
+                onKeyDown={(e) => {
+                  e.stopPropagation()
+                  if (e.key === 'Enter') {
+                    const v = (e.target as HTMLInputElement).value.trim()
+                    if (v) editTitle(c.id, v)
+                    setEditRow(null)
+                  }
+                  if (e.key === 'Escape') setEditRow(null)
+                }}
+              />
+            ) : (
+              <span
+                className="row-text"
+                title="Double-click to edit"
+                onDoubleClick={() => setEditRow(c.id)}
+              >
+                {c.title}
+                {c.summary && <span className="row-sub">{c.summary}</span>}
+              </span>
+            )}
             <span className="row-ago dim">{ago(c.updated)}</span>
-            <button className="pane-x" onClick={() => remove(c.id)} title="Delete">
+            <button className="pane-x row-del" onClick={() => remove(c.id)} title="Delete">
               ×
             </button>
           </div>

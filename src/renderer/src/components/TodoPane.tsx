@@ -17,6 +17,8 @@ export function TodoPane() {
   const [draft, setDraft] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
+  /** Todo row whose text is being edited inline (double-click to enter). */
+  const [editRow, setEditRow] = useState<string | null>(null)
   /** Index the dragged topic would land at, for the insertion caret. */
   const [dropAt, setDropAt] = useState<number | null>(null)
 
@@ -55,6 +57,12 @@ export function TodoPane() {
 
   const remove = (id: string) =>
     topic && patchTopic(topic.id, (todos) => todos.filter((t) => t.id !== id))
+
+  const editText = (id: string, text: string) =>
+    topic &&
+    patchTopic(topic.id, (todos) =>
+      todos.map((t) => (t.id === id ? { ...t, text, updated: nowIso() } : t))
+    )
 
   const clearDone = () =>
     topic && patchTopic(topic.id, (todos) => todos.filter((t) => t.status !== 'done'))
@@ -194,8 +202,37 @@ export function TodoPane() {
             >
               {GLYPH[t.status]} {t.status}
             </button>
-            <span className="row-text">{t.text}</span>
-            <button className="pane-x" onClick={() => remove(t.id)} title="Delete">
+            {editRow === t.id ? (
+              <input
+                className="row-edit"
+                autoFocus
+                defaultValue={t.text}
+                onClick={(e) => e.stopPropagation()}
+                onBlur={(e) => {
+                  const v = e.target.value.trim()
+                  if (v) editText(t.id, v)
+                  setEditRow(null)
+                }}
+                onKeyDown={(e) => {
+                  e.stopPropagation()
+                  if (e.key === 'Enter') {
+                    const v = (e.target as HTMLInputElement).value.trim()
+                    if (v) editText(t.id, v)
+                    setEditRow(null)
+                  }
+                  if (e.key === 'Escape') setEditRow(null)
+                }}
+              />
+            ) : (
+              <span
+                className="row-text"
+                title="Double-click to edit"
+                onDoubleClick={() => setEditRow(t.id)}
+              >
+                {t.text}
+              </span>
+            )}
+            <button className="pane-x row-del" onClick={() => remove(t.id)} title="Delete">
               ×
             </button>
           </div>
