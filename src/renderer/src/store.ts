@@ -1190,6 +1190,37 @@ export const tabUnseen = (t: Tab): boolean =>
 
 export const workspaceUnseen = (w: Workspace): boolean => w.tabs.some(tabUnseen)
 
+/** A located pane, as returned by the "needs you" walk and the palette. */
+export interface PaneRef {
+  wsId: string
+  tabId: string
+  paneId: string
+  pane: Pane
+}
+
+/**
+ * Every pane that is asking for you right now — blocked on a permission, newly
+ * finished, or ringing for attention — in a stable top-to-bottom order. This is
+ * what "jump to the next agent that needs me" walks through.
+ */
+export function panesNeedingYou(s: State): PaneRef[] {
+  const out: PaneRef[] = []
+  for (const w of s.workspaces) {
+    for (const t of w.tabs) {
+      for (const p of Object.values(t.panes)) {
+        if (p.status === 'blocked' || p.status === 'finished' || p.unseen || p.attention) {
+          out.push({ wsId: w.id, tabId: t.id, paneId: p.id, pane: p })
+        }
+      }
+    }
+  }
+  // Blocked outranks finished outranks a bare unseen flag, so the most urgent
+  // pane is the first place Ctrl+J lands.
+  const rank = (p: Pane): number =>
+    p.status === 'blocked' ? 0 : p.status === 'finished' ? 1 : 2
+  return out.sort((a, b) => rank(a.pane) - rank(b.pane))
+}
+
 /** How many things across everything are still waiting to be checked on. */
 export const unseenCount = (s: State): number =>
   s.workspaces.reduce(

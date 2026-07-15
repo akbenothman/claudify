@@ -1,14 +1,25 @@
 import { useEffect, useState } from 'react'
-import { activeWorkspace, setMcpConfig, tabStatus, tabUnseen, unseenCount, useStore } from './store'
+import {
+  activeWorkspace,
+  panesNeedingYou,
+  setMcpConfig,
+  tabStatus,
+  tabUnseen,
+  unseenCount,
+  useStore
+} from './store'
 import { Stage } from './components/Stage'
 import { SplitDialog } from './components/SplitDialog'
 import { SettingsDialog } from './components/SettingsDialog'
 import { Sidebar } from './components/Sidebar'
 import { TabBar } from './components/TabBar'
 import { StatusDot } from './components/StatusDot'
+import { CommandPalette } from './components/CommandPalette'
+import { TermSearch } from './components/TermSearch'
 import { ContextMenu, type MenuState } from './components/ContextMenu'
 import { startPersistence } from './persistence'
 import { handleControlRequest } from './control'
+import { bumpFontSize, initFontSize, resetFontSize } from './termPrefs'
 
 export function App() {
   const workspaces = useStore((s) => s.workspaces)
@@ -20,6 +31,8 @@ export function App() {
 
   const [showSplit, setShowSplit] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showPalette, setShowPalette] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
   const [menu, setMenu] = useState<MenuState | null>(null)
   const [booted, setBooted] = useState(false)
 
@@ -29,12 +42,16 @@ export function App() {
     Promise.all([
       window.claudify.home(),
       window.claudify.loadState(),
-      window.claudify.mcpConfigPath()
-    ]).then(([home, state, mcpPath]) => {
+      window.claudify.mcpConfigPath(),
+      window.claudify.getSettings()
+    ]).then(([home, state, mcpPath, settings]) => {
       if (cancelled) return
       // Learn the browser MCP config path before any pane launches Claude, so
       // its command carries the --mcp-config flag.
       setMcpConfig(mcpPath)
+      // Seed the live terminal font size before any pane mounts, so the first
+      // terminal opens at the size you last chose.
+      initFontSize(settings.fontSize)
       setDefaultCwd(home)
 
       if (state.session.workspaces.length > 0) {
@@ -93,9 +110,61 @@ export function App() {
         return
       }
 
+      // Font size: Ctrl+= / Ctrl+- / Ctrl+0, matching browser-zoom muscle memory.
+      // These resize every open terminal live and persist the choice.
+      if (e.key === '=' || e.key === '+') {
+        handled()
+        bumpFontSize(1)
+        return
+      }
+      if (e.key === '-' || e.key === '_') {
+        handled()
+        bumpFontSize(-1)
+        return
+      }
+      if (e.key === '0') {
+        handled()
+        resetFontSize()
+        return
+      }
+
+      // Ctrl+Tab / Ctrl+Shift+Tab — cycle tabs within the workspace.
+      if (key === 'tab') {
+        handled()
+        if (cur && cur.tabs.length > 1) {
+          const i = cur.tabs.findIndex((t) => t.id === cur.activeTabId)
+          const n = cur.tabs.length
+          const j = ((e.shiftKey ? i - 1 : i + 1) + n) % n
+          s.setActiveTab(cur.id, cur.tabs[j].id)
+        }
+        return
+      }
+
       if (!e.shiftKey) return
 
       switch (key) {
+        case 'p': // command palette
+          handled()
+          setShowPalette((v) => !v)
+          break
+        case 'f': // find in the focused terminal
+          handled()
+          setShowSearch(true)
+          break
+        case 'j': {
+          // Jump to the next agent that needs you — the whole point of the
+          // status model. Cycles blocked → finished → unseen, most urgent first.
+          handled()
+          const list = panesNeedingYou(s)
+          if (list.length === 0) break
+          const curPane = tab?.activePaneId
+          const at = list.findIndex((r) => r.paneId === curPane)
+          const next = list[(at + 1) % list.length]
+          s.setActiveWorkspace(next.wsId)
+          s.setActiveTab(next.wsId, next.tabId)
+          s.setActivePane(next.wsId, next.tabId, next.paneId)
+          break
+        }
         case 't': // Ctrl+Shift+T also makes a tab, so muscle memory from before still works.
           handled()
           if (cur) s.newTab(cur.id)
@@ -192,21 +261,29 @@ export function App() {
           )}
           <span className="spacer" />
           <span className="keys">
-            <kbd>Ctrl</kbd>+<kbd>T</kbd> tab
+            <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> palette
             <i />
-            <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> workspace
+            <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>J</kbd> next agent
             <i />
             <kbd>D</kbd>/<kbd>E</kbd> split
             <i />
             <kbd>Enter</kbd> zoom
             <i />
-            <kbd>S</kbd> worktree split
+            <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> find
           </span>
         </div>
       </div>
 
       {showSplit && <SplitDialog onClose={() => setShowSplit(false)} />}
       {showSettings && <SettingsDialog onClose={() => setShowSettings(false)} />}
+      {showPalette && (
+        <CommandPalette
+          onClose={() => setShowPalette(false)}
+          onSplit={() => setShowSplit(true)}
+          onSettings={() => setShowSettings(true)}
+        />
+      )}
+      {showSearch && <TermSearch onClose={() => setShowSearch(false)} />}
       {menu && <ContextMenu menu={menu} onClose={() => setMenu(null)} />}
     </div>
   )

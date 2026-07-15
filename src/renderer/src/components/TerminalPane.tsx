@@ -4,11 +4,14 @@ import { FitAddon } from '@xterm/addon-fit'
 import { WebglAddon } from '@xterm/addon-webgl'
 import { WebLinksAddon } from '@xterm/addon-web-links'
 import { SerializeAddon } from '@xterm/addon-serialize'
+import { SearchAddon } from '@xterm/addon-search'
 import { registerScrollback, unregisterScrollback } from '../scrollback'
 import { registerInput, unregisterInput } from '../paneInput'
+import { registerSearch, unregisterSearch } from '../paneSearch'
+import { getFontSize, subscribeFontSize } from '../termPrefs'
 import { takePort } from '../ptyPorts'
 import { useStore, type Pane, type PaneStatus } from '../store'
-import { commandTitle, isAgentCommand, topicTitle } from '../titles'
+import { agentPrompt, commandTitle, isAgentCommand, topicTitle } from '../titles'
 import type { TranscriptStats } from '../../../shared/types'
 import '@xterm/xterm/css/xterm.css'
 
@@ -64,7 +67,7 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
 
     const term = new Terminal({
       fontFamily: '"Cascadia Mono", "JetBrains Mono", Consolas, "Courier New", monospace',
-      fontSize: 13,
+      fontSize: getFontSize(),
       lineHeight: 1.2,
       theme: THEME,
       cursorBlink: true,
@@ -84,9 +87,26 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
     const serializer = new SerializeAddon()
     term.loadAddon(serializer)
 
+    // Scrollback search (Ctrl+Shift+F). The global search bar reaches this
+    // through the search registry, so the UI never touches xterm directly.
+    const search = new SearchAddon()
+    term.loadAddon(search)
+
     term.open(host)
 
     registerScrollback(pane.id, () => serializer.serialize({ scrollback: 1200 }))
+
+    const searchDecorations = {
+      matchBackground: '#3f2d00',
+      matchOverviewRuler: '#d29922',
+      activeMatchBackground: '#58a6ff',
+      activeMatchColorOverviewRuler: '#58a6ff'
+    }
+    registerSearch(pane.id, {
+      findNext: (q) => search.findNext(q, { decorations: searchDecorations }),
+      findPrevious: (q) => search.findPrevious(q, { decorations: searchDecorations }),
+      clear: () => search.clearDecorations()
+    })
 
     // WebGL is the reason large outputs stay smooth. It can fail on some GPUs /
     // in software rendering, in which case xterm silently falls back to canvas.
@@ -217,10 +237,10 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
      * line (`claude "add dark mode"`), so it IS working for you from birth. A
      * bare `claude` with no argument is not.
      */
-    const startedOnATask =
-      !!pane.initialCommand &&
-      isAgentCommand(pane.initialCommand) &&
-      pane.initialCommand.trim().split(/\s+/).length > 1
+    // A worktree pane starts with a real prompt (`claude "add dark mode"`); the
+    // dashboard/new-workspace Claude starts bare (just `claude`, plus our
+    // --mcp-config flag, which is NOT a task). agentPrompt tells them apart.
+    const startedOnATask = !!pane.initialCommand && !!agentPrompt(pane.initialCommand)
     let asked = startedOnATask
 
     const setStatus = (next: typeof status) => {
@@ -429,14 +449,23 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
     const ro = new ResizeObserver(resize)
     ro.observe(host)
 
+    // Live font size: Ctrl+= / Ctrl+- retune every open terminal at once.
+    const offFont = subscribeFontSize((n) => {
+      if (disposed) return
+      term.options.fontSize = n
+      resize()
+    })
+
     return () => {
       disposed = true
       clearTimeout(quietTimer)
       clearTimeout(workTimer)
+      offFont()
       offTranscript()
       window.claudify.unsubscribeTranscript(transcriptCwd)
       unregisterInput(pane.id)
       unregisterScrollback(pane.id)
+      unregisterSearch(pane.id)
       ro.disconnect()
       try {
         port?.close()

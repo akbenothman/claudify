@@ -27,6 +27,28 @@ export function isAgentCommand(line: string): boolean {
 }
 
 /**
+ * The task prompt an agent command carries, or null if it was launched bare.
+ *
+ * The subtlety this exists to handle: claudify launches `claude` with a
+ * `--mcp-config "<path>"` flag so the browser tools are available. That flag is
+ * NOT a task — but a naive "more than one token" check reads it as one, which
+ * made every freshly-booted REPL look like a finished job and named the pane
+ * after the flag. So strip the binary and the flags (and `--mcp-config`'s value)
+ * before deciding whether an actual prompt remains.
+ */
+export function agentPrompt(line: string): string | null {
+  if (!isAgentCommand(line)) return null
+  let rest = line.trim()
+  rest = rest.slice(rest.split(/\s+/)[0].length).trim() // drop the binary
+  // `--mcp-config <value>` — remove the flag together with its argument.
+  rest = rest.replace(/--mcp-config\s+("[^"]*"|'[^']*'|\S+)/g, '').trim()
+  // Any remaining leading boolean flags (e.g. --strict-mcp-config).
+  rest = rest.replace(/^(?:--?[\w-]+(?:\s+|$))+/, '').trim()
+  rest = rest.replace(/^["']|["']$/g, '').trim() // unwrap a quoted prompt
+  return rest.length > 0 ? rest : null
+}
+
+/**
  * A short label for a command line, or null if the command isn't worth
  * renaming the pane for.
  */
@@ -46,8 +68,9 @@ export function commandTitle(line: string): string | null {
   if (NOISE.has(raw)) return null
 
   if (AGENTS.has(raw)) {
-    // `claude "add dark mode"` names itself from the prompt.
-    const prompt = cmd.slice(parts[0].length).trim().replace(/^["']|["']$/g, '')
+    // `claude "add dark mode"` names itself from the prompt — but a bare REPL
+    // launched with only a `--mcp-config` flag has no prompt, and stays "claude".
+    const prompt = agentPrompt(cmd)
     return prompt ? trim(`${raw}: ${topicTitle(prompt) ?? prompt}`) : raw
   }
 
