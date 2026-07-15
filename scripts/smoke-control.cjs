@@ -35,7 +35,11 @@ app.whenReady().then(async () => {
   const js = (src) => win.webContents.executeJavaScript(src)
 
   // A plain shell to target — its status is nobody's but the control surface's.
+  // A new workspace opens Claude on its first tab, so split off a shell pane
+  // (splits carry no initial command) rather than target the agent.
   await js(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'N', ctrlKey: true, shiftKey: true }))`)
+  await sleep(1200)
+  await js(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'D', ctrlKey: true, shiftKey: true }))`)
   await sleep(1500)
 
   // Write two requests the way an agent would.
