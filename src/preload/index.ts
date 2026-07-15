@@ -1,6 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type {
   AppState,
+  Calendar,
+  CheckResult,
+  ConflictPair,
+  ControlRequest,
   Dashboard,
   PtySpawnOptions,
   RepoInfo,
@@ -9,6 +13,7 @@ import type {
   ShellInfo,
   SplitPlan,
   SplitTask,
+  TranscriptStats,
   Worktree,
   WorktreeDiff
 } from '../shared/types'
@@ -48,6 +53,15 @@ const api = {
     ipcRenderer.invoke('git:merge', repoRoot, baseRef, branch),
   commitAll: (wtPath: string, message: string): Promise<boolean> =>
     ipcRenderer.invoke('git:commitAll', wtPath, message),
+  /** Run a worktree's test command and report pass/fail. */
+  checkWorktree: (repoRoot: string, wtPath: string): Promise<CheckResult> =>
+    ipcRenderer.invoke('git:check', repoRoot, wtPath),
+  /** Dry-run pairwise merges and report which branches conflict. */
+  previewConflicts: (repoRoot: string, branches: string[]): Promise<ConflictPair[]> =>
+    ipcRenderer.invoke('git:conflicts', repoRoot, branches),
+  /** Apply a subset patch (adopted hunks) to the base working tree. */
+  applyPatch: (repoRoot: string, patch: string): Promise<{ ok: boolean; message: string }> =>
+    ipcRenderer.invoke('git:apply', repoRoot, patch),
   removeWorktree: (repoRoot: string, wtPath: string, branch?: string): Promise<void> =>
     ipcRenderer.invoke('git:removeWorktree', repoRoot, wtPath, branch),
 
@@ -60,6 +74,33 @@ const api = {
   home: (): Promise<string> => ipcRenderer.invoke('app:home'),
   platform: process.platform,
 
+  /**
+   * Subscribe a pane's cwd to its Claude Code transcript. Resolves with a
+   * snapshot; further updates arrive via `onTranscript`.
+   */
+  subscribeTranscript: (cwd: string): Promise<TranscriptStats> =>
+    ipcRenderer.invoke('transcript:subscribe', cwd),
+  unsubscribeTranscript: (cwd: string): void =>
+    ipcRenderer.send('transcript:unsubscribe', cwd),
+  /** Fires when any subscribed transcript changes on disk. Keyed by cwd. */
+  onTranscript: (cb: (s: TranscriptStats) => void): (() => void) => {
+    const handler = (_e: unknown, s: TranscriptStats) => cb(s)
+    ipcRenderer.on('transcript:stats', handler)
+    return () => ipcRenderer.off('transcript:stats', handler)
+  },
+
+  /** Fires when an agent appends a new request to control.json. */
+  onControlRequest: (cb: (r: ControlRequest) => void): (() => void) => {
+    const handler = (_e: unknown, r: ControlRequest) => cb(r)
+    ipcRenderer.on('control:request', handler)
+    return () => ipcRenderer.off('control:request', handler)
+  },
+  /** Record the outcome of a control request back into the file. */
+  resolveControl: (id: string, ok: boolean, message: string): void =>
+    ipcRenderer.send('control:resolve', id, ok, message),
+  notify: (title: string, body: string): void => ipcRenderer.send('control:notify', title, body),
+  controlPath: (): Promise<string> => ipcRenderer.invoke('control:path'),
+
   getDashboard: (): Promise<Dashboard> => ipcRenderer.invoke('dashboard:get'),
   saveDashboard: (data: Dashboard): Promise<void> => ipcRenderer.invoke('dashboard:save', data),
   dashboardPath: (): Promise<string> => ipcRenderer.invoke('dashboard:path'),
@@ -68,6 +109,16 @@ const api = {
     const handler = (_e: unknown, d: Dashboard) => cb(d)
     ipcRenderer.on('dashboard:changed', handler)
     return () => ipcRenderer.off('dashboard:changed', handler)
+  },
+
+  getCalendar: (): Promise<Calendar> => ipcRenderer.invoke('calendar:get'),
+  saveCalendar: (data: Calendar): Promise<void> => ipcRenderer.invoke('calendar:save', data),
+  calendarPath: (): Promise<string> => ipcRenderer.invoke('calendar:path'),
+  /** Fires when the calendar file changes on disk (an agent synced it). */
+  onCalendarChanged: (cb: (c: Calendar) => void): (() => void) => {
+    const handler = (_e: unknown, c: Calendar) => cb(c)
+    ipcRenderer.on('calendar:changed', handler)
+    return () => ipcRenderer.off('calendar:changed', handler)
   },
 
   loadState: (): Promise<AppState> => ipcRenderer.invoke('state:load'),

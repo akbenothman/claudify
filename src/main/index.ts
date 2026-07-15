@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, MessageChannelMain, dialog, shell } from '
 import path from 'node:path'
 import { createSession, killAll, killSession } from './pty'
 import {
+  applyPatch,
   commitAll,
   createWorktrees,
   diffForBranch,
@@ -9,13 +10,23 @@ import {
   listWorktrees,
   mergeBranch,
   patchForBranch,
-  removeWorktree
+  previewConflicts,
+  removeWorktree,
+  runCheck
 } from './git'
 import { planSplit } from './split'
 import { getSettings, loadState, saveSession, saveSessionNow, saveSettings } from './persist'
 import { detectShells } from './shells'
 import { dashboardPath, ensureDashboard, readDashboard, watchDashboard, writeDashboard } from './dashboard'
-import type { Dashboard, PtySpawnOptions, Session, Settings, SplitTask } from '../shared/types'
+import {
+  startTranscripts,
+  stopTranscripts,
+  subscribeTranscript,
+  unsubscribeTranscript
+} from './transcript'
+import { controlPath, notify, resolveControl, watchControl } from './control'
+import { calendarPath, ensureCalendar, readCalendar, watchCalendar, writeCalendar } from './calendar'
+import type { Calendar, Dashboard, PtySpawnOptions, Session, Settings, SplitTask } from '../shared/types'
 
 // Must be set before anything reads app.getPath('userData'), or the session file
 // lands in %APPDATA%\Electron in dev and somewhere else once packaged.
@@ -81,6 +92,12 @@ function createWindow(): void {
 
   // Live-reload the dashboard when Claude (or anything else) edits the file.
   watchDashboard(win)
+  // Watch Claude Code's own transcripts so panes can report honest status/cost.
+  startTranscripts(win)
+  // Watch the control surface: agents drive the terminal by editing control.json.
+  watchControl(win)
+  // Watch the calendar file: an agent with the Google Calendar MCP fills it.
+  watchCalendar(win)
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
@@ -125,6 +142,12 @@ ipcMain.handle('git:merge', (_e, repoRoot: string, baseRef: string, branch: stri
 )
 
 ipcMain.handle('git:commitAll', (_e, wtPath: string, message: string) => commitAll(wtPath, message))
+
+ipcMain.handle('git:check', (_e, repoRoot: string, wtPath: string) => runCheck(repoRoot, wtPath))
+ipcMain.handle('git:conflicts', (_e, repoRoot: string, branches: string[]) =>
+  previewConflicts(repoRoot, branches)
+)
+ipcMain.handle('git:apply', (_e, repoRoot: string, patch: string) => applyPatch(repoRoot, patch))
 
 ipcMain.handle('git:removeWorktree', (_e, repoRoot: string, wtPath: string, branch?: string) =>
   removeWorktree(repoRoot, wtPath, branch)
@@ -171,6 +194,28 @@ ipcMain.handle('dashboard:get', () => {
 ipcMain.handle('dashboard:save', (_e, data: Dashboard) => writeDashboard(data))
 ipcMain.handle('dashboard:path', () => dashboardPath())
 
+/* -------------------------------- calendar -------------------------------- */
+
+ipcMain.handle('calendar:get', () => {
+  ensureCalendar()
+  return readCalendar()
+})
+ipcMain.handle('calendar:save', (_e, data: Calendar) => writeCalendar(data))
+ipcMain.handle('calendar:path', () => calendarPath())
+
+/* ------------------------------ transcripts ------------------------------- */
+
+ipcMain.handle('transcript:subscribe', (_e, cwd: string) => subscribeTranscript(cwd))
+ipcMain.on('transcript:unsubscribe', (_e, cwd: string) => unsubscribeTranscript(cwd))
+
+/* --------------------------- control surface ------------------------------ */
+
+ipcMain.handle('control:path', () => controlPath())
+ipcMain.on('control:resolve', (_e, id: string, ok: boolean, message: string) =>
+  resolveControl(id, ok, message)
+)
+ipcMain.on('control:notify', (_e, title: string, body: string) => notify(win, title, body))
+
 /* ----------------------------- Lifecycle ------------------------------- */
 
 app.whenReady().then(createWindow)
@@ -181,7 +226,11 @@ app.on('activate', () => {
 
 app.on('window-all-closed', () => {
   killAll()
+  stopTranscripts()
   if (process.platform !== 'darwin') app.quit()
 })
 
-app.on('before-quit', killAll)
+app.on('before-quit', () => {
+  killAll()
+  stopTranscripts()
+})

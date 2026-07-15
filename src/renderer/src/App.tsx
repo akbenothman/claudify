@@ -8,6 +8,7 @@ import { TabBar } from './components/TabBar'
 import { StatusDot } from './components/StatusDot'
 import { ContextMenu, type MenuState } from './components/ContextMenu'
 import { startPersistence } from './persistence'
+import { handleControlRequest } from './control'
 
 export function App() {
   const workspaces = useStore((s) => s.workspaces)
@@ -61,6 +62,9 @@ export function App() {
     window.addEventListener('focus', ack)
     return () => window.removeEventListener('focus', ack)
   }, [acknowledgeTab, activeId, activeTabId])
+
+  // The control surface: an agent editing control.json drives the terminal.
+  useEffect(() => window.claudify.onControlRequest(handleControlRequest), [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

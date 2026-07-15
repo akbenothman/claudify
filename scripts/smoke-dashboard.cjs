@@ -48,9 +48,10 @@ app.whenReady().then(async () => {
     return fail(`first workspace is '${boot.firstWs}', expected 'AK Dashboard'`)
   }
   if (!boot.pinned) return fail('dashboard is not marked permanent')
-  // notes + todo + tracker are all boards now; the shell down the left is gone.
-  if (boot.boards !== 3) {
-    return fail(`expected 3 boards (notes + todo + tracker), got ${boot.boards}`)
+  // notes + todo + tracker on the dashboard tab, plus a calendar board on its
+  // own tab (rendered but hidden). All four are `.board` elements in the DOM.
+  if (boot.boards !== 4) {
+    return fail(`expected 4 boards (notes + todo + tracker + calendar), got ${boot.boards}`)
   }
   if (!boot.paneTitles.includes('notes')) {
     return fail(`the dashboard should carry a notepad, not a shell: ${JSON.stringify(boot.paneTitles)}`)

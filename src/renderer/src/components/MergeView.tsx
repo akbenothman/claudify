@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { WorktreeDiff } from '../../../shared/types'
+import type { CheckResult, ConflictPair, WorktreeDiff } from '../../../shared/types'
 import { useStore, type Workspace } from '../store'
+import { buildPatch, parseDiff, type FileDiff } from '../diff'
 
 type Row = {
   slug: string
@@ -8,16 +9,17 @@ type Row = {
   title: string
   path: string
   diff?: WorktreeDiff
+  check?: CheckResult
   busy?: boolean
   note?: string
+  adopting?: boolean
 }
 
 export function MergeView({ ws }: { ws: Workspace }) {
   const split = ws.split
   const closeWorkspace = useStore((s) => s.closeWorkspace)
-  const [rows, setRows] = useState<Row[]>(
-    () => split?.worktrees.map((w) => ({ ...w })) ?? []
-  )
+  const [rows, setRows] = useState<Row[]>(() => split?.worktrees.map((w) => ({ ...w })) ?? [])
+  const [conflicts, setConflicts] = useState<ConflictPair[]>([])
 
   const refresh = useCallback(async () => {
     if (!split) return
@@ -32,7 +34,13 @@ export function MergeView({ ws }: { ws: Workspace }) {
       })
     )
     setRows(next)
-    // `rows` identity changes on every edit; refresh reads it fresh each call.
+    // Pre-flight: which branches with real commits would collide with each other.
+    const branches = next.filter((r) => r.diff && !r.diff.empty).map((r) => r.branch)
+    if (branches.length > 1) {
+      window.claudify.previewConflicts(split.repoRoot, branches).then(setConflicts).catch(() => {})
+    } else {
+      setConflicts([])
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [split, rows.length])
 
@@ -62,6 +70,18 @@ export function MergeView({ ws }: { ws: Workspace }) {
     }
   }
 
+  const check = async (r: Row) => {
+    patch(r.branch, { busy: true, note: 'running tests…' })
+    try {
+      const res = await window.claudify.checkWorktree(split.repoRoot, r.path)
+      patch(r.branch, { check: res, note: undefined })
+    } catch (e) {
+      patch(r.branch, { note: (e as Error).message })
+    } finally {
+      patch(r.branch, { busy: false })
+    }
+  }
+
   const merge = async (r: Row) => {
     patch(r.branch, { busy: true, note: undefined })
     const res = await window.claudify.merge(split.repoRoot, split.baseRef, r.branch)
@@ -74,6 +94,21 @@ export function MergeView({ ws }: { ws: Workspace }) {
     await window.claudify.removeWorktree(split.repoRoot, r.path, r.branch)
     setRows((rs) => rs.filter((x) => x.branch !== r.branch))
   }
+
+  const badge = (c: CheckResult) =>
+    !c.ran ? (
+      <span className="check-badge dim" title={c.output}>
+        no tests
+      </span>
+    ) : c.ok ? (
+      <span className="check-badge pass" title={c.output}>
+        ✓ tests pass
+      </span>
+    ) : (
+      <span className="check-badge fail" title={c.output}>
+        ✗ tests fail
+      </span>
+    )
 
   return (
     <div className="merge">
@@ -90,6 +125,23 @@ export function MergeView({ ws }: { ws: Workspace }) {
         </div>
       </div>
 
+      {conflicts.length > 0 && (
+        <div className="merge-conflicts">
+          <strong>heads up — these branches overlap:</strong>
+          {conflicts.map((c) => (
+            <div key={`${c.a}|${c.b}`} className="merge-conflict-row">
+              <span>
+                {c.a.replace('claudify/', '')} ✕ {c.b.replace('claudify/', '')}
+              </span>
+              <span className="dim">
+                {c.files.length ? c.files.join(', ') : 'conflicting changes'}
+              </span>
+            </div>
+          ))}
+          <div className="dim">Merge the one you trust first, then resolve the other by hunk.</div>
+        </div>
+      )}
+
       <div className="merge-list">
         {rows.length === 0 && <div className="empty">No worktrees left.</div>}
         {rows.map((r) => (
@@ -97,6 +149,7 @@ export function MergeView({ ws }: { ws: Workspace }) {
             <div className="merge-row-top">
               <span className="merge-title">{r.title}</span>
               <span className="merge-branch">{r.branch}</span>
+              {r.check && badge(r.check)}
             </div>
 
             <div className="merge-stat">
@@ -118,6 +171,15 @@ export function MergeView({ ws }: { ws: Workspace }) {
               <button disabled={r.busy} onClick={() => commit(r)}>
                 commit
               </button>
+              <button disabled={r.busy} onClick={() => check(r)}>
+                run tests
+              </button>
+              <button
+                disabled={r.busy || !r.diff || r.diff.empty}
+                onClick={() => patch(r.branch, { adopting: !r.adopting })}
+              >
+                {r.adopting ? 'hide hunks' : 'adopt hunks'}
+              </button>
               <button disabled={r.busy || !r.diff || r.diff.empty} onClick={() => merge(r)}>
                 merge
               </button>
@@ -125,8 +187,98 @@ export function MergeView({ ws }: { ws: Workspace }) {
                 discard
               </button>
             </div>
+
+            {r.adopting && r.diff && !r.diff.empty && (
+              <AdoptPanel
+                repoRoot={split.repoRoot}
+                baseRef={split.baseRef}
+                branch={r.branch}
+                onDone={(msg) => patch(r.branch, { note: msg })}
+              />
+            )}
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Adopt individual hunks from a branch into the base working tree. You take the
+ * parts you want and leave the rest — dark-mode's CSS without the config change
+ * it bundled in.
+ */
+function AdoptPanel({
+  repoRoot,
+  baseRef,
+  branch,
+  onDone
+}: {
+  repoRoot: string
+  baseRef: string
+  branch: string
+  onDone: (msg: string) => void
+}) {
+  const [files, setFiles] = useState<FileDiff[] | null>(null)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    let live = true
+    window.claudify
+      .patch(repoRoot, baseRef, branch)
+      .then((p) => live && setFiles(parseDiff(p).filter((f) => !f.binary && f.hunks.length > 0)))
+      .catch(() => live && setFiles([]))
+    return () => {
+      live = false
+    }
+  }, [repoRoot, baseRef, branch])
+
+  const toggle = (key: string) =>
+    setSelected((s) => {
+      const next = new Set(s)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+
+  const apply = async () => {
+    if (!files) return
+    const p = buildPatch(files, selected)
+    if (!p) return onDone('select at least one hunk')
+    setBusy(true)
+    const res = await window.claudify.applyPatch(repoRoot, p)
+    setBusy(false)
+    onDone(res.message)
+  }
+
+  if (!files) return <div className="adopt dim">loading diff…</div>
+  if (files.length === 0) return <div className="adopt dim">no text hunks to adopt.</div>
+
+  return (
+    <div className="adopt">
+      {files.map((f, fi) => (
+        <div key={fi} className="adopt-file">
+          <div className="adopt-path">{f.path}</div>
+          {f.hunks.map((h, hi) => {
+            const key = `${fi}:${hi}`
+            return (
+              <label key={hi} className="adopt-hunk">
+                <input type="checkbox" checked={selected.has(key)} onChange={() => toggle(key)} />
+                <span className="adopt-hunk-head">{h.header}</span>
+                <span className="dim">
+                  {' '}
+                  <span className="add">+{h.added}</span> <span className="del">-{h.removed}</span>
+                </span>
+              </label>
+            )
+          })}
+        </div>
+      ))}
+      <div className="adopt-actions">
+        <button disabled={busy || selected.size === 0} onClick={apply}>
+          apply {selected.size} hunk{selected.size === 1 ? '' : 's'} to {baseRef}
+        </button>
       </div>
     </div>
   )
