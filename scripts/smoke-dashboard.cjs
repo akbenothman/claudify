@@ -272,10 +272,7 @@ app.whenReady().then(async () => {
       },
       { id: 'later', name: 'later', todos: [] }
     ],
-    notes: [{ id: 'n1', name: 'from claude', body: 'written by an agent' }],
-    conversations: [
-      { id: 'c1', title: 'worktree split design', status: 'waiting', updated: new Date().toISOString() }
-    ]
+    notes: [{ id: 'n1', name: 'from claude', body: 'written by an agent' }]
   }
   fs.writeFileSync(dashFile, JSON.stringify(edited, null, 2), 'utf8')
 
@@ -298,9 +295,6 @@ app.whenReady().then(async () => {
 
   if (!live.texts.includes('added by claude')) {
     return fail(`UI did not pick up the agent's file edit. Rows: ${JSON.stringify(live.texts)}`)
-  }
-  if (!live.texts.includes('worktree split design')) {
-    return fail(`conversation tracker did not update. Rows: ${JSON.stringify(live.texts)}`)
   }
   if (!live.chips.some((c) => c.includes('done'))) {
     return fail(`status change to 'done' did not render. Chips: ${JSON.stringify(live.chips)}`)

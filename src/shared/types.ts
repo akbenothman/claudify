@@ -150,6 +150,28 @@ export interface TranscriptStats {
   pendingToolUse: boolean
 }
 
+/**
+ * One Claude Code session, discovered from its transcript on disk. The
+ * conversations pane lists these automatically — no manual tracking — so you can
+ * see every thread and where each was left off.
+ */
+export interface ConversationInfo {
+  sessionId: string
+  /** Working directory the session ran in. */
+  cwd: string
+  /** Claude's own title for the session, or a fallback from the first message. */
+  title: string
+  /** Epoch ms of the last transcript activity. */
+  updated: number
+  /** A short description of where the thread was left off (the last exchange). */
+  leftOff: string
+  /** The last assistant turn is waiting on a tool/permission — it needs you. */
+  pendingToolUse: boolean
+  /** Number of assistant turns. */
+  messages: number
+  model?: string
+}
+
 /* ------------------------------ persistence ------------------------------- */
 
 export interface ShellInfo {
@@ -216,6 +238,8 @@ export interface PersistedWorkspace {
   activeTabId: string | null
   split?: { repoRoot: string; baseRef: string; worktrees: Worktree[] }
   permanent?: boolean
+  /** Dashboard layout generation the permanent workspace was last built with. */
+  dashVersion?: number
 }
 
 export interface Session {

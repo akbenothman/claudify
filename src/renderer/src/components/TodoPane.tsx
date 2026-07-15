@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { TodoStatus } from '../../../shared/types'
 import { dropIndex, reorder, TOPIC_MIME } from '../boardDnd'
 import { newId, nowIso, useDashboard } from '../useDashboard'
+import { TabStrip } from './TabStrip'
 
 const CYCLE: TodoStatus[] = ['todo', 'doing', 'blocked', 'done']
 
@@ -90,7 +91,13 @@ export function TodoPane() {
 
   return (
     <div className="board todo">
-      <div className="board-tabs">
+      <TabStrip
+        trailing={
+          <button className="board-tab-new" onClick={addTopic} title="New topic">
+            +
+          </button>
+        }
+      >
         {topics.map((t, i) => (
           <div
             key={t.id}
@@ -169,10 +176,7 @@ export function TodoPane() {
             )}
           </div>
         ))}
-        <button className="board-tab-new" onClick={addTopic} title="New topic">
-          +
-        </button>
-      </div>
+      </TabStrip>
 
       <div className="board-meter">
         <div className="board-meter-fill" style={{ width: `${pct}%` }} />

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { dropIndex, NOTE_MIME, reorder } from '../boardDnd'
 import { newId, nowIso, useDashboard } from '../useDashboard'
+import { TabStrip } from './TabStrip'
 
 /**
  * The notepad. Pages are tabs, bodies are plain text, and everything lives in
@@ -78,7 +79,13 @@ export function NotesPane() {
 
   return (
     <div className="board notes">
-      <div className="board-tabs">
+      <TabStrip
+        trailing={
+          <button className="board-tab-new" onClick={addNote} title="New note">
+            +
+          </button>
+        }
+      >
         {notes.map((n, i) => (
           <div
             key={n.id}
@@ -158,10 +165,7 @@ export function NotesPane() {
             )}
           </div>
         ))}
-        <button className="board-tab-new" onClick={addNote} title="New note">
-          +
-        </button>
-      </div>
+      </TabStrip>
 
       <textarea
         className="notes-body"

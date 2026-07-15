@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import type { CalEvent } from '../../../shared/types'
 import { newId } from '../useDashboard'
 import { useCalendar } from '../useCalendar'
+import { useStore } from '../store'
+import { sendToPane } from '../paneInput'
 
 /**
  * A Google-Calendar-style month grid, with a Claude-written summary and an
@@ -52,6 +54,7 @@ export function CalendarPane() {
   const [title, setTitle] = useState('')
   const [when, setWhen] = useState('')
   const [path, setPath] = useState('')
+  const [note, setNote] = useState('')
   const todayKey = keyOf(new Date())
   // The month on screen (anchored to its 1st) and the highlighted day.
   const [view, setView] = useState(() => {
@@ -130,6 +133,34 @@ export function CalendarPane() {
       requests: [...c.requests, { id: newId(), action: 'delete', eventId, status: 'pending' }]
     }))
 
+  /**
+   * Sync with the real Google Calendar. Claudify never calls Google itself — it
+   * asks the dashboard's Claude (which has your account's Calendar connector) to
+   * read your events and write them into this file, by typing the request into
+   * that pane. One click, and the grid fills in when the agent finishes.
+   */
+  const syncGoogle = (): void => {
+    const dash = useStore.getState().workspaces.find((w) => w.permanent)
+    let claudePane: string | undefined
+    for (const t of dash?.tabs ?? []) {
+      for (const p of Object.values(t.panes)) {
+        if (p.kind === 'terminal' && p.persistCommand) claudePane = p.id
+      }
+    }
+    if (!claudePane) {
+      setNote('Open the dashboard Claude pane first.')
+      return
+    }
+    const msg =
+      `Sync my Google Calendar into "${path}": use the Google Calendar MCP to read my ` +
+      `events for the next 30 days, overwrite events[] as {id,title,start (ISO-8601),end,location}, ` +
+      `set syncedAt to now, and write a one-line summary of the week into summary. ` +
+      `The file's _instructions field has the schema. Then fulfil any pending requests[].`
+    const ok = sendToPane(claudePane, msg)
+    setNote(ok ? 'Asked Claude to sync your Google Calendar…' : 'Open the dashboard Claude pane first.')
+    setTimeout(() => setNote(''), 6000)
+  }
+
   const monthLabel = view.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
 
   return (
@@ -151,7 +182,16 @@ export function CalendarPane() {
             ? `synced ${new Date(data.syncedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`
             : 'not synced'}
         </span>
+        <button
+          className="cal-sync-btn"
+          onClick={syncGoogle}
+          title="Ask the dashboard Claude to sync your Google Calendar into this file"
+        >
+          ⟳ sync
+        </button>
       </div>
+
+      {note && <div className="cal-note dim">{note}</div>}
 
       <div className="cal-grid">
         <div className="cal-weekrow cal-weekhead">

@@ -1760,3 +1760,94 @@ kbd {
 .cal-agenda {
   flex: 1;
 }
+
+.cal-sync-btn {
+  flex: none;
+  font-size: 10px;
+  padding: 2px 8px;
+  margin-left: 6px;
+}
+.cal-note {
+  flex: none;
+  padding: 3px 10px;
+  font-size: 11px;
+}
+
+/* --------------------------- scrollable tab strip ------------------------ */
+
+.tabstrip {
+  display: flex;
+  align-items: stretch;
+  flex: none;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+}
+/* Inside a strip the scroll area carries no chrome of its own — the strip does. */
+.tabstrip .board-tabs {
+  flex: 1;
+  min-width: 0;
+  border-bottom: none;
+  background: transparent;
+}
+.tabstrip-arrow {
+  flex: none;
+  border: none;
+  border-radius: 0;
+  background: var(--bg-alt);
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 5px;
+}
+.tabstrip-arrow:hover {
+  color: var(--accent);
+  border-color: transparent;
+}
+.tabstrip .board-tab-new {
+  flex: none;
+  align-self: center;
+}
+
+/* ---------------------------- conversations ------------------------------ */
+
+.convo {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.convo:hover {
+  background: var(--panel);
+}
+.convo .dot {
+  margin-top: 3px;
+}
+.convo-text {
+  flex: 1;
+  min-width: 0;
+}
+.convo-title {
+  color: var(--fg);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.convo-sub {
+  color: var(--dim);
+  font-size: 11px;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.convo-meta {
+  display: flex;
+  gap: 5px;
+  font-size: 10px;
+  margin-top: 2px;
+}
+.convo-proj {
+  color: var(--accent);
+}
