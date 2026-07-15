@@ -89,6 +89,12 @@ export interface Workspace {
   split?: { repoRoot: string; baseRef: string; worktrees: Worktree[] }
   /** The AK Dashboard. Always first, cannot be deleted. */
   permanent?: boolean
+  /**
+   * Which dashboard layout the permanent workspace was built with. Bumped when
+   * the default arrangement changes so an existing dashboard re-lays-out exactly
+   * once — after which the saved layout (and any dividers you dragged) is kept.
+   */
+  dashVersion?: number
 }
 
 interface State {
@@ -166,6 +172,13 @@ interface State {
 }
 
 export const DASHBOARD_NAME = 'AK Dashboard'
+
+/**
+ * The current dashboard layout generation. Bump this whenever the default pane
+ * arrangement changes; an existing dashboard rebuilds once to match, then keeps
+ * whatever the user has since dragged.
+ */
+const DASH_VERSION = 2
 
 let seq = 1
 const uid = (p: string) => `${p}-${seq++}`
@@ -880,14 +893,15 @@ export const useStore = create<State>((set, get) => ({
 
     /*
      * Assemble the single dashboard tab from whatever panes we already have,
-     * building any that are missing. Layout: notepad down the left, Claude and
-     * the todo/tracker pair in the middle, and the calendar as a full column on
-     * the right — a Google-Calendar-style month grid rather than its own tab.
+     * building any that are missing. Three columns:
+     *   left    notes (top) over conversations (bottom)
+     *   middle  Claude (top) over todo (bottom), same size
+     *   right   the calendar, a full-height Google-Calendar-style month grid
      *
      * Existing pane objects are reused by id (especially the dashboard's Claude,
-     * the one with persistCommand), so folding the old two-tab layout into this
-     * one never tears a running terminal down. Todos/notes/events live in their
-     * JSON files, so reshaping the layout loses nothing.
+     * the one with persistCommand), so folding an older layout into this one
+     * never tears a running terminal down. Todos/notes/events live in their JSON
+     * files, so reshaping the layout loses nothing.
      */
     const buildDashTab = (have: {
       tabId?: string
@@ -916,28 +930,31 @@ export const useStore = create<State>((set, get) => ({
         kind: 'split',
         id: uid('split'),
         dir: 'row',
-        ratio: 0.2,
-        a: { kind: 'leaf', paneId: notes.id },
+        ratio: 0.22,
+        // Left column: notes over conversations.
+        a: {
+          kind: 'split',
+          id: uid('split'),
+          dir: 'col',
+          ratio: 0.55,
+          a: { kind: 'leaf', paneId: notes.id },
+          b: { kind: 'leaf', paneId: tracker.id }
+        },
         b: {
           kind: 'split',
           id: uid('split'),
           dir: 'row',
           ratio: 0.55,
+          // Middle column: Claude over todo, same size.
           a: {
             kind: 'split',
             id: uid('split'),
             dir: 'col',
-            ratio: 0.56,
+            ratio: 0.5,
             a: { kind: 'leaf', paneId: claude.id },
-            b: {
-              kind: 'split',
-              id: uid('split'),
-              dir: 'row',
-              ratio: 0.5,
-              a: { kind: 'leaf', paneId: todo.id },
-              b: { kind: 'leaf', paneId: tracker.id }
-            }
+            b: { kind: 'leaf', paneId: todo.id }
           },
+          // Right column: the calendar.
           b: { kind: 'leaf', paneId: calendar.id }
         }
       }
@@ -958,14 +975,14 @@ export const useStore = create<State>((set, get) => ({
     const existing = get().workspaces.find((w) => w.permanent)
 
     if (existing) {
-      const main = existing.tabs[0]
-      const calInMain = !!main && Object.values(main.panes).some((p) => p.kind === 'calendar')
-      // Already the new single-tab shape with the calendar column — nothing to do.
-      if (existing.tabs.length === 1 && calInMain) return
+      // Built with the current layout generation already — leave it, including
+      // any dividers the user has dragged since.
+      if (existing.dashVersion === DASH_VERSION && existing.tabs.length === 1) return
 
-      // Otherwise migrate: collect the existing panes by kind (reusing their
-      // ids) and rebuild as one tab. This folds an old separate calendar tab,
-      // and converts a pre-notepad shell, into the new layout.
+      // Otherwise (re)lay-out: collect the existing panes by kind (reusing their
+      // ids) and rebuild as one tab. This folds an old separate calendar tab, an
+      // earlier column arrangement, or a pre-notepad shell into the new layout.
+      const main = existing.tabs[0]
       const pick = (match: (p: Pane) => boolean): Pane | undefined => {
         for (const t of existing.tabs) {
           for (const p of Object.values(t.panes)) if (match(p)) return p
@@ -984,7 +1001,7 @@ export const useStore = create<State>((set, get) => ({
       })
       set((s) => ({
         workspaces: s.workspaces.map((w) =>
-          w.permanent ? { ...w, tabs: [tab], activeTabId: tab.id } : w
+          w.permanent ? { ...w, tabs: [tab], activeTabId: tab.id, dashVersion: DASH_VERSION } : w
         )
       }))
       return
@@ -998,7 +1015,8 @@ export const useStore = create<State>((set, get) => ({
       cwd,
       tabs: [tab],
       activeTabId: tab.id,
-      permanent: true
+      permanent: true,
+      dashVersion: DASH_VERSION
     }
     set((s) => ({
       workspaces: [ws, ...s.workspaces],
@@ -1023,6 +1041,7 @@ export const useStore = create<State>((set, get) => ({
       activeTabId: w.activeTabId,
       split: w.split,
       permanent: w.permanent,
+      dashVersion: w.dashVersion,
       tabs: w.tabs.map((t) => ({
         id: t.id,
         title: t.title,
@@ -1085,6 +1104,7 @@ export const serialize = (s: State): Session => ({
     activeTabId: w.activeTabId,
     split: w.split,
     permanent: w.permanent,
+    dashVersion: w.dashVersion,
     tabs: w.tabs.map((t) => ({
       id: t.id,
       title: t.title,

@@ -2,7 +2,7 @@ import { type BrowserWindow } from 'electron'
 import { readdirSync, readFileSync, statSync, watch } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import type { TranscriptStats } from '../shared/types'
+import type { ConversationInfo, TranscriptStats } from '../shared/types'
 
 /**
  * Reads Claude Code's own session transcripts instead of guessing from bytes.
@@ -258,4 +258,144 @@ export function stopTranscripts(): void {
   watcher = null
   for (const t of debounce.values()) clearTimeout(t)
   debounce.clear()
+}
+
+/* ---------------------------- conversation list --------------------------- */
+
+/** First text block from a message's content, whichever role wrote it. */
+function firstText(content: unknown): string {
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) {
+    for (const b of content) {
+      const bb = b as { type?: string; text?: string }
+      if (bb?.type === 'text' && bb.text) return bb.text
+    }
+  }
+  return ''
+}
+
+/** Collapse whitespace and clip, so a "left off" line stays one tidy row. */
+function clip(s: string, n = 120): string {
+  const t = s.replace(/\s+/g, ' ').trim()
+  return t.length > n ? `${t.slice(0, n - 1)}…` : t
+}
+
+interface ConvoLine extends RawLine {
+  cwd?: string
+}
+
+function parseConversation(file: string, mtime: number): ConversationInfo | null {
+  let raw: string
+  try {
+    raw = readFileSync(file, 'utf8')
+  } catch {
+    return null
+  }
+
+  let title = ''
+  let firstUser = ''
+  let lastText = ''
+  let cwd = ''
+  let model: string | undefined
+  let messages = 0
+  let last = 0
+  let pending = false
+
+  for (const line of raw.split('\n')) {
+    if (!line.trim()) continue
+    let d: ConvoLine
+    try {
+      d = JSON.parse(line) as ConvoLine
+    } catch {
+      continue
+    }
+
+    if (d.type === 'ai-title' && d.aiTitle) title = d.aiTitle
+    if (typeof d.cwd === 'string' && d.cwd) cwd = d.cwd
+    if (d.timestamp) {
+      const t = Date.parse(d.timestamp)
+      if (!Number.isNaN(t)) last = Math.max(last, t)
+    }
+
+    const msg = d.message
+    if (!msg) continue
+
+    if (d.type === 'assistant') {
+      messages++
+      if (msg.model) model = msg.model
+      const txt = firstText(msg.content)
+      if (txt) lastText = txt
+      if (hasToolUse(msg.content)) pending = true
+    } else if (d.type === 'user') {
+      if (hasToolResult(msg.content) || typeof msg.content === 'string') pending = false
+      const txt = firstText(msg.content)
+      // A tool_result turn has no prose; only keep genuine user text.
+      if (txt && !hasToolResult(msg.content)) {
+        if (!firstUser) firstUser = txt
+        lastText = txt
+      }
+    }
+  }
+
+  const updated = last || mtime
+  const label = title || clip(firstUser, 48) || (cwd ? path.basename(cwd) : '') || 'session'
+  const leftOff = pending ? 'waiting on a tool — needs you' : clip(lastText) || 'no messages yet'
+
+  return {
+    sessionId: path.basename(file, '.jsonl'),
+    cwd,
+    title: label,
+    updated,
+    leftOff,
+    pendingToolUse: pending,
+    messages,
+    model
+  }
+}
+
+/**
+ * Every recent Claude Code session across all projects, newest first — what the
+ * conversations pane renders. Reads only the most recent `limit` transcripts (by
+ * file mtime) so a long history doesn't make this expensive.
+ */
+export function listConversations(limit = 25): ConversationInfo[] {
+  const root = projectsRoot()
+  const files: { file: string; mtime: number }[] = []
+
+  let dirs: string[]
+  try {
+    dirs = readdirSync(root)
+  } catch {
+    return [] // no ~/.claude/projects yet
+  }
+
+  for (const d of dirs) {
+    const dir = path.join(root, d)
+    let names: string[]
+    try {
+      names = readdirSync(dir)
+    } catch {
+      continue
+    }
+    for (const n of names) {
+      if (!n.endsWith('.jsonl')) continue
+      const full = path.join(dir, n)
+      try {
+        files.push({ file: full, mtime: statSync(full).mtimeMs })
+      } catch {
+        /* vanished between readdir and stat */
+      }
+    }
+  }
+
+  files.sort((a, b) => b.mtime - a.mtime)
+
+  const out: ConversationInfo[] = []
+  for (const { file, mtime } of files.slice(0, limit)) {
+    const info = parseConversation(file, mtime)
+    // Skip empty shells (a session that only ever printed its banner).
+    if (info && (info.messages > 0 || info.leftOff !== 'no messages yet')) out.push(info)
+  }
+  out.sort((a, b) => b.updated - a.updated)
+  return out
 }

@@ -5,6 +5,7 @@ import type {
   Calendar,
   CheckResult,
   ConflictPair,
+  ConversationInfo,
   ControlRequest,
   Dashboard,
   PtySpawnOptions,
@@ -83,6 +84,8 @@ const api = {
     ipcRenderer.invoke('transcript:subscribe', cwd),
   unsubscribeTranscript: (cwd: string): void =>
     ipcRenderer.send('transcript:unsubscribe', cwd),
+  /** Every recent Claude Code session across all projects, newest first. */
+  listConversations: (): Promise<ConversationInfo[]> => ipcRenderer.invoke('conversations:list'),
   /** Fires when any subscribed transcript changes on disk. Keyed by cwd. */
   onTranscript: (cb: (s: TranscriptStats) => void): (() => void) => {
     const handler = (_e: unknown, s: TranscriptStats) => cb(s)

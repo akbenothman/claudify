@@ -1,15 +1,21 @@
-import { useEffect, useState } from 'react'
-import type { ConvoStatus } from '../../../shared/types'
-import { newId, nowIso, useDashboard } from '../useDashboard'
+import { useCallback, useEffect, useState } from 'react'
+import type { ConversationInfo } from '../../../shared/types'
+import { StatusDot } from './StatusDot'
 
-const CYCLE: ConvoStatus[] = ['active', 'waiting', 'done']
+/**
+ * Conversations. Every recent Claude Code session across all your projects,
+ * discovered automatically from its transcript on disk — no manual tracking.
+ * Each row shows where the thread was left off and whether it's waiting on you.
+ *
+ * Read-only and self-refreshing: it reloads when you return to the window and on
+ * a slow interval, so finishing a turn in a pane shows up here without a click.
+ */
 
-/** Relative time, so a row tells you at a glance how stale it is. */
-function ago(iso?: string): string {
-  if (!iso) return ''
-  const ms = Date.now() - new Date(iso).getTime()
-  if (Number.isNaN(ms)) return ''
-  const m = Math.floor(ms / 60000)
+/** Relative time from an epoch, so a row shows at a glance how stale it is. */
+function ago(ms: number): string {
+  if (!ms) return ''
+  const diff = Date.now() - ms
+  const m = Math.floor(diff / 60000)
   if (m < 1) return 'just now'
   if (m < 60) return `${m}m ago`
   const h = Math.floor(m / 60)
@@ -17,133 +23,70 @@ function ago(iso?: string): string {
   return `${Math.floor(h / 24)}d ago`
 }
 
-export function TrackerPane() {
-  const { data, update } = useDashboard()
-  const [draft, setDraft] = useState('')
-  const [editRow, setEditRow] = useState<string | null>(null)
-  const [path, setPath] = useState('')
+const projectName = (cwd: string): string =>
+  cwd.split(/[\\/]/).filter(Boolean).pop() || cwd || '—'
 
-  useEffect(() => {
-    window.claudify.dashboardPath().then(setPath)
+export function TrackerPane() {
+  const [convos, setConvos] = useState<ConversationInfo[] | null>(null)
+
+  const load = useCallback(() => {
+    window.claudify.listConversations().then(setConvos)
   }, [])
 
-  if (!data) return <div className="board empty">loading…</div>
+  useEffect(() => {
+    load()
+    const onFocus = (): void => load()
+    window.addEventListener('focus', onFocus)
+    const iv = setInterval(load, 30_000)
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      clearInterval(iv)
+    }
+  }, [load])
 
-  const add = () => {
-    const title = draft.trim()
-    if (!title) return
-    setDraft('')
-    update((d) => ({
-      ...d,
-      conversations: [
-        ...d.conversations,
-        { id: newId(), title, status: 'active', updated: nowIso() }
-      ]
-    }))
-  }
-
-  const cycle = (id: string) =>
-    update((d) => ({
-      ...d,
-      conversations: d.conversations.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              status: CYCLE[(CYCLE.indexOf(c.status) + 1) % CYCLE.length],
-              updated: nowIso()
-            }
-          : c
-      )
-    }))
-
-  const remove = (id: string) =>
-    update((d) => ({ ...d, conversations: d.conversations.filter((c) => c.id !== id) }))
-
-  const editTitle = (id: string, title: string) =>
-    update((d) => ({
-      ...d,
-      conversations: d.conversations.map((c) =>
-        c.id === id ? { ...c, title, updated: nowIso() } : c
-      )
-    }))
+  const waiting = convos?.filter((c) => c.pendingToolUse).length ?? 0
 
   return (
-    <div className="board">
+    <div className="board convos">
       <div className="board-head">
         <strong>conversations</strong>
-        <span className="dim">{data.conversations.filter((c) => c.status === 'active').length} active</span>
+        <span className="dim">
+          {convos == null
+            ? 'loading…'
+            : `${convos.length} thread${convos.length === 1 ? '' : 's'}${
+                waiting ? ` · ${waiting} waiting` : ''
+              }`}
+        </span>
       </div>
 
       <div className="board-list">
-        {data.conversations.length === 0 && (
+        {convos != null && convos.length === 0 && (
           <div className="board-empty">
-            No threads tracked. Ask the Claude on the left to add one — it can edit this list.
+            No Claude conversations yet. Start one in any pane and it shows up here.
           </div>
         )}
-        {data.conversations.map((c) => (
-          <div key={c.id} className={`row row-${c.status}`}>
-            <button
-              className={`chip chip-${c.status}`}
-              onClick={() => cycle(c.id)}
-              title={`${c.status} — click to advance`}
-            >
-              {c.status}
-            </button>
-            {editRow === c.id ? (
-              <input
-                className="row-edit"
-                autoFocus
-                defaultValue={c.title}
-                onClick={(e) => e.stopPropagation()}
-                onBlur={(e) => {
-                  const v = e.target.value.trim()
-                  if (v) editTitle(c.id, v)
-                  setEditRow(null)
-                }}
-                onKeyDown={(e) => {
-                  e.stopPropagation()
-                  if (e.key === 'Enter') {
-                    const v = (e.target as HTMLInputElement).value.trim()
-                    if (v) editTitle(c.id, v)
-                    setEditRow(null)
-                  }
-                  if (e.key === 'Escape') setEditRow(null)
-                }}
-              />
-            ) : (
-              <span
-                className="row-text"
-                title="Double-click to edit"
-                onDoubleClick={() => setEditRow(c.id)}
-              >
-                {c.title}
-                {c.summary && <span className="row-sub">{c.summary}</span>}
-              </span>
-            )}
-            <span className="row-ago dim">{ago(c.updated)}</span>
-            <button className="pane-x row-del" onClick={() => remove(c.id)} title="Delete">
-              ×
-            </button>
+        {convos?.map((c) => (
+          <div key={c.sessionId} className="convo" title={c.cwd}>
+            <StatusDot status={c.pendingToolUse ? 'blocked' : 'finished'} />
+            <div className="convo-text">
+              <div className="convo-title">{c.title}</div>
+              <div className="convo-sub">{c.leftOff}</div>
+              <div className="convo-meta dim">
+                <span className="convo-proj">{projectName(c.cwd)}</span>
+                <span>·</span>
+                <span>{ago(c.updated)}</span>
+                {c.messages > 0 && (
+                  <>
+                    <span>·</span>
+                    <span>
+                      {c.messages} turn{c.messages === 1 ? '' : 's'}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         ))}
-      </div>
-
-      <div className="board-add">
-        <input
-          value={draft}
-          placeholder="track a thread…"
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            e.stopPropagation()
-            if (e.key === 'Enter') add()
-          }}
-        />
-        <button onClick={add}>add</button>
-      </div>
-
-      {/* Tell the user (and any agent reading over their shoulder) where the file is. */}
-      <div className="board-foot dim" title={path}>
-        Claude can edit: <code>{path}</code>
       </div>
     </div>
   )
