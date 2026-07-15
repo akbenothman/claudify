@@ -78,6 +78,12 @@ export interface ConflictPair {
   files: string[]
 }
 
+/** Current location of the claudify browser. */
+export interface BrowserInfo {
+  url: string
+  title: string
+}
+
 /* ---------------------------- control surface ----------------------------- */
 
 /**
@@ -167,7 +173,7 @@ export interface Settings {
  */
 export interface PersistedPane {
   id: string
-  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes' | 'calendar'
+  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes' | 'calendar' | 'browser'
   title: string
   cwd: string
   custom?: boolean

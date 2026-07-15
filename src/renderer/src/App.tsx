@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { activeWorkspace, tabStatus, tabUnseen, unseenCount, useStore } from './store'
+import { activeWorkspace, setMcpConfig, tabStatus, tabUnseen, unseenCount, useStore } from './store'
 import { Stage } from './components/Stage'
 import { SplitDialog } from './components/SplitDialog'
 import { SettingsDialog } from './components/SettingsDialog'
@@ -26,8 +26,15 @@ export function App() {
   // Boot: restore the saved session, or open a fresh workspace in $HOME.
   useEffect(() => {
     let cancelled = false
-    Promise.all([window.claudify.home(), window.claudify.loadState()]).then(([home, state]) => {
+    Promise.all([
+      window.claudify.home(),
+      window.claudify.loadState(),
+      window.claudify.mcpConfigPath()
+    ]).then(([home, state, mcpPath]) => {
       if (cancelled) return
+      // Learn the browser MCP config path before any pane launches Claude, so
+      // its command carries the --mcp-config flag.
+      setMcpConfig(mcpPath)
       setDefaultCwd(home)
 
       if (state.session.workspaces.length > 0) {
@@ -112,6 +119,10 @@ export function App() {
         case 's':
           handled()
           setShowSplit(true)
+          break
+        case 'b': // open a browser pane (Claude drives it via MCP)
+          handled()
+          if (cur) s.newBrowserTab(cur.id)
           break
         case 'enter':
           handled()

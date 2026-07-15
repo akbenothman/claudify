@@ -52,6 +52,14 @@ you press **launch**.
 - **Control surface.** The dashboard's "it's just a file every agent can edit" bet, extended
   to the whole app. An agent writes to `control.json` to raise a desktop notification, set a
   pane's status, type into another pane, or bring one on screen — no MCP, no shim.
+- **A browser Claude can drive.** `Ctrl+Shift+B` opens a browser pane backed by claudify's own
+  bundled Chromium. claudify runs a small **MCP server in-process** and launches every `claude`
+  pane with `--mcp-config` pointing at it, so `browser_navigate`, `browser_evaluate`,
+  `browser_snapshot`, `browser_click`, `browser_screenshot`, `browser_back`, and
+  `browser_reload` appear in Claude's tools automatically — zero config, and it never touches
+  your global Claude config. This is the one place claudify runs a server instead of a file: a
+  live browser needs a live channel. First use may prompt you to allow the tool, as any MCP
+  tool does.
 - **AK Dashboard** — a permanent first workspace: small terminal, a always-on Claude, a todo
   list and a conversation tracker. Claude can change the status of anything on it (see below).
 - **Fast input.** Keystrokes never touch React or `ipcRenderer` — see below.
@@ -95,6 +103,7 @@ deliberately do **not** — rebooting your PC must never silently re-run a real 
 | `Ctrl+Shift+S` | **Split into worktrees** (the big one) |
 | `Ctrl+T` | New tab |
 | `Ctrl+Shift+N` | New workspace |
+| `Ctrl+Shift+B` | New browser pane (Claude drives it) |
 | `Ctrl+Shift+D` | Split pane right |
 | `Ctrl+Shift+E` | Split pane down |
 | `Ctrl+Shift+W` | Close pane (closes the tab if it's the last one) |
@@ -183,6 +192,8 @@ Five end-to-end suites, all driving the real app — no mocks:
   and deletes one through the UI and asserts the requests land in the file.
 - `smoke-control.cjs` — writes requests to `control.json` (as an agent would) and asserts the
   visible effect **and** the result recorded back into the file.
+- `smoke-browser.cjs` — speaks MCP over HTTP to the in-process server exactly as Claude would
+  (initialize → tools/call), navigates the browser to a page, and reads the DOM back out.
 - `smoke-bootstrap.cjs` — creates a worktree in a repo with `node_modules` + `.env` and
   asserts both were seeded into the fresh checkout.
 - `smoke-session.cjs` — mutates a session, then **cold-starts a second process** and asserts
@@ -203,6 +214,8 @@ src/
     calendar.ts  the watched calendar.json (Google Calendar via an MCP agent)
     control.ts   the watched control.json (agents drive the terminal)
     transcript.ts reads ~/.claude/projects/** for live status + token/cost
+    browser.ts   the WebContentsView Claude drives (navigate/evaluate/…)
+    mcp.ts       in-process MCP server exposing the browser as tools
   preload/
     index.ts     contextBridge API; re-posts MessagePorts into the main world
                  (a MessagePort cannot cross contextBridge — this is Electron's
@@ -220,6 +233,7 @@ src/
       TodoPane.tsx      dashboard todo list
       TrackerPane.tsx   dashboard conversation tracker
       CalendarPane.tsx  dashboard calendar (reads/writes calendar.json)
+      BrowserPane.tsx   URL bar + host box the native browser view sits over
 ```
 
 ### Why panes are rendered flat
@@ -240,7 +254,9 @@ exists specifically to keep that true.
   attention-ring and agent-notification ideas come from here.
 - [wmux](https://github.com/amirlehmam/wmux) — the Windows cmux port; same
   Electron + xterm + ConPTY foundation. It has no worktree support, which is the gap
-  claudify exists to fill.
+  claudify exists to fill. The zero-config browser-over-MCP idea comes from here — claudify's
+  version reuses Electron's own Chromium (a `WebContentsView`) rather than driving an external
+  Chrome.
 - [WezTerm](https://github.com/wezterm/wezterm) — Rust + wgpu. The bar for what "fast"
   actually means.
 
