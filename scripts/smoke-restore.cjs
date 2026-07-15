@@ -118,6 +118,12 @@ app.whenReady().then(async () => {
     }
     console.log(`  pane visibility: 1 of ${vis.total} panes visible — inactive tabs hidden ✓`)
 
+    // A new workspace opens Claude (a TUI) on its first tab, which doesn't echo
+    // shell output. Add a plain shell tab (new tabs carry no command) to
+    // exercise real scrollback capture.
+    await wc.executeJavaScript(`document.querySelector('.tab-new').click(); true`)
+    await sleep(2500)
+
     // --- 4. type a marker, let it land in the buffer ---
     // A programmatic .click() doesn't move DOM focus, so put the caret in the
     // visible terminal explicitly before synthesising keystrokes.

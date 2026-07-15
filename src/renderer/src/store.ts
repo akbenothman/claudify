@@ -213,12 +213,12 @@ function buildGrid(paneIds: string[], depth = 0): LayoutNode {
   }
 }
 
-function makeTab(cwd: string, title = 'shell'): Tab {
+function makeTab(cwd: string, title = 'shell', initialCommand?: string): Tab {
   const paneId = uid('pane')
   return {
     id: uid('tab'),
     title,
-    panes: { [paneId]: { id: paneId, kind: 'terminal', title: 'shell', cwd } },
+    panes: { [paneId]: { id: paneId, kind: 'terminal', title: 'shell', cwd, initialCommand } },
     layout: { kind: 'leaf', paneId },
     activePaneId: paneId,
     zoomedPaneId: null
@@ -269,7 +269,10 @@ export const useStore = create<State>((set, get) => ({
   newWorkspace: (name, cwd) => {
     const wsId = uid('ws')
     const dir = cwd || get().defaultCwd
-    const tab = makeTab(dir)
+    // A new workspace opens with Claude already running on its first tab. Not
+    // persisted (no persistCommand), so a restored workspace comes back as a
+    // plain shell rather than re-launching Claude on every reboot.
+    const tab = makeTab(dir, 'shell', 'claude')
     set((s) => ({
       workspaces: [
         ...s.workspaces,
