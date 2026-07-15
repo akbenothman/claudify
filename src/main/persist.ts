@@ -9,7 +9,7 @@ const VERSION = 1
 
 const DEFAULTS: AppState = {
   version: VERSION,
-  settings: { shellId: DEFAULT_SHELL_ID, fontSize: 13 },
+  settings: { shellId: DEFAULT_SHELL_ID, fontSize: 13, launchAtLogin: true },
   session: { workspaces: [], activeWorkspaceId: null }
 }
 

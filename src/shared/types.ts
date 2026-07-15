@@ -164,6 +164,12 @@ export interface Settings {
   /** `ShellInfo.id` of the shell new terminals spawn. */
   shellId: string
   fontSize: number
+  /**
+   * Start Claudify automatically when you log in to Windows. Only takes effect
+   * for the installed app — in dev it would register electron.exe, so it's a
+   * no-op there.
+   */
+  launchAtLogin?: boolean
 }
 
 /**

@@ -65,6 +65,18 @@ app.commandLine.appendSwitch('disable-renderer-backgrounding')
 let win: BrowserWindow | null = null
 
 /**
+ * Register (or clear) Claudify as a Windows login item so it opens on sign-in.
+ *
+ * Gated on `app.isPackaged`: in dev this would point the OS at electron.exe from
+ * the build tree, which would launch a bare Electron on every boot. It only
+ * makes sense for the installed exe, so it's a no-op until then.
+ */
+function applyLaunchAtLogin(enabled: boolean): void {
+  if (!app.isPackaged) return
+  app.setLoginItemSettings({ openAtLogin: enabled })
+}
+
+/**
  * We ship unsigned, which means electron-builder never stamps the icon into the
  * exe itself (that step needs a code-signing toolchain we don't have). Handing
  * the icon to the window directly gets us the right taskbar and alt-tab icon
@@ -196,7 +208,11 @@ ipcMain.on('session:save-now', (e, session: Session) => {
   saveSessionNow(session)
   e.returnValue = true
 })
-ipcMain.handle('settings:save', (_e, patch: Partial<Settings>) => saveSettings(patch))
+ipcMain.handle('settings:save', (_e, patch: Partial<Settings>) => {
+  const next = saveSettings(patch)
+  if ('launchAtLogin' in patch) applyLaunchAtLogin(next.launchAtLogin ?? true)
+  return next
+})
 ipcMain.handle('settings:get', () => getSettings())
 ipcMain.handle('shells:detect', () => detectShells())
 
@@ -249,6 +265,8 @@ ipcMain.on('control:notify', (_e, title: string, body: string) => notify(win, ti
 /* ----------------------------- Lifecycle ------------------------------- */
 
 app.whenReady().then(() => {
+  // Honour the saved "open on login" choice (default on) for the installed app.
+  applyLaunchAtLogin(getSettings().launchAtLogin ?? true)
   createWindow()
   // Bring up the browser MCP server so `claude` panes can drive the browser.
   startMcp().catch((e) => console.error('MCP server failed to start:', e))

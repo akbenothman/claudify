@@ -51,6 +51,17 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
           Applies to terminals you open from now on. Shells already running keep going.
         </div>
 
+        <label>Startup</label>
+        <button
+          className={`shell toggle${settings?.launchAtLogin ? ' active' : ''}`}
+          disabled={!settings}
+          onClick={() => update({ launchAtLogin: !settings?.launchAtLogin })}
+        >
+          <span className="shell-label">Open Claudify when I log in to Windows</span>
+          <span className="shell-check">{settings?.launchAtLogin ? '✓' : ''}</span>
+        </button>
+        <div className="hint">Takes effect for the installed app.</div>
+
         <div className="modal-actions">
           <button className="primary" onClick={onClose}>
             done
