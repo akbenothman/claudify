@@ -61,6 +61,89 @@ export interface RepoInfo {
   isRepo: boolean
 }
 
+/** Result of running a worktree's test/check command before merging. */
+export interface CheckResult {
+  /** False when no check command could be found (nothing to run). */
+  ran: boolean
+  ok: boolean
+  cmd: string
+  /** Tail of combined stdout/stderr, for the user to glance at. */
+  output: string
+}
+
+/** Two task branches that would conflict if both were merged. */
+export interface ConflictPair {
+  a: string
+  b: string
+  files: string[]
+}
+
+/* ---------------------------- control surface ----------------------------- */
+
+/**
+ * One request an agent writes into `control.json` to drive the terminal itself
+ * — the same "just a file every agent's Write tool can touch" bet the dashboard
+ * makes, extended past todos to notifications, pane status, and pane input.
+ */
+export interface ControlRequest {
+  /** Stable id the agent assigns; how the result is written back. */
+  id: string
+  action: 'notify' | 'status' | 'message' | 'focus'
+  /** notify: desktop toast + taskbar flash. */
+  title?: string
+  body?: string
+  /** status/message/focus: substring matched against a pane's cwd/title/branch. */
+  match?: string
+  /** status: the pane status to set. */
+  state?: 'idle' | 'working' | 'blocked' | 'finished'
+  /** message: text typed into the matched pane (Enter is appended). */
+  text?: string
+  /** Written by claudify once it has acted; agents poll this to see the result. */
+  status?: 'pending' | 'done' | 'error'
+  result?: string
+  resolvedAt?: string
+}
+
+export interface ControlFile {
+  _instructions: string
+  requests: ControlRequest[]
+}
+
+/* ------------------------------ transcripts ------------------------------- */
+
+/**
+ * A snapshot derived from a pane's Claude Code session transcript
+ * (`~/.claude/projects/**`). Read-only; used to make the pane's status honest
+ * and to show a per-pane token/cost meter.
+ */
+export interface TranscriptStats {
+  /** The pane cwd this was computed for; the renderer keys on it. */
+  cwd: string
+  /** False when no transcript exists for this cwd yet. */
+  found: boolean
+  sessionId?: string
+  /** Claude Code's own aiTitle for the session, if it has named one. */
+  title?: string
+  /** Model id of the most recent assistant turn, e.g. `claude-opus-4-8`. */
+  model?: string
+  inputTokens: number
+  outputTokens: number
+  cacheReadTokens: number
+  cacheWriteTokens: number
+  /** Estimated spend in USD across the whole session. */
+  costUsd: number
+  /** Number of assistant turns. */
+  messages: number
+  /** Epoch ms of the last transcript event. */
+  lastActivity: number
+  /**
+   * The newest assistant turn issued a tool call no later turn has answered —
+   * i.e. the agent is waiting on a tool, most often a permission prompt. Paired
+   * with the pane going quiet, this is what "blocked" means.
+   */
+  pendingToolUse: boolean
+}
+
 /* ------------------------------ persistence ------------------------------- */
 
 export interface ShellInfo {
@@ -84,7 +167,7 @@ export interface Settings {
  */
 export interface PersistedPane {
   id: string
-  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes'
+  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes' | 'calendar'
   title: string
   cwd: string
   custom?: boolean
@@ -167,6 +250,46 @@ export interface Note {
   name: string
   body: string
   updated?: string
+}
+
+/* -------------------------------- calendar -------------------------------- */
+
+/** One upcoming event, mirrored from Google Calendar by an agent. */
+export interface CalEvent {
+  id: string
+  title: string
+  /** ISO-8601 start. All-day events may omit the time portion. */
+  start: string
+  end?: string
+  location?: string
+  /** Where it came from, e.g. "google". Informational. */
+  source?: string
+}
+
+/**
+ * A request the calendar pane writes for an agent to fulfil via the Google
+ * Calendar MCP — add or delete an event. The agent acts, updates `events`, and
+ * marks the request done. Claudify never talks to Google itself.
+ */
+export interface CalRequest {
+  id: string
+  action: 'add' | 'delete'
+  /** add: the new event's fields. delete: `eventId` of the one to remove. */
+  title?: string
+  start?: string
+  end?: string
+  location?: string
+  eventId?: string
+  status?: 'pending' | 'done' | 'error'
+  result?: string
+}
+
+export interface Calendar {
+  _instructions: string
+  events: CalEvent[]
+  requests: CalRequest[]
+  /** ISO time the events list was last refreshed by an agent. */
+  syncedAt?: string
 }
 
 export interface Dashboard {

@@ -6,6 +6,7 @@ import { MergeView } from './MergeView'
 import { TodoPane } from './TodoPane'
 import { NotesPane } from './NotesPane'
 import { TrackerPane } from './TrackerPane'
+import { CalendarPane } from './CalendarPane'
 import { StatusDot } from './StatusDot'
 import { PANE_MIME, TAB_MIME, type PaneDrag, type TabDrag } from '../dnd'
 
@@ -17,6 +18,28 @@ const pct = (r: Rect) => ({
 })
 
 const ZOOMED: Rect = { x: 0, y: 0, w: 100, h: 100 }
+
+const compact = (n: number): string =>
+  n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : `${n}`
+
+/**
+ * Per-pane token + cost readout, from the pane's Claude Code transcript. Only
+ * shows once the agent has actually spent tokens, so a plain shell stays clean.
+ */
+function CostMeter({ pane }: { pane: Pane }) {
+  const s = pane.stats
+  if (!s || !s.found) return null
+  const total = s.inputTokens + s.outputTokens + s.cacheReadTokens + s.cacheWriteTokens
+  if (total === 0) return null
+  const title =
+    `${s.model ?? 'model'} · ${compact(s.inputTokens)} in · ${compact(s.outputTokens)} out · ` +
+    `${compact(s.cacheReadTokens)} cache-read · ~$${s.costUsd.toFixed(2)} (estimate)`
+  return (
+    <span className="pane-meter" title={title}>
+      {compact(total)} · ${s.costUsd.toFixed(2)}
+    </span>
+  )
+}
 
 function PaneFrame({
   ws,
@@ -117,9 +140,11 @@ function PaneFrame({
           <StatusDot status={pane.status} unseen={pane.unseen} />
           <span className="pane-title">{pane.title}</span>
           {pane.branch && <span className="pane-branch">{pane.branch}</span>}
+          {pane.status === 'blocked' && <span className="pane-blocked">needs you</span>}
           {pane.status === 'finished' && (
             <span className={pane.unseen ? 'pane-done' : 'pane-seen'}>done</span>
           )}
+          <CostMeter pane={pane} />
           {pane.exited && <span className="pane-exited">exited</span>}
           <button
             className="pane-x"
@@ -139,6 +164,8 @@ function PaneFrame({
             <NotesPane />
           ) : pane.kind === 'tracker' ? (
             <TrackerPane />
+          ) : pane.kind === 'calendar' ? (
+            <CalendarPane />
           ) : (
             <TerminalPane wsId={ws.id} tabId={tab.id} pane={pane} focused={focused && visible} />
           )}

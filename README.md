@@ -39,7 +39,19 @@ you press **launch**.
 
 - **Workspaces → tabs → split panes** (the wezterm model). Sidebar of workspaces, a tab bar
   per workspace, recursive splits with draggable dividers and zoom.
-- **Worktree splitting** — the headline feature above.
+- **Worktree splitting** — the headline feature above. New worktrees are **seeded to
+  build**: `node_modules` (and other declared dirs) are junctioned in, `.env` files copied,
+  so an agent isn't stuck on a five-minute install before it can do anything. The merge pane
+  now **runs each worktree's tests** and badges it green/red, **pre-flights the merges** to
+  tell you which branches actually conflict (the planner only *claims* they don't), and lets
+  you **adopt work hunk by hunk** instead of all-or-nothing.
+- **Live cost & status.** Each agent pane reads Claude Code's own session transcript
+  (`~/.claude/projects/**`) — so its working/finished/**blocked** state is exact rather than
+  guessed, a pane waiting on a permission prompt is flagged amber, and every pane shows a
+  running **token + cost meter**.
+- **Control surface.** The dashboard's "it's just a file every agent can edit" bet, extended
+  to the whole app. An agent writes to `control.json` to raise a desktop notification, set a
+  pane's status, type into another pane, or bring one on screen — no MCP, no shim.
 - **AK Dashboard** — a permanent first workspace: small terminal, a always-on Claude, a todo
   list and a conversation tracker. Claude can change the status of anything on it (see below).
 - **Fast input.** Keystrokes never touch React or `ipcRenderer` — see below.
@@ -60,8 +72,12 @@ you press **launch**.
 
 ## The AK Dashboard
 
-Workspace 1 is permanent and can't be deleted. It carries a small shell, a Claude REPL, a todo
-list and a conversation tracker.
+Workspace 1 is permanent and can't be deleted. It carries a notepad, a Claude REPL, a todo
+list, a conversation tracker, and — on its own tab — a **calendar** that shows your upcoming
+Google Calendar events and lets you add or delete them. The calendar works exactly like the
+rest of the dashboard: the app reads `calendar.json`, and an agent with the Google Calendar
+MCP fills it and fulfils the add/delete requests the pane writes. Claudify never talks to
+Google itself.
 
 Claude changes the status of things by **editing a plain JSON file** —
 `%APPDATA%\Claudify\dashboard.json`. That's the whole protocol: no MCP server, no CLI shim, just
@@ -163,6 +179,12 @@ Five end-to-end suites, all driving the real app — no mocks:
   asserting the terminal's **DOM node survives both** (a remount would kill its PTY).
 - `smoke-dashboard.cjs` — edits `dashboard.json` from outside the app, exactly as Claude's
   file tools would, and asserts the UI live-updates.
+- `smoke-calendar.cjs` — writes an event to `calendar.json` and asserts it renders, then adds
+  and deletes one through the UI and asserts the requests land in the file.
+- `smoke-control.cjs` — writes requests to `control.json` (as an agent would) and asserts the
+  visible effect **and** the result recorded back into the file.
+- `smoke-bootstrap.cjs` — creates a worktree in a repo with `node_modules` + `.env` and
+  asserts both were seeded into the fresh checkout.
 - `smoke-session.cjs` — mutates a session, then **cold-starts a second process** and asserts
   the workspaces came back.
 
@@ -178,6 +200,9 @@ src/
     persist.ts   session + settings, atomically written
     shells.ts    detects the shells you actually have installed
     dashboard.ts the watched dashboard.json (Claude's control surface)
+    calendar.ts  the watched calendar.json (Google Calendar via an MCP agent)
+    control.ts   the watched control.json (agents drive the terminal)
+    transcript.ts reads ~/.claude/projects/** for live status + token/cost
   preload/
     index.ts     contextBridge API; re-posts MessagePorts into the main world
                  (a MessagePort cannot cross contextBridge — this is Electron's
@@ -194,6 +219,7 @@ src/
       MergeView.tsx     commit / diff / merge / discard
       TodoPane.tsx      dashboard todo list
       TrackerPane.tsx   dashboard conversation tracker
+      CalendarPane.tsx  dashboard calendar (reads/writes calendar.json)
 ```
 
 ### Why panes are rendered flat

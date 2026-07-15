@@ -1,10 +1,11 @@
 import type { PaneStatus } from '../store'
 
 /**
- * Working / finished / finished-but-unchecked.
+ * Working / blocked / finished / finished-but-unchecked.
  *
- * The three states have to be tellable apart in peripheral vision:
+ * The states have to be tellable apart in peripheral vision:
  *   working           calm blue pulse      — busy, don't bother looking yet
+ *   blocked           amber pulse          — waiting on you to approve something
  *   finished (seen)   hollow grey ring     — done, and you've already looked
  *   finished (unseen) solid green + halo   — done, and you HAVEN'T looked
  */
@@ -24,11 +25,13 @@ export function StatusDot({
   const title =
     s === 'working'
       ? 'working…'
-      : unseen
-        ? 'finished — you haven’t checked this yet'
-        : s === 'finished'
-          ? 'finished — checked'
-          : 'idle'
+      : s === 'blocked'
+        ? 'blocked — waiting on your approval'
+        : unseen
+          ? 'finished — you haven’t checked this yet'
+          : s === 'finished'
+            ? 'finished — checked'
+            : 'idle'
 
   return (
     <span className={`dot dot-${state}${unseen ? ' unseen' : ''}`} title={title}>

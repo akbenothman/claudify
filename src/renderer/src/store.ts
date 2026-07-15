@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Session, SplitPlan, Worktree } from '../../shared/types'
+import type { Session, SplitPlan, TranscriptStats, Worktree } from '../../shared/types'
 
 export type Direction = 'row' | 'col'
 
@@ -7,9 +7,10 @@ export type Direction = 'row' | 'col'
  * What the pane is doing right now.
  * - `idle`     nothing running; sitting at a prompt
  * - `working`  output is actively flowing (a command, or an agent thinking)
+ * - `blocked`  an agent is waiting on you to approve a tool / answer a prompt
  * - `finished` an agent was working and has now gone quiet — it's your turn
  */
-export type PaneStatus = 'idle' | 'working' | 'finished'
+export type PaneStatus = 'idle' | 'working' | 'blocked' | 'finished'
 
 /** Recursive split layout, same shape as tmux/wezterm pane trees. */
 export type LayoutNode =
@@ -18,7 +19,7 @@ export type LayoutNode =
 
 export interface Pane {
   id: string
-  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes'
+  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes' | 'calendar'
   title: string
   cwd: string
   /** Typed into the shell once it is ready (used to launch `claude`). */
@@ -47,6 +48,11 @@ export interface Pane {
   unseen?: boolean
   /** True once an agent CLI (claude, codex, …) is running in this pane. */
   agent?: boolean
+  /**
+   * Latest snapshot from this pane's Claude Code transcript, when one exists.
+   * Drives the token/cost meter and the honest working/blocked/finished status.
+   */
+  stats?: TranscriptStats
   /**
    * Buffer restored from the last session, replayed into xterm when the pane
    * mounts. Only ever read at mount; the live buffer is owned by xterm itself
@@ -624,7 +630,10 @@ export const useStore = create<State>((set, get) => ({
         mapTab(ws, tabId, (t) => {
           const p = t.panes[paneId]
           if (!p) return t
-          const unseen = status === 'finished' ? p.unseen || offScreen : p.unseen
+          // Both "finished" and "blocked" are your-turn states: if they happen
+          // off screen, they're unseen until you actually look.
+          const yourTurn = status === 'finished' || status === 'blocked'
+          const unseen = yourTurn ? p.unseen || offScreen : p.unseen
           if (p.status === status && p.unseen === unseen) return t
           return { ...t, panes: { ...t.panes, [paneId]: { ...p, status, unseen } } }
         })
@@ -835,12 +844,37 @@ export const useStore = create<State>((set, get) => ({
      * The dashboard's Claude is a terminal too; it's the one with persistCommand
      * set, and it is emphatically not the pane to replace.
      */
+    // A standalone tab holding one board pane. Used for the calendar, which
+    // lives beside the dashboard tab rather than crowding into its grid.
+    const boardTab = (kind: Pane['kind'], title: string): Tab => {
+      const paneId = uid('pane')
+      return {
+        id: uid('tab'),
+        title,
+        custom: true,
+        panes: { [paneId]: { id: paneId, kind, title, cwd } },
+        layout: { kind: 'leaf', paneId },
+        activePaneId: paneId,
+        zoomedPaneId: null
+      }
+    }
+
     const existing = get().workspaces.find((w) => w.permanent)
     if (existing) {
-      const hasNotes = existing.tabs.some((t) =>
-        Object.values(t.panes).some((p) => p.kind === 'notes')
-      )
-      if (hasNotes) return
+      const hasKind = (k: Pane['kind']) =>
+        existing.tabs.some((t) => Object.values(t.panes).some((p) => p.kind === k))
+
+      // The calendar is a newer addition — give long-standing dashboards one.
+      if (!hasKind('calendar')) {
+        const tab = boardTab('calendar', 'calendar')
+        set((s) => ({
+          workspaces: s.workspaces.map((w) =>
+            w.permanent ? { ...w, tabs: [...w.tabs, tab] } : w
+          )
+        }))
+      }
+
+      if (hasKind('notes')) return
 
       set((s) => ({
         workspaces: s.workspaces.map((w) => {
@@ -927,7 +961,8 @@ export const useStore = create<State>((set, get) => ({
       id: uid('ws'),
       name: DASHBOARD_NAME,
       cwd,
-      tabs: [tab],
+      // The main dashboard, plus a calendar tab beside it.
+      tabs: [tab, boardTab('calendar', 'calendar')],
       activeTabId: tab.id,
       permanent: true
     }
@@ -1046,6 +1081,29 @@ export const serialize = (s: State): Session => ({
 export const activeWorkspace = (s: State): Workspace | undefined =>
   s.workspaces.find((w) => w.id === s.activeWorkspaceId)
 
+/**
+ * Locate a pane by a substring the control surface passes — matched against its
+ * cwd, title, or branch. First match wins; agent panes are preferred so
+ * "message the claude working on auth" lands on the agent, not a sibling shell.
+ */
+export function findPane(
+  s: State,
+  match: string
+): { wsId: string; tabId: string; paneId: string; pane: Pane } | null {
+  const needle = match.toLowerCase()
+  const hits: { wsId: string; tabId: string; paneId: string; pane: Pane }[] = []
+  for (const w of s.workspaces) {
+    for (const t of w.tabs) {
+      for (const p of Object.values(t.panes)) {
+        const hay = `${p.cwd} ${p.title} ${p.branch ?? ''}`.toLowerCase()
+        if (hay.includes(needle)) hits.push({ wsId: w.id, tabId: t.id, paneId: p.id, pane: p })
+      }
+    }
+  }
+  if (hits.length === 0) return null
+  return hits.find((h) => h.pane.agent || h.pane.kind === 'terminal') ?? hits[0]
+}
+
 /** True when any pane in the tab is asking for attention. */
 export const tabNeedsAttention = (t: Tab): boolean =>
   Object.values(t.panes).some((p) => p.attention)
@@ -1070,6 +1128,9 @@ export const tabTitle = (t: Tab): string => {
  */
 const rollUp = (statuses: (PaneStatus | undefined)[]): PaneStatus => {
   if (statuses.includes('working')) return 'working'
+  // A pane waiting on you outranks one that has merely finished — it can't make
+  // progress until you act.
+  if (statuses.includes('blocked')) return 'blocked'
   if (statuses.includes('finished')) return 'finished'
   return 'idle'
 }

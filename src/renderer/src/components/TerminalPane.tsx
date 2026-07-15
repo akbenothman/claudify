@@ -5,9 +5,11 @@ import { WebglAddon } from '@xterm/addon-webgl'
 import { WebLinksAddon } from '@xterm/addon-web-links'
 import { SerializeAddon } from '@xterm/addon-serialize'
 import { registerScrollback, unregisterScrollback } from '../scrollback'
+import { registerInput, unregisterInput } from '../paneInput'
 import { takePort } from '../ptyPorts'
-import { useStore, type Pane } from '../store'
+import { useStore, type Pane, type PaneStatus } from '../store'
 import { commandTitle, isAgentCommand, topicTitle } from '../titles'
+import type { TranscriptStats } from '../../../shared/types'
 import '@xterm/xterm/css/xterm.css'
 
 const THEME = {
@@ -176,7 +178,7 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
      */
     const QUIET_MS = 1200
     const WORK_DELAY_MS = 250
-    let status: 'idle' | 'working' | 'finished' = 'idle'
+    let status: PaneStatus = 'idle'
     let quietTimer: ReturnType<typeof setTimeout> | undefined
     let workTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -229,13 +231,44 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       setPaneStatus(wsId, tabId, pane.id, next)
     }
 
+    /*
+     * Latest read of this pane's Claude Code transcript. When the agent has gone
+     * quiet, this tells "finished" apart from "blocked": a turn that ended on an
+     * unanswered tool call is waiting on you to approve something, not done.
+     */
+    let stats: TranscriptStats | null = null
+
+    /** The your-turn state once an asked agent has gone quiet. */
+    const restState = (): typeof status =>
+      agent && asked ? (stats?.pendingToolUse ? 'blocked' : 'finished') : 'idle'
+
     const settle = () => {
       clearTimeout(workTimer)
       workTimer = undefined
       settled = screen()
-      // Only an agent that was actually asked for something can be "finished".
-      setStatus(agent && asked ? 'finished' : 'idle')
+      setStatus(restState())
     }
+
+    /*
+     * The transcript is the pane's launch directory — Claude Code writes its
+     * session log against the cwd it started in, and stays there. Subscribing is
+     * cheap even for a plain shell (it just reports found:false).
+     */
+    const transcriptCwd = pane.cwd
+    const applyStats = (s: TranscriptStats) => {
+      if (disposed || s.cwd !== transcriptCwd) return
+      stats = s
+      updatePane(wsId, tabId, pane.id, { stats: s })
+      // A permission prompt appears in the transcript without any new bytes on
+      // screen, so a pane that already settled to "finished" must be able to
+      // flip to "blocked" when the transcript says a tool is pending. Only for
+      // agent panes, though — a plain shell's status isn't the transcript's to
+      // decide just because it shares a cwd (and it lets the control surface set
+      // a shell's status without the watcher stomping it).
+      if (agent && status !== 'working') setStatus(restState())
+    }
+    window.claudify.subscribeTranscript(transcriptCwd).then((s) => applyStats(s))
+    const offTranscript = window.claudify.onTranscript(applyStats)
 
     const markOutput = () => {
       // Don't claim "working" on the strength of a byte arriving. Wait, then
@@ -332,6 +365,9 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       }
       port = p
 
+      // Let the control surface (and broadcast input) type into this pane.
+      registerInput(pane.id, (data) => p.postMessage(data))
+
       // ---- the hot path ----
       // Output: PTY -> MessagePort -> xterm. Input: xterm -> MessagePort -> PTY.
       // Neither direction touches React or ipcRenderer, so a keystroke costs one
@@ -397,6 +433,9 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       disposed = true
       clearTimeout(quietTimer)
       clearTimeout(workTimer)
+      offTranscript()
+      window.claudify.unsubscribeTranscript(transcriptCwd)
+      unregisterInput(pane.id)
       unregisterScrollback(pane.id)
       ro.disconnect()
       try {
