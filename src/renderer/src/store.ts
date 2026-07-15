@@ -19,7 +19,7 @@ export type LayoutNode =
 
 export interface Pane {
   id: string
-  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes' | 'calendar'
+  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes' | 'calendar' | 'browser'
   title: string
   cwd: string
   /** Typed into the shell once it is ready (used to launch `claude`). */
@@ -104,6 +104,8 @@ interface State {
   renameWorkspace: (id: string, name: string) => void
 
   newTab: (wsId: string, cwd?: string) => void
+  /** Open a new tab holding a browser pane (the one Claude drives via MCP). */
+  newBrowserTab: (wsId: string) => void
   closeTab: (wsId: string, tabId: string) => void
   setActiveTab: (wsId: string, tabId: string) => void
   renameTab: (wsId: string, tabId: string, title: string) => void
@@ -167,6 +169,24 @@ export const DASHBOARD_NAME = 'AK Dashboard'
 
 let seq = 1
 const uid = (p: string) => `${p}-${seq++}`
+
+/**
+ * Path to claudify's own MCP config, learned at boot. When set, panes launch
+ * `claude --mcp-config <it>` so the browser tools appear automatically without
+ * ever touching the user's global Claude config.
+ */
+let mcpConfig = ''
+export function setMcpConfig(p: string): void {
+  // Forward slashes work on every shell (cmd/PowerShell/bash) and dodge all
+  // backslash-escaping ambiguity when this is typed into a terminal.
+  mcpConfig = p.replace(/\\/g, '/')
+}
+
+/** The command that launches Claude in a pane, wired to the browser MCP. */
+export function claudeCommand(extra?: string): string {
+  const flag = mcpConfig ? ` --mcp-config "${mcpConfig}"` : ''
+  return `claude${flag}${extra ? ` ${extra}` : ''}`
+}
 
 /* --------------------------- layout tree helpers --------------------------- */
 
@@ -272,7 +292,7 @@ export const useStore = create<State>((set, get) => ({
     // A new workspace opens with Claude already running on its first tab. Not
     // persisted (no persistCommand), so a restored workspace comes back as a
     // plain shell rather than re-launching Claude on every reboot.
-    const tab = makeTab(dir, 'shell', 'claude')
+    const tab = makeTab(dir, 'shell', claudeCommand())
     set((s) => ({
       workspaces: [
         ...s.workspaces,
@@ -316,6 +336,23 @@ export const useStore = create<State>((set, get) => ({
         const active = ws.tabs.find((t) => t.id === ws.activeTabId)
         const here = active?.activePaneId ? active.panes[active.activePaneId]?.cwd : undefined
         const tab = makeTab(cwd || here || ws.cwd || s.defaultCwd)
+        return { ...ws, tabs: [...ws.tabs, tab], activeTabId: tab.id }
+      })
+    ),
+
+  newBrowserTab: (wsId) =>
+    set((s) =>
+      mapWs(s, wsId, (ws) => {
+        const paneId = uid('pane')
+        const tab: Tab = {
+          id: uid('tab'),
+          title: 'browser',
+          custom: true,
+          panes: { [paneId]: { id: paneId, kind: 'browser', title: 'browser', cwd: ws.cwd } },
+          layout: { kind: 'leaf', paneId },
+          activePaneId: paneId,
+          zoomedPaneId: null
+        }
         return { ...ws, tabs: [...ws.tabs, tab], activeTabId: tab.id }
       })
     ),
@@ -803,7 +840,7 @@ export const useStore = create<State>((set, get) => ({
         worktreePath: wt.path,
         // The whole point: each pane comes up with Claude already working on its
         // own task, in its own worktree.
-        initialCommand: task ? `claude ${JSON.stringify(task.prompt)}` : undefined
+        initialCommand: task ? claudeCommand(JSON.stringify(task.prompt)) : undefined
       }
     }
 
@@ -919,7 +956,7 @@ export const useStore = create<State>((set, get) => ({
       title: 'claude',
       cwd,
       // Just opens the REPL — no task — so it's safe to bring back on every boot.
-      initialCommand: 'claude',
+      initialCommand: claudeCommand(),
       persistCommand: true
     })
     const todo = mk({ kind: 'todo', title: 'todo', cwd })

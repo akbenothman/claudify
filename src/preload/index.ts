@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type {
   AppState,
+  BrowserInfo,
   Calendar,
   CheckResult,
   ConflictPair,
@@ -110,6 +111,18 @@ const api = {
     ipcRenderer.on('dashboard:changed', handler)
     return () => ipcRenderer.off('dashboard:changed', handler)
   },
+
+  /* browser pane — position the native view over the pane and drive it */
+  browserAttach: (paneId: string, bounds: Electron.Rectangle): void =>
+    ipcRenderer.send('browser:attach', paneId, bounds),
+  browserBounds: (paneId: string, bounds: Electron.Rectangle): void =>
+    ipcRenderer.send('browser:bounds', paneId, bounds),
+  browserDetach: (paneId: string): void => ipcRenderer.send('browser:detach', paneId),
+  browserNavigate: (url: string): Promise<BrowserInfo> => ipcRenderer.invoke('browser:navigate', url),
+  browserBack: (): Promise<BrowserInfo> => ipcRenderer.invoke('browser:back'),
+  browserReload: (): Promise<BrowserInfo> => ipcRenderer.invoke('browser:reload'),
+  browserInfo: (): Promise<BrowserInfo> => ipcRenderer.invoke('browser:info'),
+  mcpConfigPath: (): Promise<string> => ipcRenderer.invoke('mcp:configPath'),
 
   getCalendar: (): Promise<Calendar> => ipcRenderer.invoke('calendar:get'),
   saveCalendar: (data: Calendar): Promise<void> => ipcRenderer.invoke('calendar:save', data),

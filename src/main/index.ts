@@ -26,6 +26,18 @@ import {
 } from './transcript'
 import { controlPath, notify, resolveControl, watchControl } from './control'
 import { calendarPath, ensureCalendar, readCalendar, watchCalendar, writeCalendar } from './calendar'
+import {
+  attachBrowser,
+  currentInfo,
+  destroyBrowser,
+  detachBrowser,
+  goBack,
+  initBrowser,
+  navigate,
+  reload,
+  setBrowserBounds
+} from './browser'
+import { mcpConfigPath, startMcp, stopMcp } from './mcp'
 import type { Calendar, Dashboard, PtySpawnOptions, Session, Settings, SplitTask } from '../shared/types'
 
 // Must be set before anything reads app.getPath('userData'), or the session file
@@ -89,6 +101,9 @@ function createWindow(): void {
   })
 
   win.on('ready-to-show', () => win?.show())
+
+  // The browser Claude drives lives in a WebContentsView owned by this window.
+  initBrowser(win)
 
   // Live-reload the dashboard when Claude (or anything else) edits the file.
   watchDashboard(win)
@@ -203,6 +218,21 @@ ipcMain.handle('calendar:get', () => {
 ipcMain.handle('calendar:save', (_e, data: Calendar) => writeCalendar(data))
 ipcMain.handle('calendar:path', () => calendarPath())
 
+/* --------------------------------- browser -------------------------------- */
+
+ipcMain.on('browser:attach', (_e, paneId: string, bounds: Electron.Rectangle) =>
+  attachBrowser(paneId, bounds)
+)
+ipcMain.on('browser:bounds', (_e, paneId: string, bounds: Electron.Rectangle) =>
+  setBrowserBounds(paneId, bounds)
+)
+ipcMain.on('browser:detach', (_e, paneId: string) => detachBrowser(paneId))
+ipcMain.handle('browser:navigate', (_e, url: string) => navigate(url))
+ipcMain.handle('browser:back', () => goBack())
+ipcMain.handle('browser:reload', () => reload())
+ipcMain.handle('browser:info', () => currentInfo())
+ipcMain.handle('mcp:configPath', () => mcpConfigPath())
+
 /* ------------------------------ transcripts ------------------------------- */
 
 ipcMain.handle('transcript:subscribe', (_e, cwd: string) => subscribeTranscript(cwd))
@@ -218,7 +248,11 @@ ipcMain.on('control:notify', (_e, title: string, body: string) => notify(win, ti
 
 /* ----------------------------- Lifecycle ------------------------------- */
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow()
+  // Bring up the browser MCP server so `claude` panes can drive the browser.
+  startMcp().catch((e) => console.error('MCP server failed to start:', e))
+})
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -227,10 +261,14 @@ app.on('activate', () => {
 app.on('window-all-closed', () => {
   killAll()
   stopTranscripts()
+  stopMcp()
+  destroyBrowser()
   if (process.platform !== 'darwin') app.quit()
 })
 
 app.on('before-quit', () => {
   killAll()
   stopTranscripts()
+  stopMcp()
+  destroyBrowser()
 })

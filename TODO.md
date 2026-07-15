@@ -68,6 +68,20 @@ known touch points:
       is done; resolving them in-app is not).
 - [ ] "Adopt existing worktrees" — reattach panes to worktrees from a previous session.
 
+## Browser
+
+- [x] A browser pane backed by Electron's own Chromium (`WebContentsView`), positioned over
+      the pane and hidden when off screen (`browser.ts` + `BrowserPane.tsx`, `Ctrl+Shift+B`).
+- [x] In-process MCP server exposing the browser as tools — `browser_navigate`,
+      `browser_evaluate`, `browser_snapshot`, `browser_screenshot`, `browser_click`,
+      `browser_back`, `browser_reload` (`mcp.ts`).
+- [x] Zero-config registration: `claude` panes launch with `--mcp-config` pointing at
+      claudify's own `mcp.json`, so the tools appear automatically without touching the
+      user's global Claude config.
+- [ ] Persist/restore the browser's current URL across a restart (today it comes back blank).
+- [ ] Tabs within the browser pane, and a visible loading/spinner state.
+- [ ] Downloads and file-upload handling for the browser.
+
 ## Agent awareness
 
 - [x] Read Claude Code transcripts (`~/.claude/projects/**`) for exact working /

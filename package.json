@@ -22,12 +22,15 @@
     "smoke:calendar": "electron scripts/smoke-calendar.cjs",
     "smoke:control": "electron scripts/smoke-control.cjs",
     "smoke:bootstrap": "electron scripts/smoke-bootstrap.cjs",
-    "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:bootstrap && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:calendar && npm run smoke:control && npm run smoke:session && npm run smoke:restore && npm run smoke:panes && npm run smoke:status",
+    "smoke:browser": "electron scripts/smoke-browser.cjs",
+    "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:bootstrap && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:calendar && npm run smoke:control && npm run smoke:browser && npm run smoke:session && npm run smoke:restore && npm run smoke:panes && npm run smoke:status",
     "pack:win": "electron-vite build && electron-builder --win --publish never",
     "pack:dir": "electron-vite build && electron-builder --win --dir"
   },
   "dependencies": {
-    "@lydell/node-pty": "^1.2.0-beta.12"
+    "@lydell/node-pty": "^1.2.0-beta.12",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

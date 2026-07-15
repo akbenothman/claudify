@@ -7,6 +7,7 @@ import { TodoPane } from './TodoPane'
 import { NotesPane } from './NotesPane'
 import { TrackerPane } from './TrackerPane'
 import { CalendarPane } from './CalendarPane'
+import { BrowserPane } from './BrowserPane'
 import { StatusDot } from './StatusDot'
 import { PANE_MIME, TAB_MIME, type PaneDrag, type TabDrag } from '../dnd'
 
@@ -166,6 +167,8 @@ function PaneFrame({
             <TrackerPane />
           ) : pane.kind === 'calendar' ? (
             <CalendarPane />
+          ) : pane.kind === 'browser' ? (
+            <BrowserPane paneId={pane.id} visible={visible} />
           ) : (
             <TerminalPane wsId={ws.id} tabId={tab.id} pane={pane} focused={focused && visible} />
           )}
