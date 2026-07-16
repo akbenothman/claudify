@@ -16,6 +16,13 @@ export interface PtySpawnOptions {
    * inside a freshly created worktree pane.
    */
   initialCommand?: string
+  /**
+   * Watch the output for Claude Code's "Do you trust the files in this folder?"
+   * prompt and answer it with Enter automatically. Set for panes that launch
+   * `claude`, so a new workspace never stalls on a dialog the user must clear by
+   * hand. Harmless when the prompt never appears.
+   */
+  autoConfirmTrust?: boolean
 }
 
 export interface SplitTask {

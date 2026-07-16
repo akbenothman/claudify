@@ -1,9 +1,34 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CalEvent } from '../../../shared/types'
 import { newId } from '../useDashboard'
 import { useCalendar } from '../useCalendar'
-import { useStore } from '../store'
+import { useStore, type PaneStatus } from '../store'
 import { sendToPane } from '../paneInput'
+
+/**
+ * Auto-sync cadence. We never nag: the calendar refreshes itself on a timer as
+ * long as the dashboard Claude is up and idle, so the grid stays current
+ * without the user ever clicking sync.
+ */
+const CHECK_MS = 5 * 60 * 1000 // re-evaluate whether a sync is due this often
+const STALE_MS = 20 * 60 * 1000 // events older than this are worth refreshing
+const COOLDOWN_MS = 3 * 60 * 1000 // don't re-fire while a dispatch is in flight
+const FIRST_DELAY_MS = 9000 // give Claude a moment to boot before the first sync
+
+/**
+ * The dashboard's Claude pane (the one launched with a persisted `claude`
+ * command) and what it's currently doing — so auto-sync can wait for it to be
+ * present and not interrupt it mid-task.
+ */
+function findDashClaude(): { paneId?: string; status?: PaneStatus } {
+  const dash = useStore.getState().workspaces.find((w) => w.permanent)
+  for (const t of dash?.tabs ?? []) {
+    for (const p of Object.values(t.panes)) {
+      if (p.kind === 'terminal' && p.persistCommand) return { paneId: p.id, status: p.status }
+    }
+  }
+  return {}
+}
 
 /**
  * A Google-Calendar-style month grid, with a Claude-written summary and an
@@ -93,6 +118,60 @@ export function CalendarPane() {
     })
   }, [view])
 
+  const lastDispatch = useRef(0)
+
+  /**
+   * Sync with the real Google Calendar. Claudify never calls Google itself — it
+   * asks the dashboard's Claude (which has your account's Calendar connector) to
+   * read your events and write them into this file, by typing the request into
+   * that pane. The grid fills in when the agent finishes.
+   */
+  const dispatchSync = useCallback(
+    (paneId: string): boolean => {
+      if (!path) return false
+      const msg =
+        `Sync my Google Calendar into "${path}": use the Google Calendar MCP to read my ` +
+        `events for the next 30 days, overwrite events[] as {id,title,start (ISO-8601),end,location}, ` +
+        `set syncedAt to now, and write a one-line summary of the week into summary. ` +
+        `The file's _instructions field has the schema. Then fulfil any pending requests[].`
+      const ok = sendToPane(paneId, msg)
+      if (ok) lastDispatch.current = Date.now()
+      return ok
+    },
+    [path]
+  )
+
+  /**
+   * Keep the calendar current on its own. Every few minutes, if the dashboard
+   * Claude is up and not mid-task and the events have gone stale, quietly ask it
+   * to re-sync — no button, no prompt from the user. The status gate means we
+   * never type over an agent that's busy, and the cooldown stops a re-fire while
+   * a sync we already sent is still running. These hooks live ABOVE the early
+   * return below so the hook order stays stable across the loading state.
+   */
+  const syncedAt = data?.syncedAt
+  useEffect(() => {
+    if (!path) return
+    let cancelled = false
+    const tick = (): void => {
+      if (cancelled) return
+      const { paneId, status } = findDashClaude()
+      if (!paneId) return
+      if (status === 'working' || status === 'blocked') return // don't interrupt
+      if (Date.now() - lastDispatch.current < COOLDOWN_MS) return
+      const last = syncedAt ? Date.parse(syncedAt) : 0
+      if (Number.isFinite(last) && Date.now() - last < STALE_MS) return
+      dispatchSync(paneId)
+    }
+    const first = setTimeout(tick, FIRST_DELAY_MS)
+    const iv = setInterval(tick, CHECK_MS)
+    return () => {
+      cancelled = true
+      clearTimeout(first)
+      clearInterval(iv)
+    }
+  }, [path, syncedAt, dispatchSync])
+
   if (!data) return <div className="board calendar empty">loading…</div>
 
   const selectedEvents = byDay[selected] ?? []
@@ -133,30 +212,14 @@ export function CalendarPane() {
       requests: [...c.requests, { id: newId(), action: 'delete', eventId, status: 'pending' }]
     }))
 
-  /**
-   * Sync with the real Google Calendar. Claudify never calls Google itself — it
-   * asks the dashboard's Claude (which has your account's Calendar connector) to
-   * read your events and write them into this file, by typing the request into
-   * that pane. One click, and the grid fills in when the agent finishes.
-   */
   const syncGoogle = (): void => {
-    const dash = useStore.getState().workspaces.find((w) => w.permanent)
-    let claudePane: string | undefined
-    for (const t of dash?.tabs ?? []) {
-      for (const p of Object.values(t.panes)) {
-        if (p.kind === 'terminal' && p.persistCommand) claudePane = p.id
-      }
-    }
-    if (!claudePane) {
+    const { paneId } = findDashClaude()
+    if (!paneId) {
       setNote('Open the dashboard Claude pane first.')
+      setTimeout(() => setNote(''), 6000)
       return
     }
-    const msg =
-      `Sync my Google Calendar into "${path}": use the Google Calendar MCP to read my ` +
-      `events for the next 30 days, overwrite events[] as {id,title,start (ISO-8601),end,location}, ` +
-      `set syncedAt to now, and write a one-line summary of the week into summary. ` +
-      `The file's _instructions field has the schema. Then fulfil any pending requests[].`
-    const ok = sendToPane(claudePane, msg)
+    const ok = dispatchSync(paneId)
     setNote(ok ? 'Asked Claude to sync your Google Calendar…' : 'Open the dashboard Claude pane first.')
     setTimeout(() => setNote(''), 6000)
   }
@@ -235,7 +298,7 @@ export function CalendarPane() {
           <span className="cal-summary-text">{data.summary}</span>
         ) : (
           <span className="dim">
-            Ask the Claude on the left to sync your Google Calendar and summarise the week.
+            Syncing your Google Calendar automatically — the week&apos;s summary appears here.
           </span>
         )}
       </div>
