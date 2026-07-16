@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, MessageChannelMain, dialog, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, MessageChannelMain, dialog } from 'electron'
 import path from 'node:path'
 import { createSession, killAll, killSession } from './pty'
 import {
@@ -27,6 +27,7 @@ import {
 } from './transcript'
 import { controlPath, notify, resolveControl, watchControl } from './control'
 import { calendarPath, ensureCalendar, readCalendar, watchCalendar, writeCalendar } from './calendar'
+import { openLink } from './openLink'
 import {
   attachBrowser,
   currentInfo,
@@ -128,7 +129,7 @@ function createWindow(): void {
   watchCalendar(win)
 
   win.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
+    openLink(url)
     return { action: 'deny' }
   })
 
