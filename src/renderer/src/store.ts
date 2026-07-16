@@ -1160,7 +1160,16 @@ export function findPane(
 export const tabNeedsAttention = (t: Tab): boolean =>
   Object.values(t.panes).some((p) => p.attention)
 
-export const workspaceNeedsAttention = (w: Workspace): boolean => w.tabs.some(tabNeedsAttention)
+/**
+ * The permanent dashboard is home, and its Claude works in the background — the
+ * calendar auto-sync finishes a turn every few minutes. Those completions must
+ * not light the home row green or ring it for attention as if they were a task
+ * you kicked off and now have to check. So the dashboard never raises the
+ * finished/unseen/attention nag; a genuine `blocked` (needs your permission) is
+ * kept in `workspaceStatus`, since that's a real "act or auto-sync stalls".
+ */
+export const workspaceNeedsAttention = (w: Workspace): boolean =>
+  !w.permanent && w.tabs.some(tabNeedsAttention)
 
 /**
  * What a tab is called. Unless the user renamed it, a tab borrows the name of
@@ -1190,7 +1199,13 @@ const rollUp = (statuses: (PaneStatus | undefined)[]): PaneStatus => {
 export const tabStatus = (t: Tab): PaneStatus =>
   rollUp(Object.values(t.panes).map((p) => p.status))
 
-export const workspaceStatus = (w: Workspace): PaneStatus => rollUp(w.tabs.map(tabStatus))
+export const workspaceStatus = (w: Workspace): PaneStatus => {
+  const s = rollUp(w.tabs.map(tabStatus))
+  // Drop the green "finished" glow on the dashboard (background auto-sync work);
+  // keep "working"/"blocked", since a pending permission still wants you.
+  if (w.permanent && s === 'finished') return 'idle'
+  return s
+}
 
 /**
  * Something in here finished (or rang) while you weren't looking — or you said
@@ -1200,7 +1215,8 @@ export const workspaceStatus = (w: Workspace): PaneStatus => rollUp(w.tabs.map(t
 export const tabUnseen = (t: Tab): boolean =>
   !!t.flagged || Object.values(t.panes).some((p) => p.unseen)
 
-export const workspaceUnseen = (w: Workspace): boolean => w.tabs.some(tabUnseen)
+export const workspaceUnseen = (w: Workspace): boolean =>
+  !w.permanent && w.tabs.some(tabUnseen)
 
 /** A located pane, as returned by the "needs you" walk and the palette. */
 export interface PaneRef {
@@ -1235,15 +1251,14 @@ export function panesNeedingYou(s: State): PaneRef[] {
 
 /** How many things across everything are still waiting to be checked on. */
 export const unseenCount = (s: State): number =>
-  s.workspaces.reduce(
-    (n, w) =>
+  s.workspaces.reduce((n, w) => {
+    // The dashboard's background work never counts as something to check on.
+    if (w.permanent) return n
+    return (
       n +
       w.tabs.reduce(
-        (m, t) =>
-          m +
-          (t.flagged ? 1 : 0) +
-          Object.values(t.panes).filter((p) => p.unseen).length,
+        (m, t) => m + (t.flagged ? 1 : 0) + Object.values(t.panes).filter((p) => p.unseen).length,
         0
-      ),
-    0
-  )
+      )
+    )
+  }, 0)
