@@ -75,9 +75,38 @@ export function createSession(opts: PtySpawnOptions, port: MessagePortMain): str
 
   const toRenderer = (msg: ControlToRenderer) => port.postMessage(msg)
 
+  /*
+   * Auto-answer Claude Code's "Do you trust the files in this folder?" dialog.
+   *
+   * Every time `claude` starts in a directory it hasn't seen before it puts up a
+   * trust prompt whose default option is "Yes, proceed", cleared with Enter.
+   * For panes claudify opens itself (a new workspace, a worktree task) that's a
+   * dialog the user never asked for and shouldn't have to clear. We watch the
+   * output for the prompt over a small rolling window (ANSI redraws mean it can
+   * arrive in pieces) and press Enter once, shortly after it appears.
+   */
+  let trustBuf = ''
+  let trustDone = !opts.autoConfirmTrust
+  const TRUST_RE = /trust the files in this folder/i
+  const watchTrust = (data: string): void => {
+    if (trustDone) return
+    trustBuf = (trustBuf + data).slice(-4096)
+    if (!TRUST_RE.test(trustBuf)) return
+    trustDone = true
+    trustBuf = ''
+    setTimeout(() => {
+      try {
+        pty.write('\r')
+      } catch {
+        /* session may have died in the interim */
+      }
+    }, 200)
+  }
+
   let launched = !opts.initialCommand
   pty.onData((data) => {
     port.postMessage(data)
+    watchTrust(data)
     if (!launched) {
       // Wait for the shell to emit its first output (i.e. it has drawn a
       // prompt) before typing into it, otherwise the command is swallowed.

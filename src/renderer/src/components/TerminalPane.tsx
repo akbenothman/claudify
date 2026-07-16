@@ -371,7 +371,10 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
         cwd: pane.cwd,
         cols: term.cols,
         rows: term.rows,
-        initialCommand: pane.initialCommand
+        initialCommand: pane.initialCommand,
+        // A pane claudify launches `claude` into shouldn't stall on the
+        // "trust this folder?" dialog — clear it for the user automatically.
+        autoConfirmTrust: !!pane.initialCommand && isAgentCommand(pane.initialCommand)
       })
       if (disposed) {
         window.claudify.killTerminal(id).catch(() => {})
