@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Icon } from './Icon'
 import type { SplitPlan } from '../../../shared/types'
 import { useStore } from '../store'
 
@@ -64,7 +65,7 @@ export function SplitDialog({ onClose }: { onClose: () => void }) {
         <div className="modal-head">
           <strong>Split into worktrees</strong>
           <button className="pane-x" onClick={onClose}>
-            ×
+            <Icon name="close" size={11} />
           </button>
         </div>
 
@@ -127,7 +128,7 @@ export function SplitDialog({ onClose }: { onClose: () => void }) {
                   <div className="plan-task-head">
                     <span className="plan-branch">{t.branch}</span>
                     <button className="pane-x" onClick={() => dropTask(i)} title="Drop this task">
-                      ×
+                      <Icon name="close" size={11} />
                     </button>
                   </div>
                   <textarea

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Icon } from './Icon'
 import { dropIndex, NOTE_MIME, reorder } from '../boardDnd'
 import { newId, nowIso, useDashboard } from '../useDashboard'
 import { TabStrip } from './TabStrip'
@@ -82,7 +83,7 @@ export function NotesPane() {
       <TabStrip
         trailing={
           <button className="board-tab-new" onClick={addNote} title="New note">
-            +
+            <Icon name="plus" size={12} />
           </button>
         }
       >
@@ -158,7 +159,7 @@ export function NotesPane() {
                       removeNote(n.id)
                     }}
                   >
-                    ×
+                    <Icon name="close" size={11} />
                   </button>
                 )}
               </>

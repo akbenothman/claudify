@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { panesNeedingYou, tabTitle, useStore } from '../store'
 import { StatusDot } from './StatusDot'
+import { Icon } from './Icon'
 import type { PaneStatus } from '../store'
 
 /**
@@ -236,7 +237,9 @@ export function CommandPalette({
               {it.status ? (
                 <StatusDot status={it.status} unseen={it.unseen} />
               ) : (
-                <span className={`cmd-glyph cmd-${it.kind}`}>{it.kind === 'action' ? '⚡' : '›'}</span>
+                <span className={`cmd-glyph cmd-${it.kind}`}>
+                  <Icon name={it.kind === 'action' ? 'bolt' : 'arrow'} size={13} />
+                </span>
               )}
               <span className="cmd-label">{it.label}</span>
               {it.detail && <span className="cmd-detail">{it.detail}</span>}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Icon } from './Icon'
 import type { CalEvent } from '../../../shared/types'
 import { newId } from '../useDashboard'
 import { useCalendar } from '../useCalendar'
@@ -320,7 +321,7 @@ export function CalendarPane() {
               {e.location && <span className="cal-loc"> · {e.location}</span>}
             </span>
             <button className="pane-x row-del" onClick={() => remove(e.id)} title="Delete event">
-              ×
+              <Icon name="close" size={11} />
             </button>
           </div>
         ))}

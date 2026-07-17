@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Icon } from './Icon'
 import type { Settings, ShellInfo } from '../../../shared/types'
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
@@ -23,7 +24,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         <div className="modal-head">
           <strong>Settings</strong>
           <button className="pane-x" onClick={onClose}>
-            ×
+            <Icon name="close" size={11} />
           </button>
         </div>
 

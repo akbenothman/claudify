@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Icon } from './Icon'
 import { activeWorkspace, useStore } from '../store'
 import { getSearch } from '../paneSearch'
 
@@ -58,7 +59,7 @@ export function TermSearch({ onClose }: { onClose: () => void }) {
         ↓
       </button>
       <button onClick={close} title="Close (Esc)">
-        ×
+        <Icon name="close" size={11} />
       </button>
     </div>
   )

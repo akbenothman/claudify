@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { tabNeedsAttention, tabStatus, tabTitle, tabUnseen, useStore, type Workspace } from '../store'
 import { StatusDot } from './StatusDot'
+import { Icon } from './Icon'
 import { PANE_MIME, TAB_MIME, type PaneDrag, type TabDrag } from '../dnd'
 import type { MenuState } from './ContextMenu'
 
@@ -175,12 +176,13 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
                   {panes > 1 && <span className="tab-panes">{panes}</span>}
                   <button
                     className="tab-x"
+                    title="Close tab"
                     onClick={(e) => {
                       e.stopPropagation()
                       closeTab(ws.id, t.id)
                     }}
                   >
-                    ×
+                    <Icon name="close" size={11} />
                   </button>
                 </>
               )}
@@ -192,7 +194,7 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
       {dropAt === ws.tabs.length && <div className="tab-caret" />}
 
       <button className="tab-new" onClick={() => newTab(ws.id)} title="New tab (Ctrl+T)">
-        +
+        <Icon name="plus" size={13} />
       </button>
     </div>
   )

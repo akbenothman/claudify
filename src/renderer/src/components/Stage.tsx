@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Icon } from './Icon'
 import { useStore, type Pane, type Tab, type Workspace } from '../store'
 import { computePlacements, edgeFor, type Edge, type Rect } from '../layout'
 import { TerminalPane } from './TerminalPane'
@@ -152,7 +153,7 @@ function PaneFrame({
             onClick={() => closePane(ws.id, tab.id, pane.id)}
             title="Close pane"
           >
-            ×
+            <Icon name="close" size={11} />
           </button>
         </div>
 
