@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore, workspaceNeedsAttention, workspaceStatus, workspaceUnseen } from '../store'
 import { StatusDot } from './StatusDot'
+import { Icon } from './Icon'
 import { TAB_MIME, WS_MIME, type TabDrag, type WorkspaceDrag } from '../dnd'
 import type { MenuState } from './ContextMenu'
 
@@ -64,14 +65,18 @@ export function Sidebar({
   return (
     <div className="sidebar">
       <div className="sidebar-head">
-        <span className="brand">claudify</span>
+        <span className="brand">
+          <span className="brand-mark" />
+          claudify
+        </span>
         <button className="gear" onClick={onSettings} title="Settings">
-          ⚙
+          <Icon name="gear" />
         </button>
       </div>
 
       <button className="split-btn" onClick={onSplit} title="Split into worktrees (Ctrl+Shift+S)">
-        <span className="split-glyph">⑂</span> worktree split
+        <Icon name="split" />
+        worktree split
       </button>
 
       <div className="sidebar-label">workspaces</div>
@@ -156,7 +161,11 @@ export function Sidebar({
             ) : (
               <>
                 <span className="ws-name">
-                  {w.permanent && <span className="ws-pin">★</span>}
+                  {w.permanent && (
+                    <span className="ws-pin" title="Permanent workspace">
+                      <Icon name="pin" size={10} />
+                    </span>
+                  )}
                   {w.name}
                 </span>
                 <StatusDot status={workspaceStatus(w)} unseen={workspaceUnseen(w)} />
@@ -172,7 +181,8 @@ export function Sidebar({
           onClick={() => newWorkspace()}
           title="New workspace (Ctrl+Shift+N)"
         >
-          + new workspace
+          <Icon name="plus" size={12} />
+          new workspace
         </button>
       </div>
 

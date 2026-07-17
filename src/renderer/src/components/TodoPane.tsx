@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icon } from './Icon'
 import type { TodoStatus } from '../../../shared/types'
 import { dropIndex, reorder, TOPIC_MIME } from '../boardDnd'
 import { newId, nowIso, useDashboard } from '../useDashboard'
@@ -94,7 +95,7 @@ export function TodoPane() {
       <TabStrip
         trailing={
           <button className="board-tab-new" onClick={addTopic} title="New topic">
-            +
+            <Icon name="plus" size={12} />
           </button>
         }
       >
@@ -169,7 +170,7 @@ export function TodoPane() {
                       removeTopic(t.id)
                     }}
                   >
-                    ×
+                    <Icon name="close" size={11} />
                   </button>
                 )}
               </>
@@ -237,7 +238,7 @@ export function TodoPane() {
               </span>
             )}
             <button className="pane-x row-del" onClick={() => remove(t.id)} title="Delete">
-              ×
+              <Icon name="close" size={11} />
             </button>
           </div>
         ))}
