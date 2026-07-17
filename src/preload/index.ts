@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { clipboard, contextBridge, ipcRenderer } from 'electron'
 import type {
   AppState,
   BrowserInfo,
@@ -149,7 +149,18 @@ const api = {
   saveSettings: (patch: Partial<Settings>): Promise<Settings> =>
     ipcRenderer.invoke('settings:save', patch),
   getSettings: (): Promise<Settings> => ipcRenderer.invoke('settings:get'),
-  detectShells: (): Promise<ShellInfo[]> => ipcRenderer.invoke('shells:detect')
+  detectShells: (): Promise<ShellInfo[]> => ipcRenderer.invoke('shells:detect'),
+
+  /*
+   * Clipboard, for the terminal panes only. Everywhere else in the app is a
+   * plain input and Chromium's own paste already works there.
+   *
+   * Synchronous by design: these are called from a keydown handler that has to
+   * decide, before it returns, whether xterm gets to see the key. Reading the
+   * clipboard through `invoke` would resolve a tick too late to make that call.
+   */
+  readClipboard: (): string => clipboard.readText(),
+  writeClipboard: (text: string): void => clipboard.writeText(text)
 }
 
 contextBridge.exposeInMainWorld('claudify', api)
