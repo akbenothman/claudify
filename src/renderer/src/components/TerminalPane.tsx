@@ -419,15 +419,54 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       })
       term.focus()
 
-      /*
-       * Shift+Enter should open a new line in an agent's prompt, not submit it.
-       * xterm sends a bare CR for Enter regardless of Shift, which every REPL
-       * reads as "go". Claude (like most of them) takes ESC+CR as a literal
-       * newline, so send that instead and keep it away from the command sniffer
-       * — the line isn't finished, so the pane shouldn't be renamed off it.
-       */
       term.attachCustomKeyEventHandler((e) => {
-        if (e.type !== 'keydown' || e.key !== 'Enter') return true
+        if (e.type !== 'keydown') return true
+
+        /*
+         * Paste. xterm treats Ctrl+V as the VT100 key it historically is — it
+         * maps to the control character \x16 and cancels the event, so the
+         * browser's native paste never runs and the clipboard never arrives.
+         * (Plain inputs elsewhere in the app are unaffected: Chromium pastes
+         * into those itself.) Every terminal that isn't a physical VT100
+         * rebinds this, so do the paste ourselves, on Ctrl+V and on the
+         * Ctrl+Shift+V that muscle memory from other terminals reaches for.
+         *
+         * term.paste() rather than a raw write: it wraps the text for
+         * bracketed-paste mode, which is what makes a multi-line paste land in
+         * Claude as one block to edit instead of N lines each submitted the
+         * instant their newline arrives.
+         */
+        if (e.ctrlKey && !e.altKey && !e.metaKey && (e.key === 'v' || e.key === 'V')) {
+          e.preventDefault()
+          const text = window.claudify.readClipboard()
+          if (text) term.paste(text)
+          return false
+        }
+
+        /*
+         * Copy the selection. Ctrl+C can't do this — in a terminal it has to
+         * stay SIGINT, which is the only way to stop a runaway agent — so the
+         * selection lives on Ctrl+Shift+C, as it does in every other terminal.
+         * With no selection, fall through and let Ctrl+Shift+C do whatever it
+         * did before.
+         */
+        if (e.ctrlKey && e.shiftKey && !e.altKey && !e.metaKey && (e.key === 'c' || e.key === 'C')) {
+          const selection = term.getSelection()
+          if (!selection) return true
+          e.preventDefault()
+          window.claudify.writeClipboard(selection)
+          return false
+        }
+
+        /*
+         * Shift+Enter should open a new line in an agent's prompt, not submit
+         * it. xterm sends a bare CR for Enter regardless of Shift, which every
+         * REPL reads as "go". Claude (like most of them) takes ESC+CR as a
+         * literal newline, so send that instead and keep it away from the
+         * command sniffer — the line isn't finished, so the pane shouldn't be
+         * renamed off it.
+         */
+        if (e.key !== 'Enter') return true
         if (!e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return true
         // preventDefault is not optional here. Returning false only tells xterm
         // to keep its hands off the keydown — the browser still raises the
