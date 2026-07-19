@@ -26,7 +26,8 @@
     "smoke:clipboard": "electron scripts/smoke-clipboard.cjs",
     "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:bootstrap && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:calendar && npm run smoke:control && npm run smoke:browser && npm run smoke:session && npm run smoke:restore && npm run smoke:panes && npm run smoke:status && npm run smoke:clipboard",
     "pack:win": "electron-vite build && electron-builder --win --publish never",
-    "pack:dir": "electron-vite build && electron-builder --win --dir"
+    "pack:dir": "electron-vite build && electron-builder --win --dir",
+    "ship": "node scripts/ship.cjs"
   },
   "dependencies": {
     "@lydell/node-pty": "^1.2.0-beta.12",
