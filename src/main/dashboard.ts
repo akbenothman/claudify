@@ -24,6 +24,9 @@ const INSTRUCTIONS = [
   'ventures[].mrr is a number in the dashboard currency; nextAction is the single next step.',
   'finance.accounts[] are balances (set liability: true for debts, which subtract from net worth).',
   'finance.recurring[] is scheduled money: direction in | out, cadence weekly | monthly | yearly.',
+  'finance.transactions[] is the ledger: date YYYY-MM-DD, amount (positive), direction in | out, category.',
+  'finance.budgets[] are monthly caps: {category, limit}; spent is summed from this month’s transactions.',
+  'finance.goals[] are savings goals: {name, target, saved}; do not confuse with the top-level goals page.',
   'habits[] is the habits page; done[] holds local YYYY-MM-DD dates the habit was completed.',
   'Keep ids stable. Set updated to an ISO-8601 timestamp when you change a row.'
 ].join(' ')
@@ -35,7 +38,7 @@ const EMPTY: Dashboard = {
   conversations: [],
   goals: [],
   ventures: [],
-  finance: { accounts: [], recurring: [], currency: '$' },
+  finance: { accounts: [], recurring: [], transactions: [], budgets: [], goals: [], currency: '$' },
   habits: []
 }
 
@@ -109,6 +112,23 @@ export function readDashboard(): Dashboard {
           amount: Number.isFinite(r.amount) ? r.amount : 0,
           cadence: r.cadence ?? 'monthly',
           direction: r.direction ?? 'out'
+        })),
+        transactions: rows<NonNullable<Dashboard['finance']['transactions']>[number]>(
+          fin.transactions
+        ).map((t) => ({
+          ...t,
+          amount: Number.isFinite(t.amount) ? Math.abs(t.amount) : 0,
+          direction: t.direction ?? 'out',
+          date: typeof t.date === 'string' ? t.date : ''
+        })),
+        budgets: rows<NonNullable<Dashboard['finance']['budgets']>[number]>(fin.budgets).map((b) => ({
+          ...b,
+          limit: Number.isFinite(b.limit) ? b.limit : 0
+        })),
+        goals: rows<NonNullable<Dashboard['finance']['goals']>[number]>(fin.goals).map((g) => ({
+          ...g,
+          target: Number.isFinite(g.target) ? g.target : 0,
+          saved: Number.isFinite(g.saved) ? g.saved : 0
         })),
         savingsTarget: fin.savingsTarget,
         currency: fin.currency ?? '$'
