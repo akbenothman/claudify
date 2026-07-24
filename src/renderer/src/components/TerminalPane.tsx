@@ -80,7 +80,14 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
 
     const fit = new FitAddon()
     term.loadAddon(fit)
-    term.loadAddon(new WebLinksAddon())
+    // Pass the URL to window.open explicitly. The addon's default handler opens
+    // a blank window first and assigns location.href after, which reaches the
+    // main process as `about:blank` instead of the link the user clicked.
+    term.loadAddon(
+      new WebLinksAddon((_event, uri) => {
+        window.open(uri, '_blank', 'noopener,noreferrer')
+      })
+    )
 
     // Lets the session survive a restart: persistence asks this for the pane's
     // buffer, and we replay whatever it saved last time (below).
