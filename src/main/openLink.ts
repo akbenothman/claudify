@@ -33,9 +33,17 @@ function findChrome(): string | null {
 /** A bare host like `github.com/foo` that a user plainly meant as a web link. */
 const looksLikeDomain = (s: string): boolean => /^[\w-]+(\.[\w-]+)+([/:?#]|$)/.test(s)
 
+/**
+ * Schemes that mean something only inside a browser engine. Handing one to
+ * Windows finds no association and pops the "get an app from the Store" dialog,
+ * so we drop them instead of routing them out.
+ */
+const INTERNAL_SCHEME = /^(about|blob|data|javascript|chrome|devtools):/i
+
 export function openLink(rawUrl: string): void {
   const url = (rawUrl || '').trim()
   if (!url) return
+  if (INTERNAL_SCHEME.test(url)) return
 
   const isWeb = /^https?:\/\//i.test(url)
   const target = isWeb ? url : looksLikeDomain(url) ? `https://${url}` : null
