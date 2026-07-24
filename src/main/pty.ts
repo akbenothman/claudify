@@ -61,6 +61,28 @@ export function createSession(opts: PtySpawnOptions, port: MessagePortMain): str
   if (env.FORCE_COLOR === '0') delete env.FORCE_COLOR
 
   /*
+   * If Claudify was launched from inside a Claude Code session (a terminal that
+   * was itself running `claude`), that session's runtime markers ride in on the
+   * environment. A `claude` started in a pane then sees them, decides it is a
+   * nested/inherited session, and switches transcript saving off — which also
+   * blanks the context/usage statusline and this pane's own finished/blocked
+   * detection, both of which read those transcripts. A pane is a fresh top-level
+   * session, so clear the markers. Left alone on purpose: real config such as
+   * CLAUDE_CODE_USE_BEDROCK/VERTEX and CLAUDE_CONFIG_DIR — these are only the
+   * per-session runtime vars.
+   */
+  for (const key of [
+    'CLAUDECODE',
+    'CLAUDE_CODE_ENTRYPOINT',
+    'CLAUDE_CODE_SESSION_ID',
+    'CLAUDE_CODE_CHILD_SESSION',
+    'CLAUDE_CODE_SSE_PORT',
+    'CLAUDE_PID'
+  ]) {
+    delete env[key]
+  }
+
+  /*
    * Two things wrong with cmd's default prompt, both fixed here.
    *
    * It renders `C:\dir>` with nothing after the `>`, so what you type collides
