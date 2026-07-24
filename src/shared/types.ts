@@ -380,10 +380,55 @@ export interface Recurring {
   updated?: string
 }
 
+/**
+ * A single dated money movement — the ledger every real tracker is built on.
+ * `amount` is always positive; `direction` carries the sign, the same way the
+ * recurring rows work, so a value can never contradict its own label.
+ */
+export interface Transaction {
+  id: string
+  /** Local `YYYY-MM-DD`. Grouped into months for the spending views. */
+  date: string
+  desc: string
+  amount: number
+  direction: 'in' | 'out'
+  /** Free text, matched to a budget by name (case-insensitive). */
+  category?: string
+  /** Optional account name this hit — display only, not reconciled to balances. */
+  account?: string
+  updated?: string
+}
+
+/** A monthly spending limit for a category, measured against actual transactions. */
+export interface Budget {
+  id: string
+  category: string
+  /** Cap per month, in the dashboard currency. */
+  limit: number
+  updated?: string
+}
+
+/** A named savings goal: a target, and what has been set aside so far. */
+export interface SavingsGoal {
+  id: string
+  name: string
+  target: number
+  saved: number
+  /** Optional target date, `YYYY-MM-DD`. */
+  due?: string
+  updated?: string
+}
+
 export interface Finance {
   accounts: Account[]
   recurring: Recurring[]
-  /** What the savings meter measures against. */
+  /** The transaction ledger, newest first is not assumed — sorted on read. */
+  transactions?: Transaction[]
+  /** Per-category monthly spending limits. */
+  budgets?: Budget[]
+  /** Savings goals, each with its own progress. */
+  goals?: SavingsGoal[]
+  /** Legacy single target; superseded by goals[] but still honoured if set. */
   savingsTarget?: number
   /** Currency symbol used for display only; no conversion happens anywhere. */
   currency?: string

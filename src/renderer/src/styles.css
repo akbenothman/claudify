@@ -2560,6 +2560,12 @@ kbd {
 .meter-up {
   background: linear-gradient(90deg, rgba(74, 201, 119, 0.6), var(--add));
 }
+.meter-warn {
+  background: linear-gradient(90deg, rgba(227, 179, 65, 0.55), var(--warn));
+}
+.meter-down {
+  background: linear-gradient(90deg, rgba(255, 107, 99, 0.55), var(--danger));
+}
 
 /* -------------------------------- blanks ---------------------------------- */
 
@@ -2985,6 +2991,221 @@ kbd {
 .toggle.in {
   color: var(--add);
   background: rgba(74, 201, 119, 0.1);
+}
+
+/* -------------------------- spending this month --------------------------- */
+
+.spend-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.spend-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-1);
+}
+.spend-cat {
+  flex: 1;
+  min-width: 0;
+  font-weight: 550;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.spend-share {
+  font-size: var(--fs-small);
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+.spend-amt {
+  font-weight: 560;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+
+/* -------------------------------- budgets --------------------------------- */
+
+.budget-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.budget-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-1);
+}
+.budget-cat {
+  flex: 1;
+  min-width: 0;
+  font-weight: 550;
+  background: transparent;
+  border-color: transparent;
+}
+.budget-cat:hover {
+  border-color: var(--border-soft);
+}
+.budget-cat:focus {
+  background: var(--bg-alt);
+}
+.budget-nums {
+  flex: none;
+  font-weight: 560;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+}
+.page input.num.budget-limit {
+  width: 72px;
+}
+.budget-limit {
+  background: transparent;
+  border-color: transparent;
+  font-weight: 560;
+}
+.budget-limit:hover {
+  border-color: var(--border-soft);
+}
+.budget-left {
+  font-size: var(--fs-small);
+  color: var(--dim);
+  margin-top: var(--sp-1);
+}
+.budget-left.over {
+  color: var(--danger);
+}
+.budget-row.over .budget-nums {
+  color: var(--danger);
+}
+.budget-add input:first-child {
+  flex: 1;
+}
+
+/* ----------------------------- transactions ------------------------------- */
+
+.txn-add,
+.txn-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.txn-add {
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border-soft);
+}
+.txn-list {
+  display: flex;
+  flex-direction: column;
+}
+.txn-row {
+  padding: var(--sp-2);
+  border-radius: var(--radius);
+}
+.txn-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.txn-row input {
+  background: transparent;
+  border-color: transparent;
+}
+.txn-row input:hover {
+  border-color: var(--border-soft);
+}
+.txn-row input:focus {
+  background: var(--bg-alt);
+}
+.page input.date.txn-date {
+  width: 130px;
+  flex: none;
+}
+.txn-desc {
+  flex: 1;
+  min-width: 0;
+  font-weight: 550;
+}
+.txn-cat {
+  width: 132px;
+  flex: none;
+  color: var(--dim);
+  font-size: var(--fs-body);
+}
+.page input.num.txn-amount {
+  width: 92px;
+  flex: none;
+  font-weight: 560;
+}
+.txn-row.dir-out .txn-amount {
+  color: var(--danger);
+}
+.txn-row.dir-in .txn-amount {
+  color: var(--add);
+}
+.txn-go {
+  flex: none;
+}
+
+/* ------------------------------ savings goals ----------------------------- */
+
+.sgoal-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.sgoal {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--bg-alt);
+  padding: var(--sp-4);
+}
+.sgoal.done {
+  border-color: color-mix(in srgb, var(--add) 40%, var(--border-soft));
+}
+.sgoal-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.sgoal-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 560;
+  background: transparent;
+  border-color: transparent;
+}
+.sgoal-name:hover {
+  border-color: var(--border-soft);
+}
+.sgoal-name:focus {
+  background: var(--panel);
+}
+.sgoal-pct {
+  flex: none;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--page);
+}
+.sgoal-nums {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  font-size: var(--fs-body);
+}
+.page input.num.sgoal-saved,
+.page input.num.sgoal-target {
+  width: 96px;
+}
+.sgoal-left {
+  margin-left: auto;
+}
+.sgoal-add input:first-child {
+  flex: 1;
 }
 
 /* --------------------------------- home ----------------------------------- */

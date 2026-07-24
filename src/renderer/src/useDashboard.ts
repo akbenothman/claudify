@@ -52,6 +52,28 @@ export const daysAgo = (n: number): string => {
   return dayKey(d)
 }
 
+/** The current month as `YYYY-MM` — the bucket the spending views total into. */
+export const thisMonth = (): string => dayKey().slice(0, 7)
+
+/** `YYYY-MM` for a month `n` before the current one (0 = this month). */
+export const monthsAgo = (n: number): string => {
+  const d = new Date()
+  d.setDate(1) // avoid month-length overflow (e.g. Mar 31 → Mar when stepping back)
+  d.setMonth(d.getMonth() - n)
+  return dayKey(d).slice(0, 7)
+}
+
+/** True if a `YYYY-MM-DD` date falls inside the given `YYYY-MM` month. */
+export const inMonth = (date: string | undefined, month: string): boolean =>
+  (date ?? '').slice(0, 7) === month
+
+/** A month key like `2026-07` spelled out as `July 2026`, for a heading. */
+export const monthName = (month: string): string => {
+  const [y, m] = month.split('-').map(Number)
+  if (!y || !m) return month
+  return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+}
+
 /**
  * Money, short. Balances and revenue are glanced at, not audited: 12.4k reads
  * faster than 12,417.83, and the exact figure is one hover away in the title.
