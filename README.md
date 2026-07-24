@@ -60,8 +60,9 @@ you press **launch**.
   your global Claude config. This is the one place claudify runs a server instead of a file: a
   live browser needs a live channel. First use may prompt you to allow the tool, as any MCP
   tool does.
-- **AK Dashboard** — a permanent first workspace: small terminal, a always-on Claude, a todo
-  list and a conversation tracker. Claude can change the status of anything on it (see below).
+- **AK Dashboard** — a permanent first workspace of full-screen **pages**, one per tab: home,
+  todo, goals, habits, business, finance, notes, calendar, sessions, and a personal Claude.
+  Claude can change the state of anything on it (see below).
 - **Fast input.** Keystrokes never touch React or `ipcRenderer` — see below.
 - **Smart pane names.** A pane names itself from what you run in it (`npm run dev` → "npm dev").
   Once an agent CLI is running there, it names itself from the *topic* instead
@@ -80,18 +81,33 @@ you press **launch**.
 
 ## The AK Dashboard
 
-Workspace 1 is permanent and can't be deleted. It carries a notepad, a Claude REPL, a todo
-list, a conversation tracker, and — on its own tab — a **calendar** that shows your upcoming
-Google Calendar events and lets you add or delete them. The calendar works exactly like the
-rest of the dashboard: the app reads `calendar.json`, and an agent with the Google Calendar
-MCP fills it and fulfils the add/delete requests the pane writes. Claudify never talks to
-Google itself.
+Workspace 1 is permanent and can't be deleted. It is not a split of panes — it is a set of
+**pages**, one per tab, each filling the window with no pane chrome around it:
+
+| Page | What it is |
+| --- | --- |
+| **home** | The overview: open tasks, today's habits, goal progress, net worth, what's next on the calendar, and the next action for every venture. Everything is derived from the other pages, so it can never disagree with them. |
+| **todo** | Lists as tabs, each with its own items and a todo → doing → blocked → done cycle. |
+| **goals** | Grouped by horizon (year / quarter / month / someday), with a progress bar you can drag or fill in from milestones. |
+| **habits** | Five weeks of days per habit, click any day, with streaks. |
+| **business** | Every venture by stage, its MRR, and the single next step that moves it. |
+| **finance** | Accounts and debts, recurring money in and out, net worth, monthly surplus and runway. |
+| **notes** | Pages of plain text, as tabs. |
+| **calendar** | Upcoming Google Calendar events, with add and delete. |
+| **sessions** | Every recent Claude Code conversation across all your projects, and where each was left off. |
+| **claude** | A personal Claude REPL, always up, one click away. |
+
+The calendar works exactly like the rest of the dashboard: the app reads `calendar.json`, and an
+agent with the Google Calendar MCP fills it and fulfils the add/delete requests the page writes.
+Claudify never talks to Google itself.
 
 Claude changes the status of things by **editing a plain JSON file** —
 `%APPDATA%\Claudify\dashboard.json`. That's the whole protocol: no MCP server, no CLI shim, just
 a file every agent already has tools for. The app watches it and re-renders live, so telling the
-dashboard's Claude *"mark the auth todo blocked"* updates the UI without a reload. The file
-carries its own schema instructions, and the tracker pane shows you the path.
+dashboard's Claude *"mark the auth todo blocked"*, *"add a goal to hit $10k MRR by December"*, or
+*"my Amex balance is 2300 now"* updates the UI without a reload. One top-level key per page —
+`topics`, `notes`, `goals`, `habits`, `ventures`, `finance` — and the file carries its own schema
+instructions, so an agent editing it needs nothing else.
 
 The dashboard's Claude pane restarts with the app (it only opens the REPL). Worktree task panes
 deliberately do **not** — rebooting your PC must never silently re-run a real task.

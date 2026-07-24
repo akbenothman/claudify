@@ -202,13 +202,31 @@ export interface Settings {
 }
 
 /**
+ * What a pane shows. `terminal`, `merge` and `browser` are tools; the rest are
+ * the AK Dashboard's pages, each of which is a view onto `dashboard.json`.
+ */
+export type PaneKind =
+  | 'terminal'
+  | 'merge'
+  | 'browser'
+  | 'home'
+  | 'todo'
+  | 'notes'
+  | 'goals'
+  | 'habits'
+  | 'business'
+  | 'finance'
+  | 'calendar'
+  | 'tracker'
+
+/**
  * The persisted session. Mirrors the renderer's workspace tree, minus anything
  * transient (attention rings, exit flags) and minus `initialCommand` — we will
  * not silently re-run an agent on a task days later just because you rebooted.
  */
 export interface PersistedPane {
   id: string
-  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes' | 'calendar' | 'browser'
+  kind: PaneKind
   title: string
   cwd: string
   custom?: boolean
@@ -295,6 +313,94 @@ export interface Note {
   updated?: string
 }
 
+/* --------------------------------- goals ---------------------------------- */
+
+/** How far out a goal reaches. Drives the grouping on the goals page. */
+export type GoalHorizon = 'year' | 'quarter' | 'month' | 'someday'
+
+export interface Milestone {
+  id: string
+  text: string
+  done: boolean
+}
+
+export interface Goal {
+  id: string
+  title: string
+  /** One line of context: why this matters, or what "done" looks like. */
+  detail?: string
+  horizon: GoalHorizon
+  /** 0–100. Set by hand, or derived from milestones when there are any. */
+  progress: number
+  /** ISO date it should be finished by. */
+  due?: string
+  milestones?: Milestone[]
+  updated?: string
+}
+
+/* -------------------------------- business -------------------------------- */
+
+export type VentureStage = 'idea' | 'building' | 'launched' | 'growing' | 'parked'
+
+/** One business, product or side project on the business page. */
+export interface Venture {
+  id: string
+  name: string
+  stage: VentureStage
+  /** One line on what it is. */
+  pitch?: string
+  /** Monthly recurring revenue, as last known. */
+  mrr?: number
+  /** The single next thing that moves it forward. */
+  nextAction?: string
+  url?: string
+  updated?: string
+}
+
+/* -------------------------------- finance --------------------------------- */
+
+export interface Account {
+  id: string
+  name: string
+  /** Free text: checking, savings, brokerage, card, crypto… */
+  kind?: string
+  balance: number
+  /** A debt: counts against net worth rather than towards it. */
+  liability?: boolean
+  updated?: string
+}
+
+/** Money that arrives or leaves on a schedule — salary, rent, subscriptions. */
+export interface Recurring {
+  id: string
+  name: string
+  amount: number
+  cadence: 'weekly' | 'monthly' | 'yearly'
+  direction: 'in' | 'out'
+  updated?: string
+}
+
+export interface Finance {
+  accounts: Account[]
+  recurring: Recurring[]
+  /** What the savings meter measures against. */
+  savingsTarget?: number
+  /** Currency symbol used for display only; no conversion happens anywhere. */
+  currency?: string
+}
+
+/* --------------------------------- habits --------------------------------- */
+
+export interface Habit {
+  id: string
+  name: string
+  /** How many days a week this should happen. Defaults to 7. */
+  targetPerWeek?: number
+  /** Local `YYYY-MM-DD` dates it was done on. */
+  done: string[]
+  updated?: string
+}
+
 /* -------------------------------- calendar -------------------------------- */
 
 /** One upcoming event, mirrored from Google Calendar by an agent. */
@@ -347,6 +453,10 @@ export interface Dashboard {
   topics: Topic[]
   notes: Note[]
   conversations: Conversation[]
+  goals: Goal[]
+  ventures: Venture[]
+  finance: Finance
+  habits: Habit[]
   /**
    * Superseded by `topics`, kept so an older dashboard.json (and anything still
    * writing one) is read rather than silently dropped. On load these are folded

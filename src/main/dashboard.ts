@@ -13,10 +13,18 @@ import type { Dashboard } from '../shared/types'
 const INSTRUCTIONS = [
   'This file is the live state of the Claudify "AK Dashboard". Claude may edit it directly.',
   'Edit this file and the dashboard UI updates immediately — no restart needed.',
-  'topics[] are the tabs of the todo pane; each has its own todos[].',
+  'Each top-level section is one page (tab) of the dashboard.',
+  'topics[] are the tabs of the todo page; each has its own todos[].',
   'topics[].todos[].status must be one of: todo | doing | blocked | done',
-  'notes[] are the tabs of the notepad pane; body is plain text (newlines allowed).',
+  'notes[] are the tabs of the notes page; body is plain text (newlines allowed).',
   'conversations[].status must be one of: active | waiting | done',
+  'goals[] is the goals page. horizon: year | quarter | month | someday.',
+  'goals[].progress is 0-100; if a goal has milestones[], progress is computed from them instead.',
+  'ventures[] is the business page. stage: idea | building | launched | growing | parked.',
+  'ventures[].mrr is a number in the dashboard currency; nextAction is the single next step.',
+  'finance.accounts[] are balances (set liability: true for debts, which subtract from net worth).',
+  'finance.recurring[] is scheduled money: direction in | out, cadence weekly | monthly | yearly.',
+  'habits[] is the habits page; done[] holds local YYYY-MM-DD dates the habit was completed.',
   'Keep ids stable. Set updated to an ISO-8601 timestamp when you change a row.'
 ].join(' ')
 
@@ -24,8 +32,16 @@ const EMPTY: Dashboard = {
   _instructions: INSTRUCTIONS,
   topics: [{ id: 'general', name: 'General', todos: [] }],
   notes: [{ id: 'scratch', name: 'Scratch', body: '' }],
-  conversations: []
+  conversations: [],
+  goals: [],
+  ventures: [],
+  finance: { accounts: [], recurring: [], currency: '$' },
+  habits: []
 }
+
+/** Rows an agent wrote by hand are trusted for shape but not for existence. */
+const rows = <T extends { id?: string }>(v: unknown): T[] =>
+  Array.isArray(v) ? (v as T[]).filter((r) => r && r.id) : []
 
 export function dashboardPath(): string {
   const dir = app.getPath('userData')
@@ -62,13 +78,45 @@ export function readDashboard(): Dashboard {
 
     const notes = Array.isArray(parsed.notes) ? parsed.notes.filter((n) => n && n.id) : []
 
+    // A file written before a page existed simply has no key for it. Every
+    // section defaults to empty rather than undefined, so no page has to guard
+    // against a missing array of its own.
+    const fin = parsed.finance ?? EMPTY.finance
+
     return {
       _instructions: INSTRUCTIONS,
       // Never hand back an empty tab strip: a pane with no tabs has nothing to
       // click, and no way back to a usable state.
       topics: topics.length > 0 ? topics.map((t) => ({ ...t, todos: t.todos ?? [] })) : EMPTY.topics,
       notes: notes.length > 0 ? notes.map((n) => ({ ...n, body: n.body ?? '' })) : EMPTY.notes,
-      conversations: Array.isArray(parsed.conversations) ? parsed.conversations : []
+      conversations: Array.isArray(parsed.conversations) ? parsed.conversations : [],
+      goals: rows<Dashboard['goals'][number]>(parsed.goals).map((g) => ({
+        ...g,
+        horizon: g.horizon ?? 'quarter',
+        progress: Number.isFinite(g.progress) ? g.progress : 0
+      })),
+      ventures: rows<Dashboard['ventures'][number]>(parsed.ventures).map((v) => ({
+        ...v,
+        stage: v.stage ?? 'idea'
+      })),
+      finance: {
+        accounts: rows<Dashboard['finance']['accounts'][number]>(fin.accounts).map((a) => ({
+          ...a,
+          balance: Number.isFinite(a.balance) ? a.balance : 0
+        })),
+        recurring: rows<Dashboard['finance']['recurring'][number]>(fin.recurring).map((r) => ({
+          ...r,
+          amount: Number.isFinite(r.amount) ? r.amount : 0,
+          cadence: r.cadence ?? 'monthly',
+          direction: r.direction ?? 'out'
+        })),
+        savingsTarget: fin.savingsTarget,
+        currency: fin.currency ?? '$'
+      },
+      habits: rows<Dashboard['habits'][number]>(parsed.habits).map((h) => ({
+        ...h,
+        done: Array.isArray(h.done) ? h.done : []
+      }))
     }
   } catch {
     // Missing or malformed (quite likely mid-edit by an agent) — hand back the

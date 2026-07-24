@@ -4,6 +4,7 @@ import type { TodoStatus } from '../../../shared/types'
 import { dropIndex, reorder, TOPIC_MIME } from '../boardDnd'
 import { newId, nowIso, useDashboard } from '../useDashboard'
 import { TabStrip } from './TabStrip'
+import { Blank, Card, Meter, Page, Stat } from './Page'
 
 const CYCLE: TodoStatus[] = ['todo', 'doing', 'blocked', 'done']
 
@@ -24,7 +25,7 @@ export function TodoPane() {
   /** Index the dragged topic would land at, for the insertion caret. */
   const [dropAt, setDropAt] = useState<number | null>(null)
 
-  if (!data) return <div className="board empty">loading…</div>
+  if (!data) return <div className="page loading">loading…</div>
 
   const topics = data.topics
   // The selected topic can vanish under us — an agent editing the file may
@@ -89,9 +90,31 @@ export function TodoPane() {
   const done = topic ? topic.todos.filter((t) => t.status === 'done').length : 0
   const total = topic ? topic.todos.length : 0
   const pct = total ? Math.round((done / total) * 100) : 0
+  const openAll = topics.reduce((n, t) => n + t.todos.filter((x) => x.status !== 'done').length, 0)
+  const blocked = topic ? topic.todos.filter((t) => t.status === 'blocked').length : 0
 
   return (
-    <div className="board todo">
+    <Page
+      kind="todo"
+      title="Todo"
+      subtitle={`${openAll} open across ${topics.length} list${topics.length === 1 ? '' : 's'}`}
+      actions={
+        <div className="page-add">
+          <input
+            value={draft}
+            placeholder={topic ? `Add to ${topic.name}…` : 'New todo…'}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              e.stopPropagation()
+              if (e.key === 'Enter') add()
+            }}
+          />
+          <button className="primary" onClick={add}>
+            <Icon name="plus" size={12} /> Add
+          </button>
+        </div>
+      }
+    >
       <TabStrip
         trailing={
           <button className="board-tab-new" onClick={addTopic} title="New topic">
@@ -179,25 +202,31 @@ export function TodoPane() {
         ))}
       </TabStrip>
 
-      <div className="board-meter">
-        <div className="board-meter-fill" style={{ width: `${pct}%` }} />
+      <div className="stat-row">
+        <Stat
+          label="Open"
+          value={total - done}
+          tone={blocked > 0 ? 'down' : 'accent'}
+          hint={blocked > 0 ? `${blocked} blocked` : `in ${topic?.name ?? 'this list'}`}
+        />
+        <Stat label="Done" value={`${done}/${total}`} tone={done > 0 ? 'up' : undefined} />
+        <Stat label="Complete" value={`${pct}%`} hint={<Meter pct={pct} tone="up" />} />
       </div>
 
-      <div className="board-head">
-        <strong>{topic?.name ?? 'todo'}</strong>
-        <span className="dim">
-          {total - done} open · {done}/{total} done
-        </span>
-        <span className="spacer" />
-        {done > 0 && (
-          <button className="board-clear" onClick={clearDone} title="Remove completed items">
-            clear done
-          </button>
+      <Card
+        title={topic?.name ?? 'todo'}
+        action={
+          done > 0 ? (
+            <button className="ghost" onClick={clearDone} title="Remove completed items">
+              clear done
+            </button>
+          ) : undefined
+        }
+      >
+        <div className="board-list">
+        {total === 0 && (
+          <Blank icon="todo" text="Nothing here yet" hint="Add one from the box up top." />
         )}
-      </div>
-
-      <div className="board-list">
-        {total === 0 && <div className="board-empty">Nothing here yet. Add one below.</div>}
         {topic?.todos.map((t) => (
           <div key={t.id} className={`row row-${t.status}`}>
             <button
@@ -242,20 +271,8 @@ export function TodoPane() {
             </button>
           </div>
         ))}
-      </div>
-
-      <div className="board-add">
-        <input
-          value={draft}
-          placeholder={topic ? `add to ${topic.name}…` : 'new todo…'}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            e.stopPropagation()
-            if (e.key === 'Enter') add()
-          }}
-        />
-        <button onClick={add}>add</button>
-      </div>
-    </div>
+        </div>
+      </Card>
+    </Page>
   )
 }

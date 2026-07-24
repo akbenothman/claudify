@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { tabNeedsAttention, tabStatus, tabTitle, tabUnseen, useStore, type Workspace } from '../store'
 import { StatusDot } from './StatusDot'
-import { Icon } from './Icon'
+import { Icon, PAGE_ICONS } from './Icon'
 import { PANE_MIME, TAB_MIME, type PaneDrag, type TabDrag } from '../dnd'
 import type { MenuState } from './ContextMenu'
 
@@ -102,8 +102,15 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
       {ws.tabs.map((t, i) => {
         const panes = Object.keys(t.panes).length
         const unseen = tabUnseen(t)
+        /*
+         * A dashboard page gets an icon instead of a status dot and a close
+         * button. It is a place in the app, not a process you started: there is
+         * nothing to close it back to, and the icon is what lets you find
+         * "finance" in a strip of ten without reading every label.
+         */
+        const page = ws.permanent && panes === 1 ? Object.values(t.panes)[0].kind : null
         return (
-          <div key={t.id} className="tab-slot">
+          <div key={t.id} className={`tab-slot${page ? ' tab-page' : ''}`}>
             {dropAt === i && <div className="tab-caret" />}
             <div
               data-tab-id={t.id}
@@ -131,12 +138,19 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
                       label: t.flagged ? 'Mark read' : 'Mark unread',
                       onClick: () => setTabFlagged(ws.id, t.id, !t.flagged)
                     },
-                    {
-                      label: 'Close tab',
-                      danger: true,
-                      separated: true,
-                      onClick: () => closeTab(ws.id, t.id)
-                    }
+                    // Closing a dashboard page isn't on the menu — the next boot
+                    // would only put it back, and losing "finance" to a stray
+                    // click is a worse outcome than not being able to hide it.
+                    ...(page
+                      ? []
+                      : [
+                          {
+                            label: 'Close tab',
+                            danger: true,
+                            separated: true,
+                            onClick: () => closeTab(ws.id, t.id)
+                          }
+                        ])
                   ]
                 })
               }}
@@ -152,38 +166,51 @@ export function TabBar({ ws, openMenu }: { ws: Workspace; openMenu: (m: MenuStat
                 />
               ) : (
                 <>
-                  {/* The dot is the button: click it to keep a tab lit as
-                      unread, click again to clear it. A flagged tab shows the
-                      same green you get from a pane that finished unwatched —
-                      it's the same message ("look at this"), just yours. */}
-                  <button
-                    className={`tab-flag${t.flagged ? ' flagged' : ''}`}
-                    title={t.flagged ? 'Marked unread — click to clear' : 'Mark unread'}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setTabFlagged(ws.id, t.id, !t.flagged)
-                    }}
-                  >
-                    {t.flagged || unseen || tabStatus(t) !== 'idle' ? (
-                      <StatusDot status={t.flagged ? 'finished' : tabStatus(t)} unseen={unseen} />
-                    ) : (
-                      // Nothing to report — but the button still has to be there
-                      // to click. It surfaces on hover.
-                      <span className="dot dot-seen mark-hint" />
-                    )}
-                  </button>
+                  {page ? (
+                    <span className={`tab-glyph glyph-${page}`}>
+                      <Icon name={PAGE_ICONS[page] ?? 'home'} size={13} />
+                    </span>
+                  ) : (
+                    /* The dot is the button: click it to keep a tab lit as
+                       unread, click again to clear it. A flagged tab shows the
+                       same green you get from a pane that finished unwatched —
+                       it's the same message ("look at this"), just yours. */
+                    <button
+                      className={`tab-flag${t.flagged ? ' flagged' : ''}`}
+                      title={t.flagged ? 'Marked unread — click to clear' : 'Mark unread'}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setTabFlagged(ws.id, t.id, !t.flagged)
+                      }}
+                    >
+                      {t.flagged || unseen || tabStatus(t) !== 'idle' ? (
+                        <StatusDot status={t.flagged ? 'finished' : tabStatus(t)} unseen={unseen} />
+                      ) : (
+                        // Nothing to report — but the button still has to be
+                        // there to click. It surfaces on hover.
+                        <span className="dot dot-seen mark-hint" />
+                      )}
+                    </button>
+                  )}
                   <span className="tab-name">{tabTitle(t)}</span>
+                  {/* A page keeps its status readout — the Claude page still has
+                      to be able to say it's working or waiting on you. */}
+                  {page && (unseen || tabStatus(t) !== 'idle') && (
+                    <StatusDot status={tabStatus(t)} unseen={unseen} />
+                  )}
                   {panes > 1 && <span className="tab-panes">{panes}</span>}
-                  <button
-                    className="tab-x"
-                    title="Close tab"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      closeTab(ws.id, t.id)
-                    }}
-                  >
-                    <Icon name="close" size={11} />
-                  </button>
+                  {!page && (
+                    <button
+                      className="tab-x"
+                      title="Close tab"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        closeTab(ws.id, t.id)
+                      }}
+                    >
+                      <Icon name="close" size={11} />
+                    </button>
+                  )}
                 </>
               )}
             </div>

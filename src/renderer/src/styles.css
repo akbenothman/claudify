@@ -2273,3 +2273,1017 @@ kbd {
     transform: none;
   }
 }
+
+/* ========================================================================== */
+/* AK DASHBOARD PAGES                                                          */
+/*                                                                            */
+/* The dashboard is not a terminal multiplexer wearing a hat. Each page owns   */
+/* the whole window, has a title you can read from across the room, and lays   */
+/* out on a centred column of cards â€” the shape every modern productivity app  */
+/* converged on, because it works. Nothing here uses the mono font by default: */
+/* monospace is what makes a UI read as a developer tool more than any other   */
+/* single choice.                                                             */
+/* ========================================================================== */
+
+/* A page fills its tab, so the pane card around it is pure overhead: no
+   border, no shadow, no title bar to sit under. */
+.pane.bare {
+  inset: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.pane.bare.focused {
+  border: none;
+  box-shadow: none;
+}
+/* The Claude page is still a terminal â€” give it room to breathe instead. */
+.pane.bare .term-host {
+  padding: var(--sp-5) var(--sp-6);
+}
+
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-ui);
+  font-size: var(--fs-ui);
+  color: var(--fg);
+  /* Each page carries its own accent, set per kind below. Everything tinted on
+     the page reads from this one variable. */
+  --page: var(--accent);
+}
+.page.loading {
+  align-items: center;
+  justify-content: center;
+  color: var(--dim);
+}
+
+.glyph-home,
+.page-home {
+  --page: #5b9dff;
+}
+.glyph-todo,
+.page-todo {
+  --page: #4ade80;
+}
+.glyph-goals,
+.page-goals {
+  --page: #a78bfa;
+}
+.glyph-habits,
+.page-habits {
+  --page: #fb923c;
+}
+.glyph-business,
+.page-business {
+  --page: #2dd4bf;
+}
+.glyph-finance,
+.page-finance {
+  --page: #fbbf24;
+}
+.glyph-notes,
+.page-notes {
+  --page: #f472b6;
+}
+.glyph-calendar,
+.page-calendar {
+  --page: #38bdf8;
+}
+.glyph-tracker,
+.page-tracker {
+  --page: #94a3b8;
+}
+.glyph-terminal {
+  --page: #e08a5f;
+}
+
+/* ------------------------------ page header ------------------------------- */
+
+.page-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: 22px var(--sp-6) var(--sp-5);
+  /* A wash of the page's colour behind the title is the whole "this is a
+     different place" cue â€” no heavy banner needed. */
+  background: radial-gradient(
+    680px 180px at 0% 0%,
+    color-mix(in srgb, var(--page) 12%, transparent),
+    transparent 70%
+  );
+  border-bottom: 1px solid var(--border-soft);
+}
+.page-glyph {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-lg);
+  color: var(--page);
+  background: color-mix(in srgb, var(--page) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--page) 26%, transparent);
+}
+.page-heading {
+  min-width: 0;
+}
+.page-heading h1 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 620;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.page-sub {
+  color: var(--dim);
+  font-size: var(--fs-body);
+  margin-top: 2px;
+}
+.page-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.page-add {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.page-add input {
+  width: 240px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-ui);
+  padding: 7px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--panel);
+}
+.page-add .primary {
+  border-radius: var(--radius-pill);
+  padding: 7px 14px;
+  white-space: nowrap;
+}
+
+/* ------------------------------- page body -------------------------------- */
+
+.page-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--sp-5) var(--sp-6) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+/* Everything sits on one centred column. Full-bleed rows of text on a wide
+   monitor are the fastest way to make an app feel unconsidered. */
+.page-body > * {
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;
+}
+
+/* --------------------------------- cards ---------------------------------- */
+
+.card {
+  background: linear-gradient(
+    180deg,
+    var(--panel),
+    color-mix(in srgb, var(--panel) 82%, var(--bg))
+  );
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-5);
+  box-shadow: var(--shadow);
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.card-head h2 {
+  margin: 0;
+  font-size: var(--fs-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.card-head > :last-child:not(h2) {
+  margin-left: auto;
+  font-size: var(--fs-body);
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--sp-5);
+}
+
+/* --------------------------------- stats ---------------------------------- */
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--sp-4);
+}
+.stat {
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-4) var(--sp-5);
+  min-width: 0;
+}
+.stat-label {
+  font-size: var(--fs-small);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--dim);
+  font-weight: 600;
+}
+.stat-value {
+  font-size: 26px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat-up {
+  color: var(--add);
+}
+.stat-down {
+  color: var(--danger);
+}
+.stat-accent {
+  color: var(--page);
+}
+.stat-hint {
+  font-size: var(--fs-small);
+  color: var(--dim);
+  margin-top: var(--sp-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --------------------------------- meter ---------------------------------- */
+
+.meter {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  margin-top: var(--sp-2);
+}
+.meter-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--page) 70%, transparent),
+    var(--page)
+  );
+  transition: width var(--dur) var(--ease);
+}
+.meter-up {
+  background: linear-gradient(90deg, rgba(74, 201, 119, 0.6), var(--add));
+}
+
+/* -------------------------------- blanks ---------------------------------- */
+
+.blank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 44px var(--sp-5);
+  text-align: center;
+}
+.blank-glyph {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  color: var(--page);
+  background: color-mix(in srgb, var(--page) 10%, transparent);
+  margin-bottom: var(--sp-2);
+}
+.blank-text {
+  font-size: var(--fs-title);
+  font-weight: 560;
+}
+.blank-hint,
+.blank-inline {
+  color: var(--dim);
+  font-size: var(--fs-body);
+}
+.blank-inline {
+  padding: var(--sp-5) 0;
+  text-align: center;
+}
+
+/* ------------------------- shared page controls --------------------------- */
+
+.page .select,
+.page select.select {
+  appearance: none;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font: 500 var(--fs-body) / 1.4 var(--font-ui);
+  cursor: pointer;
+}
+.page input,
+.page textarea {
+  font-family: var(--font-ui);
+  font-size: var(--fs-ui);
+}
+.page input.num {
+  width: 96px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.page input.date {
+  width: 150px;
+  color: var(--fg-muted);
+}
+.page button.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--dim);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-body);
+}
+.page button.ghost:hover:not(:disabled) {
+  background: var(--panel-2);
+  color: var(--fg);
+}
+.page button.ghost-x {
+  background: transparent;
+  border-color: transparent;
+  color: var(--dim);
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  flex: none;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.page .goal:hover .ghost-x,
+.page .venture:hover .ghost-x,
+.page .fin-row:hover .ghost-x,
+.page .habit:hover .ghost-x,
+.page .ghost-x:focus-visible {
+  opacity: 1;
+}
+.page button.ghost-x:hover:not(:disabled) {
+  color: var(--danger);
+  background: rgba(255, 107, 99, 0.1);
+}
+.inline-add {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+.inline-add input {
+  flex: 1;
+  min-width: 0;
+}
+.pill {
+  font-size: var(--fs-small);
+  color: var(--dim);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-pill);
+  padding: 2px 9px;
+  white-space: nowrap;
+  flex: none;
+}
+.pill-soon {
+  color: var(--warn);
+  background: rgba(227, 179, 65, 0.12);
+}
+.pill-late {
+  color: var(--danger);
+  background: rgba(255, 107, 99, 0.12);
+}
+
+/* --------------------------------- goals ---------------------------------- */
+
+.goal-list,
+.venture-list,
+.habit-list,
+.fin-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.goal {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--bg-alt);
+  padding: var(--sp-4);
+}
+.goal-top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  cursor: pointer;
+  margin-bottom: var(--sp-3);
+}
+.goal-name {
+  min-width: 0;
+  flex: 1;
+}
+.goal-title {
+  font-weight: 560;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.goal-detail {
+  color: var(--dim);
+  font-size: var(--fs-body);
+}
+.goal-pct {
+  font-variant-numeric: tabular-nums;
+  color: var(--page);
+  font-weight: 600;
+  flex: none;
+}
+.goal-done .goal-title {
+  color: var(--dim);
+}
+.goal-open {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-4);
+  border-top: 1px dashed var(--border-soft);
+}
+.goal-slider {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.goal-slider input[type="range"] {
+  flex: 1;
+  accent-color: var(--page);
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+.goal-ms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.ms {
+  background: var(--panel);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px 4px 8px;
+  font-size: var(--fs-body);
+  color: var(--fg-muted);
+  gap: var(--sp-2);
+}
+.ms-box {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--bg);
+}
+.ms-done {
+  color: var(--dim);
+  text-decoration: line-through;
+}
+.ms-done .ms-box {
+  background: var(--add);
+  border-color: var(--add);
+}
+
+/* -------------------------------- habits ---------------------------------- */
+
+.habit {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--bg-alt);
+  padding: var(--sp-4);
+}
+.habit-name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.habit-flame {
+  color: var(--border);
+  display: flex;
+}
+.habit-flame.lit {
+  color: var(--page);
+}
+.habit-title {
+  font-weight: 560;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.habit-streak {
+  font-size: var(--fs-small);
+  color: var(--page);
+  font-variant-numeric: tabular-nums;
+}
+/* Five weeks of dots. A grid rather than a flex row so the columns line up
+   between habits and the run reads vertically as well as across. */
+.habit-grid {
+  display: grid;
+  /* Capped rather than stretched: a day is a small square, however wide the
+     window gets. Full-width cells turn a five-week run into a bar chart. */
+  grid-template-columns: repeat(35, minmax(0, 17px));
+  justify-content: start;
+  gap: 4px;
+}
+.hd {
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+}
+.hd:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: transparent;
+}
+.hd.on {
+  background: var(--page);
+}
+.hd.today {
+  box-shadow: 0 0 0 1px var(--fg-muted);
+}
+.habit-week {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+  font-size: var(--fs-small);
+}
+.habit-week .ok {
+  color: var(--add);
+}
+.habit-week .ghost-x {
+  margin-left: auto;
+}
+
+/* ------------------------------- business --------------------------------- */
+
+.venture {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  background: var(--bg-alt);
+  padding: var(--sp-4);
+  /* A stage stripe down the edge: the list groups by stage, and this keeps
+     that grouping legible once you have scrolled past the heading. */
+  box-shadow: inset 3px 0 0 var(--border);
+}
+.venture.stage-growing {
+  box-shadow: inset 3px 0 0 var(--add);
+}
+.venture.stage-launched {
+  box-shadow: inset 3px 0 0 var(--page);
+}
+.venture.stage-building {
+  box-shadow: inset 3px 0 0 var(--warn);
+}
+.venture-top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.venture-name {
+  font-weight: 560;
+}
+.venture-mrr {
+  font-variant-numeric: tabular-nums;
+  color: var(--add);
+  font-size: var(--fs-body);
+  background: rgba(74, 201, 119, 0.12);
+  border-radius: var(--radius-pill);
+  padding: 2px 9px;
+}
+.venture-pitch {
+  color: var(--dim);
+  font-size: var(--fs-body);
+  margin-top: var(--sp-1);
+}
+.venture-next {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  color: var(--page);
+  font-size: var(--fs-body);
+}
+.venture-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px dashed var(--border-soft);
+}
+.venture-fields {
+  display: flex;
+  gap: var(--sp-2);
+}
+.venture-fields input:last-child {
+  flex: 1;
+}
+
+/* -------------------------------- finance --------------------------------- */
+
+.fin-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border-radius: var(--radius);
+}
+.fin-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.fin-row input {
+  background: transparent;
+  border-color: transparent;
+}
+.fin-row input:hover {
+  border-color: var(--border-soft);
+}
+.fin-row input:focus {
+  background: var(--bg-alt);
+}
+.fin-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 550;
+}
+.fin-kind {
+  width: 92px;
+  flex: none;
+  color: var(--dim);
+  font-size: var(--fs-body);
+}
+.fin-amount {
+  flex: none;
+  font-weight: 560;
+}
+.fin-row.liability .fin-amount,
+.fin-row.dir-out .fin-amount {
+  color: var(--danger);
+}
+.fin-row.dir-in .fin-amount {
+  color: var(--add);
+}
+.toggle {
+  flex: none;
+  font-size: var(--fs-small);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: transparent;
+  color: var(--dim);
+  text-transform: lowercase;
+}
+.toggle.on,
+.toggle.out {
+  color: var(--danger);
+  background: rgba(255, 107, 99, 0.1);
+}
+.toggle.in {
+  color: var(--add);
+  background: rgba(74, 201, 119, 0.1);
+}
+
+/* --------------------------------- home ----------------------------------- */
+
+.home-todos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.home-todo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  background: transparent;
+  border-color: transparent;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius);
+  font-size: var(--fs-ui);
+}
+.home-todo:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: transparent;
+}
+.tick {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+}
+.tick-doing {
+  border-color: var(--accent);
+  background: radial-gradient(circle at center, var(--accent) 42%, transparent 44%);
+}
+.tick-blocked {
+  border-color: var(--blocked);
+  background: radial-gradient(circle at center, var(--blocked) 42%, transparent 44%);
+}
+.tick-done {
+  border-color: var(--add);
+  background: var(--add);
+}
+.home-todo-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.st-done .home-todo-text {
+  color: var(--dim);
+  text-decoration: line-through;
+}
+.home-todo-topic {
+  flex: none;
+  font-size: var(--fs-small);
+  color: var(--dim);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-pill);
+  padding: 1px 8px;
+}
+
+.home-events {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.home-event {
+  display: flex;
+  gap: var(--sp-4);
+  align-items: baseline;
+}
+.he-when {
+  flex: none;
+  width: 92px;
+  display: flex;
+  flex-direction: column;
+}
+.he-day {
+  font-weight: 600;
+  font-size: var(--fs-body);
+}
+.he-time {
+  color: var(--dim);
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+}
+.he-text {
+  min-width: 0;
+}
+.he-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.he-loc {
+  color: var(--dim);
+  font-size: var(--fs-small);
+}
+
+.home-goals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.hg-top {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: baseline;
+}
+.hg-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hg-pct {
+  color: var(--page);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-body);
+}
+.home-mrr {
+  font-size: 24px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: var(--sp-3);
+}
+.home-mrr .dim {
+  font-size: var(--fs-body);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.home-next {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.hn-row {
+  display: flex;
+  gap: var(--sp-3);
+  font-size: var(--fs-body);
+}
+.hn-name {
+  flex: none;
+  width: 110px;
+  color: var(--fg-muted);
+  font-weight: 550;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hn-action {
+  color: var(--dim);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jump-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.jump {
+  gap: var(--sp-2);
+  border-radius: var(--radius-pill);
+  padding: 7px 14px;
+  color: var(--fg-muted);
+  background: var(--bg-alt);
+}
+.jump:hover:not(:disabled) {
+  color: var(--page);
+  border-color: color-mix(in srgb, var(--page) 40%, transparent);
+  background: color-mix(in srgb, var(--page) 10%, transparent);
+}
+
+/* ------------- the older boards, once they live inside a page ------------- */
+
+/* Topic / note tabs become a segmented control: same markup and same drag
+   handlers, read as pills on a rail rather than a second row of tabs. */
+/* The strip itself is invisible: it spans the column like every other block on
+   the page, and the pills inside it sit at the left margin with the cards. A
+   boxed segmented control floating in the middle of the page reads as a widget
+   someone dropped in, not as part of the layout. */
+.page .tabstrip {
+  background: transparent;
+  border: none;
+  border-bottom: none;
+  padding: 0;
+  justify-content: flex-start;
+}
+.page .board-tabs {
+  gap: var(--sp-1);
+  padding: 0;
+  /* Don't stretch: the "new list" button belongs beside the last pill, not
+     stranded against the far edge of the page. */
+  flex: 0 1 auto;
+}
+.page .board-tab {
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  font-size: var(--fs-body);
+  color: var(--fg-muted);
+  background: var(--panel);
+  border-color: var(--border-soft);
+}
+.page .board-tab.active {
+  background: var(--page);
+  border-color: transparent;
+  color: #08101c;
+  font-weight: 600;
+}
+.page .board-tab.active .board-tab-count {
+  color: #08101c;
+  background: rgba(0, 0, 0, 0.14);
+}
+.page .board-tab .pane-x {
+  opacity: 0.55;
+}
+
+/* Inside a page the body scrolls, so these lists must not scroll themselves. */
+.page .board-list {
+  flex: none;
+  overflow: visible;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.page .row {
+  padding: var(--sp-3);
+  border-radius: var(--radius);
+  gap: var(--sp-3);
+  font-size: var(--fs-ui);
+}
+.page .row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.page .chip {
+  font-size: var(--fs-small);
+  text-transform: lowercase;
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+  flex: none;
+}
+.page .convo {
+  padding: var(--sp-3);
+  border-radius: var(--radius);
+}
+
+/* The notepad becomes the page: one big sheet, generous line height, and the
+   proportional font â€” it is prose, not code. */
+.page .notes-body {
+  flex: 1;
+  min-height: 340px;
+  background: var(--panel);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-6);
+  font: var(--fs-ui) / 1.75 var(--font-ui);
+  box-shadow: var(--shadow);
+}
+.page .notes-body:focus {
+  border-color: color-mix(in srgb, var(--page) 45%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--page) 12%, transparent);
+}
+
+/* The calendar keeps its own month grid, but loses the pane-era chrome. */
+.pane.bare .board {
+  font-size: var(--fs-ui);
+}
+.pane.bare .board .board-head {
+  padding: var(--sp-4) var(--sp-6);
+  font-size: var(--fs-title);
+}
+
+/* --------------------------- dashboard tab strip -------------------------- */
+
+/* A page tab is a place in the app. Its icon carries the page colour so the
+   strip is scannable by shape and hue before you read a single word. */
+.tab-glyph {
+  display: flex;
+  color: var(--page, var(--dim));
+  opacity: 0.85;
+  flex: none;
+}
+.tab-page .tab {
+  padding-right: 10px;
+}
+.tab-page .tab.active .tab-glyph {
+  opacity: 1;
+}
+.tab-page .tab.active {
+  background: color-mix(in srgb, var(--page, var(--accent)) 14%, var(--panel-2));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--page, var(--accent)) 26%, transparent);
+}

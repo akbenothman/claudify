@@ -3,6 +3,7 @@ import { Icon } from './Icon'
 import { dropIndex, NOTE_MIME, reorder } from '../boardDnd'
 import { newId, nowIso, useDashboard } from '../useDashboard'
 import { TabStrip } from './TabStrip'
+import { Page } from './Page'
 
 /**
  * The notepad. Pages are tabs, bodies are plain text, and everything lives in
@@ -37,7 +38,7 @@ export function NotesPane() {
 
   useEffect(() => () => clearTimeout(timer.current), [])
 
-  if (!data) return <div className="board empty">loading…</div>
+  if (!data) return <div className="page loading">loading…</div>
 
   const flush = (id: string, text: string) => {
     update((d) => ({
@@ -79,7 +80,16 @@ export function NotesPane() {
   const words = (body ?? '').trim() ? (body ?? '').trim().split(/\s+/).length : 0
 
   return (
-    <div className="board notes">
+    <Page
+      kind="notes"
+      title="Notes"
+      subtitle={`${note?.name ?? 'scratch'} · ${words} word${words === 1 ? '' : 's'}`}
+      actions={
+        <button className="primary" onClick={addNote}>
+          <Icon name="plus" size={12} /> New note
+        </button>
+      }
+    >
       <TabStrip
         trailing={
           <button className="board-tab-new" onClick={addNote} title="New note">
@@ -177,10 +187,6 @@ export function NotesPane() {
         // The terminal grabs global keys; keep them off this textarea.
         onKeyDown={(e) => e.stopPropagation()}
       />
-
-      <div className="board-foot">
-        <span className="dim">{words} words</span>
-      </div>
-    </div>
+    </Page>
   )
 }
