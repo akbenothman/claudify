@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Session, SplitPlan, TranscriptStats, Worktree } from '../../shared/types'
+import type { PaneKind, Session, SplitPlan, TranscriptStats, Worktree } from '../../shared/types'
 
 export type Direction = 'row' | 'col'
 
@@ -19,7 +19,7 @@ export type LayoutNode =
 
 export interface Pane {
   id: string
-  kind: 'terminal' | 'merge' | 'todo' | 'tracker' | 'notes' | 'calendar' | 'browser'
+  kind: PaneKind
   title: string
   cwd: string
   /** Typed into the shell once it is ready (used to launch `claude`). */
@@ -178,7 +178,28 @@ export const DASHBOARD_NAME = 'AK Dashboard'
  * arrangement changes; an existing dashboard rebuilds once to match, then keeps
  * whatever the user has since dragged.
  */
-const DASH_VERSION = 2
+const DASH_VERSION = 3
+
+/**
+ * The pages of the AK Dashboard, in tab order.
+ *
+ * One page per tab, one pane per page — deliberately no splits. A dashboard you
+ * live in wants each thing full-bleed and switched between, not five things
+ * fighting over the same screen. `kind` doubles as the identity used to carry a
+ * page across a rebuild, so each kind may appear only once.
+ */
+export const DASH_PAGES: { kind: PaneKind; title: string }[] = [
+  { kind: 'home', title: 'home' },
+  { kind: 'todo', title: 'todo' },
+  { kind: 'goals', title: 'goals' },
+  { kind: 'habits', title: 'habits' },
+  { kind: 'business', title: 'business' },
+  { kind: 'finance', title: 'finance' },
+  { kind: 'notes', title: 'notes' },
+  { kind: 'calendar', title: 'calendar' },
+  { kind: 'tracker', title: 'sessions' },
+  { kind: 'terminal', title: 'claude' }
+]
 
 let seq = 1
 const uid = (p: string) => `${p}-${seq++}`
@@ -889,132 +910,106 @@ export const useStore = create<State>((set, get) => ({
   },
 
   ensureDashboard: (cwd) => {
-    const mk = (p: Omit<Pane, 'id'>): Pane => ({ ...p, id: uid('pane') })
-
-    /*
-     * Assemble the single dashboard tab from whatever panes we already have,
-     * building any that are missing. Three columns:
-     *   left    notes (top) over conversations (bottom)
-     *   middle  Claude (top) over todo (bottom), same size
-     *   right   the calendar, a full-height Google-Calendar-style month grid
-     *
-     * Existing pane objects are reused by id (especially the dashboard's Claude,
-     * the one with persistCommand), so folding an older layout into this one
-     * never tears a running terminal down. Todos/notes/events live in their JSON
-     * files, so reshaping the layout loses nothing.
+    /**
+     * Build one page pane. The Claude page is a real terminal running the REPL;
+     * every other page is a view onto dashboard.json.
      */
-    const buildDashTab = (have: {
-      tabId?: string
-      notes?: Pane
-      claude?: Pane
-      todo?: Pane
-      tracker?: Pane
-      calendar?: Pane
-    }): Tab => {
-      const notes = have.notes ?? mk({ kind: 'notes', title: 'notes', cwd })
-      const claude =
-        have.claude ??
-        mk({
-          kind: 'terminal',
-          title: 'claude',
-          cwd,
-          // Just the REPL — no task — so it's safe to bring back on every boot.
-          initialCommand: claudeCommand(),
-          persistCommand: true
-        })
-      const todo = have.todo ?? mk({ kind: 'todo', title: 'todo', cwd })
-      const tracker = have.tracker ?? mk({ kind: 'tracker', title: 'conversations', cwd })
-      const calendar = have.calendar ?? mk({ kind: 'calendar', title: 'calendar', cwd })
+    const mkPane = (page: { kind: PaneKind; title: string }): Pane =>
+      page.kind === 'terminal'
+        ? {
+            id: uid('pane'),
+            kind: 'terminal',
+            title: page.title,
+            cwd,
+            // Just the REPL — no task — so it's safe to bring back on every boot.
+            initialCommand: claudeCommand(),
+            persistCommand: true
+          }
+        : { id: uid('pane'), kind: page.kind, title: page.title, cwd }
 
-      const layout: LayoutNode = {
-        kind: 'split',
-        id: uid('split'),
-        dir: 'row',
-        ratio: 0.22,
-        // Left column: notes over conversations.
-        a: {
-          kind: 'split',
-          id: uid('split'),
-          dir: 'col',
-          ratio: 0.55,
-          a: { kind: 'leaf', paneId: notes.id },
-          b: { kind: 'leaf', paneId: tracker.id }
-        },
-        b: {
-          kind: 'split',
-          id: uid('split'),
-          dir: 'row',
-          ratio: 0.55,
-          // Middle column: Claude over todo, same size.
-          a: {
-            kind: 'split',
-            id: uid('split'),
-            dir: 'col',
-            ratio: 0.5,
-            a: { kind: 'leaf', paneId: claude.id },
-            b: { kind: 'leaf', paneId: todo.id }
-          },
-          // Right column: the calendar.
-          b: { kind: 'leaf', paneId: calendar.id }
-        }
-      }
-
-      return {
-        id: have.tabId ?? uid('tab'),
-        title: 'dashboard',
-        custom: true,
-        panes: Object.fromEntries(
-          [notes, claude, todo, tracker, calendar].map((p) => [p.id, p])
-        ),
-        layout,
-        activePaneId: claude.id,
-        zoomedPaneId: null
-      }
-    }
+    /** A tab holding exactly one page. No split tree, so nothing to drag. */
+    const mkTab = (page: { kind: PaneKind; title: string }, pane: Pane, tabId?: string): Tab => ({
+      id: tabId ?? uid('tab'),
+      title: page.title,
+      // Named by the page, not by whatever the pane's process calls itself.
+      custom: true,
+      panes: { [pane.id]: pane },
+      layout: { kind: 'leaf', paneId: pane.id },
+      activePaneId: pane.id,
+      zoomedPaneId: null
+    })
 
     const existing = get().workspaces.find((w) => w.permanent)
 
     if (existing) {
-      // Built with the current layout generation already — leave it, including
-      // any dividers the user has dragged since.
-      if (existing.dashVersion === DASH_VERSION && existing.tabs.length === 1) return
-
-      // Otherwise (re)lay-out: collect the existing panes by kind (reusing their
-      // ids) and rebuild as one tab. This folds an old separate calendar tab, an
-      // earlier column arrangement, or a pre-notepad shell into the new layout.
-      const main = existing.tabs[0]
-      const pick = (match: (p: Pane) => boolean): Pane | undefined => {
+      /*
+       * Find the pane that already serves a page, wherever it currently lives —
+       * an old split layout, or a tab of its own. Reusing the object by id keeps
+       * the dashboard's Claude terminal alive across the reshape; the data pages
+       * live in JSON files, so they lose nothing either way.
+       */
+      const claimed = new Set<string>()
+      const adopt = (kind: PaneKind): Pane | undefined => {
         for (const t of existing.tabs) {
-          for (const p of Object.values(t.panes)) if (match(p)) return p
+          for (const p of Object.values(t.panes)) {
+            if (claimed.has(p.id)) continue
+            // The dashboard's Claude is the terminal with a persisted command;
+            // a plain shell someone opened here is not a page.
+            if (kind === 'terminal' && !(p.kind === 'terminal' && p.persistCommand)) continue
+            if (kind !== 'terminal' && p.kind !== kind) continue
+            claimed.add(p.id)
+            return p
+          }
         }
         return undefined
       }
-      const tab = buildDashTab({
-        tabId: main?.id,
-        notes: pick((p) => p.kind === 'notes'),
-        claude:
-          pick((p) => p.kind === 'terminal' && !!p.persistCommand) ??
-          pick((p) => p.kind === 'terminal'),
-        todo: pick((p) => p.kind === 'todo'),
-        tracker: pick((p) => p.kind === 'tracker'),
-        calendar: pick((p) => p.kind === 'calendar')
-      })
+
+      const upToDate = existing.dashVersion === DASH_VERSION
+      /*
+       * Already tabbed: leave the user's tab order and any tabs they added
+       * alone, and only fill in a page that isn't there — which is how a page
+       * added in a later release arrives without resetting anything.
+       */
+      if (upToDate) {
+        const present = new Set(
+          existing.tabs.flatMap((t) => Object.values(t.panes)).map((p) => p.kind)
+        )
+        const missing = DASH_PAGES.filter(
+          (page) => !present.has(page.kind === 'terminal' ? 'terminal' : page.kind)
+        )
+        if (missing.length === 0) return
+        const added = missing.map((page) => mkTab(page, mkPane(page)))
+        set((s) => ({
+          workspaces: s.workspaces.map((w) =>
+            w.permanent ? { ...w, tabs: [...w.tabs, ...added] } : w
+          )
+        }))
+        return
+      }
+
+      // Coming from the old split layout: re-cut it into one tab per page,
+      // reusing the first tab's id so the saved session keeps its identity.
+      const tabs = DASH_PAGES.map((page, i) =>
+        mkTab(page, adopt(page.kind) ?? mkPane(page), i === 0 ? existing.tabs[0]?.id : undefined)
+      )
       set((s) => ({
         workspaces: s.workspaces.map((w) =>
-          w.permanent ? { ...w, tabs: [tab], activeTabId: tab.id, dashVersion: DASH_VERSION } : w
+          w.permanent
+            ? { ...w, tabs, activeTabId: tabs[0].id, dashVersion: DASH_VERSION }
+            : w
         )
       }))
       return
     }
 
-    // First run: build the dashboard fresh, always first in the sidebar.
-    const tab = buildDashTab({})
+    // First run: build every page fresh, always first in the sidebar.
+    const tabs = DASH_PAGES.map((page) => mkTab(page, mkPane(page)))
     const ws: Workspace = {
       id: uid('ws'),
       name: DASHBOARD_NAME,
       cwd,
-      tabs: [tab],
-      activeTabId: tab.id,
+      tabs,
+      activeTabId: tabs[0].id,
       permanent: true,
       dashVersion: DASH_VERSION
     }

@@ -33,7 +33,69 @@ const paths: Record<string, ReactElement> = {
   plus: <path d="M8 3.5v9M3.5 8h9" />,
   // Palette: "go somewhere" vs "do something".
   arrow: <path d="M6 3.5L10.5 8 6 12.5" />,
-  bolt: <path d="M8.75 1.75L3.5 9h3.75l-.5 5.25L12.5 7H8.25z" />
+  bolt: <path d="M8.75 1.75L3.5 9h3.75l-.5 5.25L12.5 7H8.25z" />,
+
+  /* Dashboard pages. One per tab, so a glance at the strip is enough to find
+     the page you want without reading it. */
+  home: <path d="M2.5 7.25L8 2.75l5.5 4.5v5.25a.75.75 0 01-.75.75H9.75V9.5h-3.5v3.75H3.25a.75.75 0 01-.75-.75z" />,
+  check: (
+    <>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M5.5 8.25l1.85 1.85L10.6 6.5" />
+    </>
+  ),
+  target: (
+    <>
+      <circle cx="8" cy="8" r="6" />
+      <circle cx="8" cy="8" r="2.75" />
+      <path d="M8 7.9h.01" />
+    </>
+  ),
+  flame: <path d="M8 1.5c.6 2.1 2.3 3 3 4.6.9 1.9.5 4.2-1.1 5.5-1.3 1-3.2 1-4.4-.2C4.2 10.1 4.3 7.6 5.6 6c.3 1 .8 1.6 1.4 1.9C6.3 6 6.7 3.4 8 1.5z" />,
+  briefcase: (
+    <>
+      <rect x="2" y="4.75" width="12" height="8.5" rx="1.75" />
+      <path d="M5.75 4.75V3.6A1.35 1.35 0 017.1 2.25h1.8A1.35 1.35 0 0110.25 3.6v1.15M2 8.25h12" />
+    </>
+  ),
+  wallet: (
+    <>
+      <rect x="2" y="3.5" width="12" height="9" rx="2" />
+      <path d="M2 6.75h12" />
+      <path d="M11 9.6h.01" />
+    </>
+  ),
+  note: (
+    <>
+      <path d="M4 2.5h5.25L13 6.25v7.25H4z" />
+      <path d="M9.1 2.5v3.6H13M6.25 8.75h4M6.25 10.9h2.75" />
+    </>
+  ),
+  calendar: (
+    <>
+      <rect x="2.25" y="3.5" width="11.5" height="10.25" rx="1.75" />
+      <path d="M2.25 6.9h11.5M5.5 2.25v2.5M10.5 2.25v2.5" />
+    </>
+  ),
+  chat: <path d="M13.5 9.5a2 2 0 01-2 2H6.25L3 13.75V4.5a2 2 0 012-2h6.5a2 2 0 012 2z" />,
+  spark: <path d="M8 1.75l1.55 4.7 4.7 1.55-4.7 1.55L8 14.25 6.45 9.55 1.75 8l4.7-1.55z" />,
+  chart: <path d="M2.75 13.25h10.5M5 11V7.25M8 11V3.5M11 11V8.25" />
+}
+
+/** Which icon stands for a dashboard page, keyed by the pane kind it shows. */
+export const PAGE_ICONS: Record<string, keyof typeof paths> = {
+  home: 'home',
+  todo: 'check',
+  goals: 'target',
+  habits: 'flame',
+  business: 'briefcase',
+  finance: 'wallet',
+  notes: 'note',
+  calendar: 'calendar',
+  tracker: 'chat',
+  terminal: 'spark',
+  browser: 'arrow',
+  merge: 'split'
 }
 
 export function Icon({

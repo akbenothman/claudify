@@ -9,6 +9,11 @@ import { NotesPane } from './NotesPane'
 import { TrackerPane } from './TrackerPane'
 import { CalendarPane } from './CalendarPane'
 import { BrowserPane } from './BrowserPane'
+import { HomePane } from './HomePane'
+import { GoalsPane } from './GoalsPane'
+import { HabitsPane } from './HabitsPane'
+import { BusinessPane } from './BusinessPane'
+import { FinancePane } from './FinancePane'
 import { StatusDot } from './StatusDot'
 import { PANE_MIME, TAB_MIME, type PaneDrag, type TabDrag } from '../dnd'
 
@@ -65,8 +70,17 @@ function PaneFrame({
   const zoomed = tab.zoomedPaneId === pane.id
   const box = zoomed ? ZOOMED : rect
 
+  /*
+   * A dashboard page fills its tab on its own — there is nothing to drag it
+   * next to, nothing to close it back to, and no second pane to tell it apart
+   * from. So it gets no title bar: the page starts at the top of the window and
+   * reads as an app screen rather than a pane in a terminal multiplexer.
+   */
+  const bare = !!ws.permanent && Object.keys(tab.panes).length === 1
+
   const cls = [
     'pane',
+    bare ? 'bare' : '',
     focused ? 'focused' : '',
     pane.attention ? 'attention' : '',
     pane.unseen ? 'unseen' : ''
@@ -130,40 +144,52 @@ function PaneFrame({
         {/* The head is the pane's drag handle — dragging the body would fight
             with selecting text in the terminal. Drop it on another pane to
             re-split there, or on the tab bar to give it a tab of its own. */}
-        <div
-          className="pane-head"
-          draggable
-          onDragStart={(e) => {
-            const payload: PaneDrag = { wsId: ws.id, tabId: tab.id, paneId: pane.id }
-            e.dataTransfer.setData(PANE_MIME, JSON.stringify(payload))
-            e.dataTransfer.effectAllowed = 'move'
-          }}
-        >
-          <StatusDot status={pane.status} unseen={pane.unseen} />
-          <span className="pane-title">{pane.title}</span>
-          {pane.branch && <span className="pane-branch">{pane.branch}</span>}
-          {pane.status === 'blocked' && <span className="pane-blocked">needs you</span>}
-          {pane.status === 'finished' && (
-            <span className={pane.unseen ? 'pane-done' : 'pane-seen'}>done</span>
-          )}
-          <CostMeter pane={pane} />
-          {pane.exited && <span className="pane-exited">exited</span>}
-          <button
-            className="pane-x"
-            onClick={() => closePane(ws.id, tab.id, pane.id)}
-            title="Close pane"
+        {!bare && (
+          <div
+            className="pane-head"
+            draggable
+            onDragStart={(e) => {
+              const payload: PaneDrag = { wsId: ws.id, tabId: tab.id, paneId: pane.id }
+              e.dataTransfer.setData(PANE_MIME, JSON.stringify(payload))
+              e.dataTransfer.effectAllowed = 'move'
+            }}
           >
-            <Icon name="close" size={11} />
-          </button>
-        </div>
+            <StatusDot status={pane.status} unseen={pane.unseen} />
+            <span className="pane-title">{pane.title}</span>
+            {pane.branch && <span className="pane-branch">{pane.branch}</span>}
+            {pane.status === 'blocked' && <span className="pane-blocked">needs you</span>}
+            {pane.status === 'finished' && (
+              <span className={pane.unseen ? 'pane-done' : 'pane-seen'}>done</span>
+            )}
+            <CostMeter pane={pane} />
+            {pane.exited && <span className="pane-exited">exited</span>}
+            <button
+              className="pane-x"
+              onClick={() => closePane(ws.id, tab.id, pane.id)}
+              title="Close pane"
+            >
+              <Icon name="close" size={11} />
+            </button>
+          </div>
+        )}
 
         <div className="pane-body">
           {pane.kind === 'merge' ? (
             <MergeView ws={ws} />
+          ) : pane.kind === 'home' ? (
+            <HomePane />
           ) : pane.kind === 'todo' ? (
             <TodoPane />
           ) : pane.kind === 'notes' ? (
             <NotesPane />
+          ) : pane.kind === 'goals' ? (
+            <GoalsPane />
+          ) : pane.kind === 'habits' ? (
+            <HabitsPane />
+          ) : pane.kind === 'business' ? (
+            <BusinessPane />
+          ) : pane.kind === 'finance' ? (
+            <FinancePane />
           ) : pane.kind === 'tracker' ? (
             <TrackerPane />
           ) : pane.kind === 'calendar' ? (

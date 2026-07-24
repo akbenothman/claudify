@@ -1,10 +1,14 @@
 /**
  * AK Dashboard smoke test.
  *
- * The claim that matters: an agent can change the status of things by editing
- * dashboard.json, and the UI reflects it live. We test that literally — write
- * the file from OUTSIDE the app (exactly as Claude's file tools would) and
- * assert the rendered rows change without a reload.
+ * The claim that matters: an agent can change the state of your life-admin by
+ * editing dashboard.json, and the UI reflects it live. We test that literally —
+ * write the file from OUTSIDE the app (exactly as Claude's file tools would) and
+ * assert the rendered pages change without a reload.
+ *
+ * The second claim, since the dashboard was re-cut: it is a set of PAGES, one
+ * per tab, not a split of panes. So we also assert the tab strip carries every
+ * page and that a page fills its tab with no pane chrome around it.
  *
  *   npm run build && npx electron scripts/smoke-dashboard.cjs
  */
@@ -26,6 +30,20 @@ const fail = (msg) => {
   app.exit(1)
 }
 
+/** Every page the dashboard is supposed to carry, by tab title. */
+const PAGES = [
+  'home',
+  'todo',
+  'goals',
+  'habits',
+  'business',
+  'finance',
+  'notes',
+  'calendar',
+  'sessions',
+  'claude'
+]
+
 app.whenReady().then(async () => {
   const win = BrowserWindow.getAllWindows()[0]
   if (win.webContents.isLoading()) {
@@ -35,31 +53,59 @@ app.whenReady().then(async () => {
   await sleep(3000)
   const js = (src) => win.webContents.executeJavaScript(src)
 
-  // --- the permanent workspace exists, is first, and has the right 4 panes ---
+  /** Bring a page to the front by clicking its tab (pages are keyed by title). */
+  const open = async (title) => {
+    const ok = await js(`(() => {
+      const tab = [...document.querySelectorAll('.tab-page .tab')]
+        .find(t => t.querySelector('.tab-name')?.textContent === ${JSON.stringify(title)});
+      if (!tab) return false;
+      tab.click();
+      return true;
+    })()`)
+    if (!ok) return fail(`no dashboard tab titled '${title}'`)
+    await sleep(400)
+    return true
+  }
+
+  // --- the permanent workspace exists, is first, and is a strip of pages ---
   const boot = await js(`(() => ({
     firstWs: document.querySelector('.ws .ws-name')?.textContent,
     pinned: !!document.querySelector('.ws .ws-pin'),
-    paneTitles: [...document.querySelectorAll('.pane-slot:not(.hidden) .pane-title')].map(e => e.textContent),
-    hasTodo: !!document.querySelector('.board'),
-    boards: document.querySelectorAll('.board').length
+    tabs: [...document.querySelectorAll('.tab-page .tab .tab-name')].map(e => e.textContent),
+    glyphs: document.querySelectorAll('.tab-page .tab-glyph').length,
+    closable: document.querySelectorAll('.tab-page .tab-x').length,
+    pages: [...document.querySelectorAll('.page')].map(p => p.className.replace('page ', '')),
+    // A page owns its tab: no pane title bar above it.
+    chromeless: document.querySelectorAll('.pane.bare').length,
+    headsOnPages: document.querySelectorAll('.pane.bare .pane-head').length
   }))()`)
 
   if (!/AK Dashboard/.test(boot.firstWs || '')) {
     return fail(`first workspace is '${boot.firstWs}', expected 'AK Dashboard'`)
   }
   if (!boot.pinned) return fail('dashboard is not marked permanent')
-  // notes + todo + tracker on the dashboard tab, plus a calendar board on its
-  // own tab (rendered but hidden). All four are `.board` elements in the DOM.
-  if (boot.boards !== 4) {
-    return fail(`expected 4 boards (notes + todo + tracker + calendar), got ${boot.boards}`)
+
+  const missing = PAGES.filter((p) => !boot.tabs.includes(p))
+  if (missing.length > 0) {
+    return fail(`missing dashboard pages ${JSON.stringify(missing)}; got ${JSON.stringify(boot.tabs)}`)
   }
-  if (!boot.paneTitles.includes('notes')) {
-    return fail(`the dashboard should carry a notepad, not a shell: ${JSON.stringify(boot.paneTitles)}`)
+  if (boot.glyphs < PAGES.length) {
+    return fail(`every page tab should carry an icon; ${boot.glyphs} of ${PAGES.length} did`)
+  }
+  if (boot.closable > 0) {
+    return fail(`dashboard pages must not offer a close button (${boot.closable} did)`)
+  }
+  if (boot.headsOnPages > 0) {
+    return fail(`a full-tab page still draws pane chrome (${boot.headsOnPages} title bars)`)
+  }
+  if (boot.chromeless < PAGES.length) {
+    return fail(`expected ${PAGES.length} chrome-free panes, got ${boot.chromeless}`)
   }
   console.log(`  workspace: ${boot.firstWs} (permanent)`)
-  console.log(`  panes: ${boot.paneTitles.join(', ')}`)
+  console.log(`  pages: ${boot.tabs.join(', ')}`)
+  console.log('  each page fills its tab, with no pane title bar ✓')
 
-  // --- deleting it must be impossible ---
+  // --- deleting the workspace must be impossible ---
   const menu = await js(`(async () => {
     document.querySelector('.ws').dispatchEvent(
       new MouseEvent('contextmenu', { bubbles: true, clientX: 60, clientY: 120 })
@@ -74,9 +120,12 @@ app.whenReady().then(async () => {
   }
   console.log(`  context menu (no delete): ${JSON.stringify(menu)}`)
 
-  // --- add a todo through the UI, and check it lands in the file ---
+  /* --------------------------------- todo ---------------------------------- */
+
+  await open('todo')
+
   await js(`(() => {
-    const input = document.querySelector('.board.todo .board-add input');
+    const input = document.querySelector('.page-todo .page-add input');
     const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
     setter.call(input, 'ship claudify');
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -94,7 +143,7 @@ app.whenReady().then(async () => {
   /* ------------------------- topics are tabs ------------------------------- */
 
   const topics = await js(`(async () => {
-    const board = document.querySelector('.board.todo');
+    const board = document.querySelector('.page-todo');
     board.querySelector('.board-tab-new').click();
     await new Promise(r => setTimeout(r, 400));
 
@@ -106,7 +155,7 @@ app.whenReady().then(async () => {
     await new Promise(r => setTimeout(r, 500));
 
     // Add an item — it must land in the NEW topic, not the first one.
-    const add = board.querySelector('.board-add input');
+    const add = board.querySelector('.page-add input');
     setter.call(add, 'buy milk');
     add.dispatchEvent(new Event('input', { bubbles: true }));
     add.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
@@ -122,7 +171,9 @@ app.whenReady().then(async () => {
     return fail(`new topic tab did not appear: ${JSON.stringify(topics.tabs)}`)
   }
   if (topics.rows.includes('ship claudify')) {
-    return fail(`switching topic must switch lists; still showing the other topic's items: ${JSON.stringify(topics.rows)}`)
+    return fail(
+      `switching topic must switch lists; still showing the other topic's items: ${JSON.stringify(topics.rows)}`
+    )
   }
 
   onDisk = JSON.parse(fs.readFileSync(dashFile, 'utf8'))
@@ -135,7 +186,7 @@ app.whenReady().then(async () => {
   /* --------------------- topic tabs can be reordered ----------------------- */
 
   const reordered = await js(`(async () => {
-    const board = document.querySelector('.board.todo');
+    const board = document.querySelector('.page-todo');
     const tabs = [...board.querySelectorAll('.board-tab')];
     const before = tabs.map(t => t.querySelector('.board-tab-name').textContent);
 
@@ -174,14 +225,15 @@ app.whenReady().then(async () => {
   /* ----------------------- clearing completed items ------------------------ */
 
   const cleared = await js(`(async () => {
-    const board = document.querySelector('.board.todo');
+    const board = document.querySelector('.page-todo');
     // Cycle the item to 'done' (todo -> doing -> blocked -> done).
     for (let i = 0; i < 3; i++) {
       board.querySelector('.row .chip').click();
       await new Promise(r => setTimeout(r, 250));
     }
     const before = board.querySelectorAll('.row').length;
-    const clear = board.querySelector('.board-clear');
+    const clear = [...board.querySelectorAll('.card-head .ghost')]
+      .find(b => /clear done/i.test(b.textContent));
     if (!clear) return { ok: false, why: 'no "clear done" button appeared for a completed item' };
     clear.click();
     await new Promise(r => setTimeout(r, 600));
@@ -196,9 +248,11 @@ app.whenReady().then(async () => {
 
   /* ------------------------------ the notepad ------------------------------ */
 
+  await open('notes')
+
   const notes = await js(`(async () => {
-    const board = document.querySelector('.board.notes');
-    if (!board) return { ok: false, why: 'no notepad pane on the dashboard' };
+    const board = document.querySelector('.page-notes');
+    if (!board) return { ok: false, why: 'no notes page on the dashboard' };
 
     const ta = board.querySelector('.notes-body');
     const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
@@ -229,7 +283,7 @@ app.whenReady().then(async () => {
 
   // Note pages reorder the same way.
   const notesMoved = await js(`(async () => {
-    const board = document.querySelector('.board.notes');
+    const board = document.querySelector('.page-notes');
     const tabs = [...board.querySelectorAll('.board-tab')];
     const target = tabs[0];
     const box = target.getBoundingClientRect();
@@ -258,7 +312,43 @@ app.whenReady().then(async () => {
   }
   console.log(`  notepad: ${notes.tabs.length} pages, each saved to dashboard.json ✓`)
 
-  // --- THE ONE THAT MATTERS: edit the file the way Claude would ---
+  /* ------------------------ habits are clickable days ---------------------- */
+
+  await open('habits')
+
+  const habit = await js(`(async () => {
+    const page = document.querySelector('.page-habits');
+    if (!page) return { ok: false, why: 'no habits page' };
+    const input = page.querySelector('.page-add input');
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    setter.call(input, 'gym');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await new Promise(r => setTimeout(r, 600));
+
+    // The last dot in the row is today.
+    const days = [...page.querySelectorAll('.habit-grid .hd')];
+    days[days.length - 1].click();
+    await new Promise(r => setTimeout(r, 600));
+    return {
+      ok: true,
+      streak: page.querySelector('.habit-streak')?.textContent,
+      lit: page.querySelectorAll('.habit-grid .hd.on').length
+    };
+  })()`)
+
+  if (!habit.ok) return fail(habit.why)
+  if (habit.lit !== 1) return fail(`clicking today should light exactly one day, lit ${habit.lit}`)
+
+  onDisk = JSON.parse(fs.readFileSync(dashFile, 'utf8'))
+  const gym = (onDisk.habits || []).find((h) => h.name === 'gym')
+  if (!gym || gym.done.length !== 1) {
+    return fail(`the habit tick did not reach the file: ${JSON.stringify(onDisk.habits)}`)
+  }
+  console.log(`  habits: ticked today -> "${habit.streak}", saved to dashboard.json ✓`)
+
+  /* ---------------- THE ONE THAT MATTERS: edit the file as Claude ---------- */
+
   const edited = {
     ...onDisk,
     topics: [
@@ -272,7 +362,27 @@ app.whenReady().then(async () => {
       },
       { id: 'later', name: 'later', todos: [] }
     ],
-    notes: [{ id: 'n1', name: 'from claude', body: 'written by an agent' }]
+    notes: [{ id: 'n1', name: 'from claude', body: 'written by an agent' }],
+    goals: [
+      {
+        id: 'g1',
+        title: 'launch the course site',
+        horizon: 'quarter',
+        progress: 40,
+        updated: new Date().toISOString()
+      }
+    ],
+    ventures: [
+      { id: 'v1', name: 'cert prep co', stage: 'launched', mrr: 1200, nextAction: 'run ads' }
+    ],
+    finance: {
+      currency: '$',
+      accounts: [
+        { id: 'a1', name: 'checking', kind: 'bank', balance: 9000 },
+        { id: 'a2', name: 'card', kind: 'credit', balance: 1500, liability: true }
+      ],
+      recurring: [{ id: 'r1', name: 'rent', amount: 2000, cadence: 'monthly', direction: 'out' }]
+    }
   }
   fs.writeFileSync(dashFile, JSON.stringify(edited, null, 2), 'utf8')
 
@@ -280,10 +390,15 @@ app.whenReady().then(async () => {
   await sleep(1800)
 
   const live = await js(`(() => ({
-    chips: [...document.querySelectorAll('.board .chip')].map(c => c.textContent.trim()),
-    texts: [...document.querySelectorAll('.board .row-text')].map(c => c.textContent.trim()),
-    topicTabs: [...document.querySelectorAll('.board.todo .board-tab-name')].map(e => e.textContent),
-    noteBody: document.querySelector('.board.notes .notes-body')?.value
+    chips: [...document.querySelectorAll('.page-todo .chip')].map(c => c.textContent.trim()),
+    texts: [...document.querySelectorAll('.page-todo .row-text')].map(c => c.textContent.trim()),
+    topicTabs: [...document.querySelectorAll('.page-todo .board-tab-name')].map(e => e.textContent),
+    noteBody: document.querySelector('.page-notes .notes-body')?.value,
+    goals: [...document.querySelectorAll('.page-goals .goal-title')].map(e => e.textContent),
+    goalPct: [...document.querySelectorAll('.page-goals .goal-pct')].map(e => e.textContent),
+    ventures: [...document.querySelectorAll('.page-business .venture-name')].map(e => e.textContent),
+    accounts: [...document.querySelectorAll('.page-finance .fin-name')].map(e => e.value),
+    netWorth: document.querySelector('.page-finance .stat-value')?.textContent
   }))()`)
 
   if (!live.topicTabs.includes('later')) {
@@ -292,18 +407,32 @@ app.whenReady().then(async () => {
   if (live.noteBody !== 'written by an agent') {
     return fail(`the notepad did not pick up the agent's edit: ${JSON.stringify(live.noteBody)}`)
   }
-
   if (!live.texts.includes('added by claude')) {
     return fail(`UI did not pick up the agent's file edit. Rows: ${JSON.stringify(live.texts)}`)
   }
   if (!live.chips.some((c) => c.includes('done'))) {
     return fail(`status change to 'done' did not render. Chips: ${JSON.stringify(live.chips)}`)
   }
+  if (!live.goals.includes('launch the course site') || !live.goalPct.includes('40%')) {
+    return fail(`an agent-written goal did not render: ${JSON.stringify(live.goals)} ${JSON.stringify(live.goalPct)}`)
+  }
+  if (!live.ventures.includes('cert prep co')) {
+    return fail(`an agent-written venture did not render: ${JSON.stringify(live.ventures)}`)
+  }
+  if (!live.accounts.includes('checking') || !live.accounts.includes('card')) {
+    return fail(`agent-written accounts did not render: ${JSON.stringify(live.accounts)}`)
+  }
+  // 9000 assets less 1500 of debt. Under 10k it's shown in full, not abbreviated.
+  if (!/7,?500/.test(live.netWorth || '')) {
+    return fail(`net worth should net debts off assets, showed '${live.netWorth}'`)
+  }
 
   console.log(`  edited dashboard.json from outside the app (as Claude would)`)
   console.log(`  agent-added topic tab + note body landed live ✓`)
   console.log(`  UI live-updated: ${JSON.stringify(live.texts)}`)
   console.log(`  statuses now: ${JSON.stringify(live.chips)}`)
+  console.log(`  goals ${JSON.stringify(live.goals)} · business ${JSON.stringify(live.ventures)}`)
+  console.log(`  finance: ${JSON.stringify(live.accounts)} -> net worth ${live.netWorth} ✓`)
   console.log('DASHBOARD PASS')
   app.exit(0)
 })

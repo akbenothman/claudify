@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { ConversationInfo } from '../../../shared/types'
 import { StatusDot } from './StatusDot'
+import { Blank, Card, Page } from './Page'
 
 /**
  * Conversations. Every recent Claude Code session across all your projects,
@@ -47,23 +48,30 @@ export function TrackerPane() {
   const waiting = convos?.filter((c) => c.pendingToolUse).length ?? 0
 
   return (
-    <div className="board convos">
-      <div className="board-head">
-        <strong>conversations</strong>
-        <span className="dim">
-          {convos == null
-            ? 'loading…'
-            : `${convos.length} thread${convos.length === 1 ? '' : 's'}${
-                waiting ? ` · ${waiting} waiting` : ''
-              }`}
-        </span>
-      </div>
-
+    <Page
+      kind="tracker"
+      title="Sessions"
+      subtitle={
+        convos == null
+          ? 'loading…'
+          : `${convos.length} thread${convos.length === 1 ? '' : 's'}${
+              waiting ? ` · ${waiting} waiting on you` : ''
+            }`
+      }
+      actions={
+        <button className="ghost" onClick={load}>
+          refresh
+        </button>
+      }
+    >
+      <Card title="Every Claude conversation" action={<span className="dim">across all projects</span>}>
       <div className="board-list">
         {convos != null && convos.length === 0 && (
-          <div className="board-empty">
-            No Claude conversations yet. Start one in any pane and it shows up here.
-          </div>
+          <Blank
+            icon="tracker"
+            text="No conversations yet"
+            hint="Start one in any pane and it shows up here."
+          />
         )}
         {convos?.map((c) => (
           <div key={c.sessionId} className="convo" title={c.cwd}>
@@ -88,6 +96,7 @@ export function TrackerPane() {
           </div>
         ))}
       </div>
-    </div>
+      </Card>
+    </Page>
   )
 }
