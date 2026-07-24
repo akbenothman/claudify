@@ -41,9 +41,24 @@ export function createSession(opts: PtySpawnOptions, port: MessagePortMain): str
     ...(process.env as Record<string, string>),
     ...(opts.env ?? {}),
     TERM: 'xterm-256color',
+    // Claudify's xterm is a full truecolor display, so advertise it the way every
+    // real terminal emulator (Windows Terminal, iTerm) does. Without COLORTERM,
+    // chalk / supports-color — which Claude Code's TUI and statusline plugins run
+    // on — drop to a lower colour level.
+    COLORTERM: 'truecolor',
     // Lets a Claude running inside a pane detect (and later, address) its host.
     CLAUDIFY_PANE: id
   }
+
+  /*
+   * A NO_COLOR (or FORCE_COLOR=0) inherited from however Claudify itself was
+   * launched turns every colour in the pane off — a fully monochrome Claude TUI,
+   * spinner glyph and statusline included. NO_COLOR is a display instruction and
+   * the pane is a colour-capable display, so it isn't the launching shell's to
+   * give: undo it here rather than let it leak into the shell we start.
+   */
+  delete env.NO_COLOR
+  if (env.FORCE_COLOR === '0') delete env.FORCE_COLOR
 
   /*
    * Two things wrong with cmd's default prompt, both fixed here.
