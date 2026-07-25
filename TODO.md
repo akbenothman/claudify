@@ -43,12 +43,87 @@ known touch points:
 - [x] Claude controls it by editing `dashboard.json`; the app watches the file.
 - [x] Calendar tab — reads `calendar.json` (filled by an agent via the Google Calendar
       MCP), shows upcoming events, and writes add/delete requests back.
-- [ ] Auto-populate the conversation tracker from real Claude Code sessions
-      (`~/.claude/projects/**`) instead of only manual/agent entries. (The reader
-      exists now — `transcript.ts` — it just isn't wired to the tracker yet.)
+- [x] Auto-populate the conversation tracker from real Claude Code sessions
+      (`~/.claude/projects/**`) instead of only manual/agent entries — the Sessions
+      page reads `transcript.ts` directly.
+- [x] Every session row opens: jump to the pane already running that thread, or
+      resume it (`claude --resume`) in a tab in its own project's workspace. Never
+      resumes a thread that's already live — two Claudes on one transcript is
+      unrecoverable.
+- [x] Link out to the real Google Calendar from the calendar page, on the month
+      you're looking at.
 - [ ] Toast / taskbar flash *automatically* when a pane finishes in the background.
       (The mechanism exists — `control.ts`'s `notify` — an agent can already raise
       one; doing it on every finish without being asked is the missing part.)
+
+## Dashboard — the gap to the apps people actually use
+
+Reviewed against Sunsama / Motion / Akiflow (daily planning), Todoist / TickTick
+(capture), Notion (structure), YNAB / Monarch (money), Habitica / Streaks
+(habits). The pages here are competitive on *display*. What's missing is almost
+entirely **time, alerting, and history** — plus one real bug.
+
+Ordered by value per unit of work.
+
+- [ ] **A momentarily-malformed `dashboard.json` destroys it. Reproduced.**
+      `readDashboard`'s catch returns `EMPTY`, the watcher pushes that into the
+      renderer, and the next UI edit saves the empty shape over the real file. An
+      agent caught mid-write — the exact usage this design invites — is enough.
+      Measured, against a file holding one todo:
+        1. half-written file appears  -> UI goes blank
+        2. agent finishes the write   -> **UI stays blank** (see below)
+        3. user types one new todo    -> the old todo is gone from disk
+      Step 2 is a second bug in its own right: `watchDashboard` skips any change
+      whose bytes equal `lastWritten`, so a file *restored* to what the app last
+      wrote is invisible to it, and the app never recovers on its own.
+      Fix: hold the last good state on a parse failure instead of handing back
+      `EMPTY`; drop the `lastWritten` shortcut (or clear it whenever a read
+      fails); roll a `.bak` before each write. Nothing else on this list matters
+      if the file can evaporate.
+- [ ] **Todos have no dates.** `Todo` is `{text, status}` — no due, no scheduled
+      day, no priority, no recurrence. So Home's "Today" card isn't today, it's
+      "open, ordered by status", and there is no way to say "this is Thursday's
+      problem". This is the single biggest functional gap against every task app
+      in the comparison set. Add `due` / `scheduled` / `priority` / `repeat`, and
+      parse them out of the capture box ("pay rent friday") the way Todoist does.
+- [ ] **The calendar and the todo list have never met.** That fusion IS the
+      product for Sunsama/Motion/Akiflow, and claudify already has both halves in
+      the same file-watching world. Cheapest real version: one "Today" column with
+      today's events and today's tasks interleaved; then dragging a task onto a
+      day sets its date.
+- [ ] **Nothing keeps history, so nothing has a trend.** Net worth is a number,
+      not the Monarch/Copilot line chart. Goals have progress but no trajectory;
+      task completion has no rate. A `history[]` of daily snapshots (written by
+      the resident Claude, or by the app at midnight) unlocks all three at once,
+      and is what makes a dashboard feel like it has been paying attention.
+- [ ] **No daily/weekly review.** Sunsama's whole business is the morning plan and
+      the evening shutdown. This app has an idle Claude sitting in a tab with
+      read/write access to the calendar, the todos, the habits and the ledger —
+      it is better positioned to do this than anything on the market, and it
+      currently doesn't. A drafted daily note + an end-of-day "here's what
+      actually happened" is the highest-leverage feature on this page.
+- [ ] **Nothing ever nags.** No reminders, no "standup in 10 minutes", no "rent
+      leaves the account tomorrow", no "3-day streak about to break". A dashboard
+      you have to remember to open is a page, not a dashboard. `control.ts`'s
+      `notify` is already the delivery mechanism.
+- [ ] **Capture only works if you're already on Home.** Every capture tool worth
+      the name (Todoist, Akiflow, Raycast) has a global hotkey. This one needs you
+      to navigate to the page you were trying to avoid navigating to.
+- [ ] **No search.** Nothing finds a note, a todo or a goal by text. One box over
+      `dashboard.json` covers all of it.
+- [ ] **Home never says "look at this".** It's a set of totals. The alerts are all
+      computable and none are shown: overdue, streak at risk, budget blown, goal
+      untouched for a month, bill due this week.
+- [ ] **Spend per session is sitting right there.** The transcripts are already
+      parsed for cost per pane. "$X this week across N threads, by project" is a
+      headline stat no other personal dashboard can show, and it belongs on Home.
+- [ ] Business: ventures carry an `mrr` number with no history and no link to the
+      todos or goals that move them. A venture should be able to show its own open
+      tasks (it's the same file).
+- [ ] Honest limitation, tracked not planned: everything here is desktop-only.
+      Every app in the comparison set is on the phone. The plausible answer is the
+      file — put `dashboard.json` in a git repo and let Claude on any device edit
+      it — not a mobile client.
 
 ## Worktree splitting
 

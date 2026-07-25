@@ -33,15 +33,20 @@ export function isAgentCommand(line: string): boolean {
  * `--mcp-config "<path>"` flag so the browser tools are available. That flag is
  * NOT a task — but a naive "more than one token" check reads it as one, which
  * made every freshly-booted REPL look like a finished job and named the pane
- * after the flag. So strip the binary and the flags (and `--mcp-config`'s value)
- * before deciding whether an actual prompt remains.
+ * after the flag. So strip the binary and the flags (and the values belonging to
+ * them) before deciding whether an actual prompt remains.
+ *
+ * `--resume <session-id>` is the same shape and the same non-task: resuming a
+ * thread asks the agent for nothing, and a pane named after a uuid tells you
+ * nothing either.
  */
+const FLAGS_WITH_VALUES = /--(?:mcp-config|resume|session-id|model|append-system-prompt)\s+("[^"]*"|'[^']*'|\S+)/g
+
 export function agentPrompt(line: string): string | null {
   if (!isAgentCommand(line)) return null
   let rest = line.trim()
   rest = rest.slice(rest.split(/\s+/)[0].length).trim() // drop the binary
-  // `--mcp-config <value>` — remove the flag together with its argument.
-  rest = rest.replace(/--mcp-config\s+("[^"]*"|'[^']*'|\S+)/g, '').trim()
+  rest = rest.replace(FLAGS_WITH_VALUES, '').trim()
   // Any remaining leading boolean flags (e.g. --strict-mcp-config).
   rest = rest.replace(/^(?:--?[\w-]+(?:\s+|$))+/, '').trim()
   rest = rest.replace(/^["']|["']$/g, '').trim() // unwrap a quoted prompt

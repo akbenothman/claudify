@@ -103,6 +103,39 @@ app.whenReady().then(async () => {
   }
   console.log('  deleting an event wrote a delete request ✓')
 
+  /* -------------- the escape hatch to the real Google Calendar ------------- */
+
+  /*
+   * This grid is a mirror. Everything it can't do — invites, guests, recurrence,
+   * dragging an event to a new slot — lives in Google Calendar, so there has to
+   * be one click that gets you there, on the month you were looking at rather
+   * than dumped on today. `window.open` is stubbed: the real one launches a
+   * browser, which is not something a test gets to do to you.
+   */
+  const opened = await js(`(() => {
+    const real = window.open;
+    let got = null;
+    window.open = (url) => { got = url; return null; };
+    const btn = document.querySelector('.board.calendar .cal-google-btn');
+    if (!btn) return { missing: true };
+    btn.click();
+    window.open = real;
+    return { url: got };
+  })()`)
+
+  if (opened.missing) return fail('the calendar has no link out to Google Calendar')
+  const now = new Date()
+  const expected = `/month/${now.getFullYear()}/${now.getMonth() + 1}/`
+  if (!/^https:\/\/calendar\.google\.com\//.test(opened.url || '')) {
+    return fail(`the Google Calendar button opened ${JSON.stringify(opened.url)}`)
+  }
+  if (!(opened.url || '').includes(expected)) {
+    return fail(
+      `it should open the month on screen (${expected}), opened ${JSON.stringify(opened.url)}`
+    )
+  }
+  console.log(`  "Google Calendar" opens the month you're looking at: ${opened.url} ✓`)
+
   console.log('CALENDAR PASS')
   app.exit(0)
 })

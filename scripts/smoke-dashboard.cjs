@@ -433,6 +433,91 @@ app.whenReady().then(async () => {
   console.log(`  statuses now: ${JSON.stringify(live.chips)}`)
   console.log(`  goals ${JSON.stringify(live.goals)} · business ${JSON.stringify(live.ventures)}`)
   console.log(`  finance: ${JSON.stringify(live.accounts)} -> net worth ${live.netWorth} ✓`)
+  /* ---- sessions: every row is a door ------------------------------------- */
+
+  /*
+   * The Sessions page lists every Claude Code thread on the machine. Listing
+   * them is only half the feature — a thread you can't get back into is a
+   * museum. Clicking a row must land you IN the conversation: resumed in a pane,
+   * in its own project's directory, in a workspace that isn't the dashboard.
+   */
+  await open('sessions')
+  await sleep(600)
+
+  const rows = await js(`(() => {
+    const r = document.querySelector('.page-tracker .convo');
+    return r ? { title: r.querySelector('.convo-title')?.textContent, go: r.querySelector('.convo-go')?.textContent?.trim() } : null;
+  })()`)
+
+  if (!rows) {
+    // No transcripts under ~/.claude/projects on this machine — nothing to click.
+    console.log('  sessions: no conversations on this machine, skipped the open test')
+  } else {
+    if (!/resume|open/.test(rows.go || '')) {
+      return fail(`a session row should offer to open/resume, got ${JSON.stringify(rows.go)}`)
+    }
+
+    await js(`document.querySelector('.page-tracker .convo').click(); true`)
+    await sleep(3000) // the pane spawns a shell and types `claude --resume <id>`
+
+    const landed = await js(`(() => ({
+      wsName: document.querySelector('.ws.active .ws-name')?.textContent,
+      tabs: [...document.querySelectorAll('.tabbar .tab .tab-name')].map(t => t.textContent)
+    }))()`)
+
+    if (landed.wsName === 'AK Dashboard') {
+      return fail(`clicking a session left you on the dashboard (ws: ${JSON.stringify(landed.wsName)})`)
+    }
+    if (!landed.tabs.includes(rows.title)) {
+      return fail(
+        `the resumed thread should get a tab named after the conversation ` +
+          `(${JSON.stringify(rows.title)}); tabs are ${JSON.stringify(landed.tabs)}`
+      )
+    }
+    console.log(
+      `  clicked "${rows.title}" -> resumed it in a new "${landed.wsName}" workspace tab ✓`
+    )
+
+    /*
+     * And the half that keeps it safe: the SAME thread must never be resumed
+     * twice. Two Claudes appending to one transcript is a mess you cannot unpick
+     * afterwards, so a thread that's already live in a pane is a jump, not a
+     * launch — and the row says "open" instead of "resume" to tell you which
+     * you're about to get.
+     */
+    await js(`document.querySelectorAll('.ws')[0].click(); true`)
+    await sleep(500)
+    await open('sessions')
+    await sleep(500)
+
+    const badge = await js(
+      `document.querySelector('.page-tracker .convo')?.className + '|' +
+       document.querySelector('.page-tracker .convo .convo-go')?.textContent?.trim()`
+    )
+    if (!/convo-live/.test(badge) || !/open/.test(badge)) {
+      return fail(`a session that's live in a pane should be badged open, got ${JSON.stringify(badge)}`)
+    }
+
+    await js(`document.querySelector('.page-tracker .convo').click(); true`)
+    await sleep(1500)
+
+    const again = await js(`(() => ({
+      wsName: document.querySelector('.ws.active .ws-name')?.textContent,
+      tabs: [...document.querySelectorAll('.tabbar .tab .tab-name')].map(t => t.textContent)
+    }))()`)
+
+    if (again.tabs.length !== landed.tabs.length) {
+      return fail(
+        `clicking a live thread resumed it a SECOND time: tabs went from ` +
+          `${JSON.stringify(landed.tabs)} to ${JSON.stringify(again.tabs)}`
+      )
+    }
+    if (again.wsName !== landed.wsName) {
+      return fail(`clicking a live thread should jump to its pane, landed on ${JSON.stringify(again.wsName)}`)
+    }
+    console.log(`  clicking it again jumped to the live pane instead of resuming twice ✓`)
+  }
+
   console.log('DASHBOARD PASS')
   app.exit(0)
 })
