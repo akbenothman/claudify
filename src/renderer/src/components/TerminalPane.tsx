@@ -153,7 +153,13 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
     // cmux-style attention signals: an agent that wants you raises OSC 9 or
     // OSC 777, and most CLIs ring the bell when they need input.
     const raiseAttention = () => {
-      if (!disposed) raiseAttentionFor(wsId, tabId, pane.id)
+      if (disposed) return
+      // An agent with nothing outstanding is talking to itself — Claude posts a
+      // recap after a session has sat idle for a while, and that notification is
+      // not a job of yours coming due. Don't ring for it. (A plain shell still
+      // rings freely: a build that beeps at 2am is exactly what this is for.)
+      if (agent && !asked) return
+      raiseAttentionFor(wsId, tabId, pane.id)
     }
     /*
      * OSC 9 carries two different things on Windows. `ESC ] 9 ; <text>` is the
@@ -205,9 +211,21 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
      */
     const QUIET_MS = 1200
     const WORK_DELAY_MS = 250
+    /*
+     * How long after a keystroke output still counts as your own echo.
+     *
+     * Typing IS output: every character you press comes back from the PTY, and
+     * an agent's composer redraws its whole box around it. That changes the grid,
+     * which is why the dot used to flip blue the moment you started writing a
+     * message to an agent that had finished ten minutes ago. Composing is not
+     * work — pressing Enter is, and `sniff` says so explicitly.
+     */
+    const ECHO_MS = 1200
     let status: PaneStatus = 'idle'
     let quietTimer: ReturnType<typeof setTimeout> | undefined
     let workTimer: ReturnType<typeof setTimeout> | undefined
+    /** When you last touched the keyboard in this pane. */
+    let lastInputAt = 0
 
     /** What the visible grid says right now. Cheap: rows, not scrollback. */
     const screen = (): string => {
@@ -232,13 +250,22 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
         : null
 
     /*
-     * Has this agent actually been ASKED for anything?
+     * Is there an OUTSTANDING request in this pane right now?
      *
-     * "Finished" is a claim that something you wanted is now done and waiting on
-     * you — it lights the tab green and counts as unchecked. An agent that has
-     * merely been launched has finished nothing: the dashboard's Claude boots,
-     * paints its prompt, goes quiet, and used to announce itself as a job you
-     * hadn't checked, in a pane where you had never typed a thing.
+     * This is the gate on the entire status machine for an agent pane: no
+     * outstanding request means nothing the agent does is news, so it must not
+     * move the light at all — not to blue, not to green, not a ring.
+     *
+     * It goes true when you ask for something (Enter, or a task on the command
+     * line) or when the agent gets stuck needing your permission. It goes false
+     * the moment the answer lands and the light has said so.
+     *
+     * Two things this fixes, both of which used to light the app for nothing:
+     *   - A merely-launched agent has finished nothing. The dashboard's Claude
+     *     boots, paints its prompt, goes quiet — that is not a completed job.
+     *   - A settled agent still talks: Claude posts a follow-up recap when a
+     *     session has been idle a while. You didn't ask for it, so it doesn't
+     *     get to turn the tab green (or blue on its way there).
      *
      * A worktree pane is the opposite case: it starts with a task on the command
      * line (`claude "add dark mode"`), so it IS working for you from birth. A
@@ -249,6 +276,19 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
     // --mcp-config flag, which is NOT a task). agentPrompt tells them apart.
     const startedOnATask = !!pane.initialCommand && !!agentPrompt(pane.initialCommand)
     let asked = startedOnATask
+    let askedAt = startedOnATask ? Date.now() : 0
+    const markAsked = () => {
+      asked = true
+      askedAt = Date.now()
+    }
+    /*
+     * An agent can take a beat to print anything at all after you hit Enter. If
+     * that beat outruns QUIET_MS we'd call the turn finished before it began —
+     * which now costs more than a wrong dot, because finishing also closes the
+     * ask, and the real work would then arrive looking like unprompted chatter.
+     * So a very fresh ask never settles; it just waits another round.
+     */
+    const ASK_GRACE_MS = 3000
 
     const setStatus = (next: typeof status) => {
       if (disposed || status === next) return
@@ -265,15 +305,34 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
      */
     let stats: TranscriptStats | null = null
 
-    /** The your-turn state once an asked agent has gone quiet. */
-    const restState = (): typeof status =>
-      agent && asked ? (stats?.pendingToolUse ? 'blocked' : 'finished') : 'idle'
-
     const settle = () => {
       clearTimeout(workTimer)
       workTimer = undefined
       settled = screen()
-      setStatus(restState())
+
+      // A plain shell going quiet just means we're back at a prompt.
+      if (!agent) {
+        setStatus('idle')
+        return
+      }
+      // Nothing was outstanding, so whatever just happened was the agent's own
+      // chatter. Leave the light exactly as you left it.
+      if (!asked) return
+      // Too soon after the ask to believe it's over — look again next round.
+      if (Date.now() - askedAt < ASK_GRACE_MS) {
+        clearTimeout(quietTimer)
+        quietTimer = setTimeout(settle, QUIET_MS)
+        return
+      }
+      // A turn that ends on an unanswered tool call isn't done — it's waiting on
+      // you to approve something, and stays outstanding until you do.
+      if (stats?.pendingToolUse) {
+        setStatus('blocked')
+        return
+      }
+      setStatus('finished')
+      // Answered, and the dot now says so. Anything from here is unprompted.
+      asked = false
     }
 
     /*
@@ -292,7 +351,14 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       // agent panes, though — a plain shell's status isn't the transcript's to
       // decide just because it shares a cwd (and it lets the control surface set
       // a shell's status without the watcher stomping it).
-      if (agent && status !== 'working') setStatus(restState())
+      //
+      // A pending tool is an outstanding ask in its own right, whether or not
+      // you were the one who started it: the agent cannot move until you act,
+      // and once you do act, what follows is genuine work worth showing.
+      if (agent && status !== 'working' && s.pendingToolUse) {
+        markAsked()
+        setStatus('blocked')
+      }
     }
     window.claudify.subscribeTranscript(transcriptCwd).then((s) => applyStats(s))
     const offTranscript = window.claudify.onTranscript(applyStats)
@@ -304,7 +370,15 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       if (status !== 'working' && workTimer === undefined) {
         workTimer = setTimeout(() => {
           workTimer = undefined
-          if (!disposed && screen() !== settled) setStatus('working')
+          if (disposed) return
+          // You typing is not the agent working — this is your own echo coming
+          // back. Once you stop, `settle` folds what you typed into `settled`,
+          // so the pane stops seeing it as a change at all.
+          if (Date.now() - lastInputAt < ECHO_MS) return
+          // An agent with nothing outstanding isn't working FOR you, so its
+          // unprompted output doesn't get to flash the pane blue.
+          if (agent && !asked) return
+          if (screen() !== settled) setStatus('working')
         }, WORK_DELAY_MS)
       }
 
@@ -324,6 +398,9 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
     let inEscape = false
 
     const sniff = (chunk: string) => {
+      // Everything this chunk causes to appear on screen over the next moment is
+      // your echo, not the agent thinking. See ECHO_MS.
+      lastInputAt = Date.now()
       for (const ch of chunk) {
         // Arrow keys and friends arrive as escape sequences; they'd otherwise
         // land in the buffer as stray "[A" garbage.
@@ -343,7 +420,7 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
 
           // You asked it for something: from here on, going quiet means it has
           // finished YOUR request, and is worth telling you about.
-          asked = true
+          markAsked()
 
           if (agent) {
             const topic = topicTitle(submitted)
