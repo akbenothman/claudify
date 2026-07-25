@@ -209,6 +209,47 @@ app.whenReady().then(async () => {
   }
   console.log('  a freshly-booted agent does not raise an unchecked notification ✓')
 
+  /* ---- 5. typing is not working ------------------------------------------ */
+
+  /*
+   * Your own keystrokes echo back out of the PTY and change the screen, and an
+   * agent's composer redraws its whole box around them. Taken at face value that
+   * reads as work: the dot went blue the moment you started composing a message,
+   * in a pane that had been done for ten minutes. Pressing Enter starts work —
+   * typing does not.
+   */
+  await js(`document.querySelector('.tabbar .tab-new').click(); true`)
+  await sleep(3500) // let the new shell boot, paint its prompt and settle
+
+  const before = await dots()
+  if (before.includes('dot-working')) {
+    return fail(`new tab never settled before the typing test: ${JSON.stringify(before)}`)
+  }
+
+  await js(`(() => {
+    const host = document.querySelector('.pane-slot:not(.hidden) .term-host');
+    host.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    host.querySelector('.xterm-helper-textarea').focus();
+    return true;
+  })()`)
+  await sleep(250)
+
+  const typed = []
+  for (const ch of 'write me a haiku about status dots') {
+    wc.sendInputEvent({ type: 'char', keyCode: ch })
+    await sleep(60) // slower than a person types, so any flicker has room to show
+    typed.push(await dots())
+  }
+
+  const blue = typed.filter((s) => s.includes('dot-working'))
+  if (blue.length > 0) {
+    return fail(
+      `composing a message read as "working" in ${blue.length}/${typed.length} samples — ` +
+        `typing is not work`
+    )
+  }
+  console.log(`  ${typed.length} keystrokes composed: the dot never went blue ✓`)
+
   console.log('STATUS PASS')
   app.exit(0)
 })

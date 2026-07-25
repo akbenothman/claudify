@@ -1178,24 +1178,35 @@ export const tabTitle = (t: Tab): string => {
 }
 
 /**
- * Roll-up status for a tab / workspace. "Something in here is still working"
- * outranks "something in here has finished", because the finished thing can
- * wait and the working thing tells you not to bother looking yet.
+ * Roll-up status for a tab / workspace.
+ *
+ * Order matters, and it is ordered by URGENCY TO YOU, not by drama:
+ *
+ *   1. An UNCHECKED "needs you" wins outright. It can't make progress until you
+ *      act, so it outranks any amount of work in flight elsewhere — the whole
+ *      workspace should say "act here", not "busy over there".
+ *   2. Work in flight — nothing to do but wait.
+ *   3. An UNCHECKED "finished" — news, but it can wait behind live work.
+ *   4. Otherwise report the plain state, so a readout with a label can still
+ *      name it. Because these last two are `unseen: false` at every call site,
+ *      StatusDot renders them as the quiet hollow ring rather than a colour.
+ *
+ * Checked-ness is what separates 1/3 from 4: once you've been to the tab, the
+ * state is still true but it has stopped being a notification.
  */
-const rollUp = (statuses: (PaneStatus | undefined)[]): PaneStatus => {
-  if (statuses.includes('working')) return 'working'
-  // A pane waiting on you outranks one that has merely finished — it can't make
-  // progress until you act.
-  if (statuses.includes('blocked')) return 'blocked'
-  if (statuses.includes('finished')) return 'finished'
+const rollUp = (panes: { status?: PaneStatus; unseen?: boolean }[]): PaneStatus => {
+  if (panes.some((p) => p.status === 'blocked' && p.unseen)) return 'blocked'
+  if (panes.some((p) => p.status === 'working')) return 'working'
+  if (panes.some((p) => p.status === 'finished' && p.unseen)) return 'finished'
+  if (panes.some((p) => p.status === 'blocked')) return 'blocked'
+  if (panes.some((p) => p.status === 'finished')) return 'finished'
   return 'idle'
 }
 
-export const tabStatus = (t: Tab): PaneStatus =>
-  rollUp(Object.values(t.panes).map((p) => p.status))
+export const tabStatus = (t: Tab): PaneStatus => rollUp(Object.values(t.panes))
 
 export const workspaceStatus = (w: Workspace): PaneStatus => {
-  const s = rollUp(w.tabs.map(tabStatus))
+  const s = rollUp(w.tabs.map((t) => ({ status: tabStatus(t), unseen: tabUnseen(t) })))
   // Drop the green "finished" glow on the dashboard (background auto-sync work);
   // keep "working"/"blocked", since a pending permission still wants you.
   if (w.permanent && s === 'finished') return 'idle'
