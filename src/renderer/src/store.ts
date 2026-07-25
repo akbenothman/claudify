@@ -12,6 +12,9 @@ export type Direction = 'row' | 'col'
  */
 export type PaneStatus = 'idle' | 'working' | 'blocked' | 'finished'
 
+/** What `openSession` did: found the thread already open, or resumed it. */
+export type SessionOpen = 'jumped' | 'resumed'
+
 /** Recursive split layout, same shape as tmux/wezterm pane trees. */
 export type LayoutNode =
   | { kind: 'leaf'; paneId: string }
@@ -48,6 +51,16 @@ export interface Pane {
   unseen?: boolean
   /** True once an agent CLI (claude, codex, …) is running in this pane. */
   agent?: boolean
+  /**
+   * The Claude Code session this pane was deliberately pointed at (`--resume`).
+   *
+   * `stats.sessionId` is only ever a guess — the transcript watcher reports the
+   * NEWEST session for the pane's directory, which is a different thing from the
+   * one this pane is actually attached to until the resumed thread takes another
+   * turn. When claudify itself opened the session it knows the answer exactly,
+   * and this is where it keeps it.
+   */
+  sessionId?: string
   /**
    * Latest snapshot from this pane's Claude Code transcript, when one exists.
    * Drives the token/cost meter and the honest working/blocked/finished status.
@@ -112,6 +125,13 @@ interface State {
   newTab: (wsId: string, cwd?: string) => void
   /** Open a new tab holding a browser pane (the one Claude drives via MCP). */
   newBrowserTab: (wsId: string) => void
+  /**
+   * Open a Claude Code session by id — the Sessions page's one action.
+   *
+   * Jumps to the pane already running it if there is one, and otherwise spawns a
+   * pane that resumes it. Reports which it did so the caller can say so.
+   */
+  openSession: (session: { sessionId: string; cwd: string; title?: string }) => SessionOpen
   closeTab: (wsId: string, tabId: string) => void
   setActiveTab: (wsId: string, tabId: string) => void
   renameTab: (wsId: string, tabId: string, title: string) => void
@@ -267,6 +287,42 @@ function buildGrid(paneIds: string[], depth = 0): LayoutNode {
   }
 }
 
+/**
+ * Same directory, allowing for the ways Windows spells one: either slash, a
+ * trailing separator or not, and case-insensitively.
+ */
+function samePath(a: string, b: string): boolean {
+  const norm = (p: string): string => p.replace(/[\\/]+/g, '/').replace(/\/+$/, '').toLowerCase()
+  return !!a && !!b && norm(a) === norm(b)
+}
+
+/** Last segment of a path — what a human calls the project. */
+export function projectName(cwd: string): string {
+  return cwd.split(/[\\/]/).filter(Boolean).pop() || cwd
+}
+
+/** Is this pane holding the given Claude Code session right now? */
+export function paneHasSession(p: Pane, sessionId: string): boolean {
+  if (p.kind !== 'terminal' || p.exited) return false
+  // An explicit `--resume` beats the watcher's guess; see `Pane.sessionId`.
+  return p.sessionId === sessionId || (!p.sessionId && p.stats?.sessionId === sessionId)
+}
+
+/** The pane running a given Claude Code session, if one is open. */
+export function paneForSession(s: State, sessionId: string): PaneRef | null {
+  if (!sessionId) return null
+  for (const w of s.workspaces) {
+    for (const t of w.tabs) {
+      for (const p of Object.values(t.panes)) {
+        if (paneHasSession(p, sessionId)) {
+          return { wsId: w.id, tabId: t.id, paneId: p.id, pane: p }
+        }
+      }
+    }
+  }
+  return null
+}
+
 function makeTab(cwd: string, title = 'shell', initialCommand?: string): Tab {
   const paneId = uid('pane')
   return {
@@ -373,6 +429,74 @@ export const useStore = create<State>((set, get) => ({
         return { ...ws, tabs: [...ws.tabs, tab], activeTabId: tab.id }
       })
     ),
+
+  openSession: ({ sessionId, cwd, title }) => {
+    // Already on screen somewhere: never resume a session twice — two Claudes
+    // appending to one transcript is a mess you can't unpick afterwards.
+    const open = paneForSession(get(), sessionId)
+    if (open) {
+      set({ activeWorkspaceId: open.wsId })
+      get().setActiveTab(open.wsId, open.tabId)
+      get().setActivePane(open.wsId, open.tabId, open.paneId)
+      return 'jumped'
+    }
+
+    const paneId = uid('pane')
+    const pane: Pane = {
+      id: paneId,
+      kind: 'terminal',
+      title: 'claude',
+      cwd,
+      sessionId,
+      // `--resume` picks the thread up exactly where it was left, in the
+      // directory it ran in — Claude Code keys its transcripts on the cwd, so
+      // resuming from anywhere else would strand it from its own history.
+      initialCommand: claudeCommand(`--resume ${sessionId}`)
+    }
+    // The tab keeps the conversation's name (custom, so the pane's live topic
+    // naming doesn't overwrite the thing you clicked to get here).
+    const tab: Tab = {
+      id: uid('tab'),
+      title: title || 'claude',
+      custom: !!title,
+      panes: { [paneId]: pane },
+      layout: { kind: 'leaf', paneId },
+      activePaneId: paneId,
+      zoomedPaneId: null
+    }
+
+    /*
+     * Where it lands. A session belongs to a project directory, and so does a
+     * workspace — so a resumed thread goes back to its own project's workspace
+     * if you have one open, and gets a new workspace named after the project if
+     * you don't. Never the dashboard: that workspace is a fixed set of pages,
+     * not somewhere to pile up terminals.
+     */
+    const host = get().workspaces.find((w) => !w.permanent && samePath(w.cwd, cwd))
+    if (host) {
+      set((s) =>
+        mapWs(s, host.id, (ws) => ({ ...ws, tabs: [...ws.tabs, tab], activeTabId: tab.id }))
+      )
+      set({ activeWorkspaceId: host.id })
+      return 'resumed'
+    }
+
+    const wsId = uid('ws')
+    set((s) => ({
+      workspaces: [
+        ...s.workspaces,
+        {
+          id: wsId,
+          name: projectName(cwd) || 'session',
+          cwd,
+          tabs: [tab],
+          activeTabId: tab.id
+        }
+      ],
+      activeWorkspaceId: wsId
+    }))
+    return 'resumed'
+  },
 
   newBrowserTab: (wsId) =>
     set((s) =>

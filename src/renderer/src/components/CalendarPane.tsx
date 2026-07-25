@@ -65,6 +65,16 @@ function timeLabel(iso: string): string {
   return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
 }
 
+/**
+ * Google Calendar's month view for the month on screen. The `/r/month/y/m/d`
+ * form is the one that survives being handed to a browser cold — it opens on
+ * that month in whichever Google account the browser is already signed into,
+ * rather than bouncing through a date-less redirect to "today".
+ */
+function googleUrl(view: Date): string {
+  return `https://calendar.google.com/calendar/r/month/${view.getFullYear()}/${view.getMonth() + 1}/1`
+}
+
 function humanDay(key: string): string {
   const [y, m, d] = key.split('-').map(Number)
   const date = new Date(y, m - 1, d)
@@ -252,6 +262,16 @@ export function CalendarPane() {
           title="Ask the dashboard Claude to sync your Google Calendar into this file"
         >
           ⟳ sync
+        </button>
+        {/* This grid is a mirror, not the source of truth. Anything it can't do —
+            invites, guests, recurrence, moving something by dragging it — is one
+            click away in the real thing, opened on the month you're looking at. */}
+        <button
+          className="cal-sync-btn cal-google-btn"
+          onClick={() => window.open(googleUrl(view), '_blank', 'noopener,noreferrer')}
+          title="Open this month in Google Calendar"
+        >
+          <Icon name="arrow" size={11} /> Google Calendar
         </button>
       </div>
 

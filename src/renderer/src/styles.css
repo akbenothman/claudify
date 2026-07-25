@@ -2078,6 +2078,17 @@ kbd {
   padding: 2px 8px;
   margin-left: 6px;
 }
+/* Leaves the app, so it says so: the arrow reads as "out of here", and the
+   accent tint separates it from the sync button sitting next to it. */
+.cal-google-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+}
+.cal-google-btn svg {
+  transform: rotate(-45deg);
+}
 .cal-note {
   flex: none;
   padding: 3px 10px;
@@ -2121,15 +2132,51 @@ kbd {
 
 /* ---------------------------- conversations ------------------------------ */
 
+/* Every row is a button: clicking it jumps to the pane running that thread, or
+   opens one that resumes it. So it has to read as pressable — full width, left
+   aligned, and with the "go" affordance surfacing on hover. */
 .convo {
   display: flex;
   gap: 8px;
   align-items: flex-start;
   padding: 6px 8px;
   border-radius: 6px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
 }
 .convo:hover {
   background: var(--panel);
+  border-color: var(--border-soft);
+}
+.convo:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.convo-go {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--dim);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.convo:hover .convo-go,
+.convo:focus-visible .convo-go {
+  opacity: 1;
+}
+/* A thread that's live in a pane says so without being hovered — that's the
+   difference between "go back to it" and "start it up again". */
+.convo-live .convo-go {
+  opacity: 1;
+  color: var(--accent);
 }
 .convo .dot {
   margin-top: 3px;
