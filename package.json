@@ -15,6 +15,7 @@
     "smoke:worktree": "electron scripts/smoke-worktree.cjs",
     "smoke:session": "electron scripts/smoke-session.cjs phase1 && electron scripts/smoke-session.cjs phase2",
     "smoke:restore": "electron scripts/smoke-restore.cjs phase1 && electron scripts/smoke-restore.cjs phase2",
+    "smoke:resume": "electron scripts/smoke-resume.cjs phase1 && electron scripts/smoke-resume.cjs phase2",
     "smoke:panes": "electron scripts/smoke-panes.cjs",
     "smoke:status": "electron scripts/smoke-status.cjs",
     "smoke:dnd": "electron scripts/smoke-dnd.cjs",
@@ -24,7 +25,7 @@
     "smoke:bootstrap": "electron scripts/smoke-bootstrap.cjs",
     "smoke:browser": "electron scripts/smoke-browser.cjs",
     "smoke:clipboard": "electron scripts/smoke-clipboard.cjs",
-    "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:bootstrap && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:calendar && npm run smoke:control && npm run smoke:browser && npm run smoke:session && npm run smoke:restore && npm run smoke:panes && npm run smoke:status && npm run smoke:clipboard",
+    "test": "npm run build && npm run smoke && npm run smoke:worktree && npm run smoke:bootstrap && npm run smoke:dnd && npm run smoke:dashboard && npm run smoke:calendar && npm run smoke:control && npm run smoke:browser && npm run smoke:session && npm run smoke:restore && npm run smoke:resume && npm run smoke:panes && npm run smoke:status && npm run smoke:clipboard",
     "pack:win": "electron-vite build && electron-builder --win --publish never",
     "pack:dir": "electron-vite build && electron-builder --win --dir",
     "ship": "node scripts/ship.cjs"

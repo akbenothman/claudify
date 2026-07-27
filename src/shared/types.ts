@@ -179,6 +179,32 @@ export interface ConversationInfo {
   model?: string
 }
 
+/* -------------------------------- resume ---------------------------------- */
+
+/**
+ * What a pane needs in order to come back holding the SAME conversation after a
+ * restart — not a fresh agent in the same directory, the actual thread.
+ *
+ * Captured live from the transcript watcher while the pane runs, and persisted
+ * with the pane. On restore the pane relaunches as `claude --resume <sessionId>`,
+ * so the whole exchange is back on screen and you can keep typing.
+ *
+ * `cwd` is the directory the transcript belongs to, which is where `claude` was
+ * launched — NOT necessarily where the pane has since wandered. `--resume` is
+ * cwd-scoped, so the restore path only fires when the two still agree.
+ */
+export interface ResumeBinding {
+  /** The agent CLI. Only Claude Code writes the transcripts we read. */
+  agent: 'claude'
+  /** Session id — the basename of the transcript this pane is appending to. */
+  sessionId: string
+  /** Directory the transcript is keyed on. Guards against resuming elsewhere. */
+  cwd: string
+  /** Epoch ms the binding was last observed. Staleness is decided by a
+   *  file-existence probe at restore, not by age. */
+  ts: number
+}
+
 /* ------------------------------ persistence ------------------------------- */
 
 export interface ShellInfo {
@@ -235,6 +261,14 @@ export interface PersistedPane {
   /** Only ever set for opted-in panes (the dashboard's Claude REPL). */
   initialCommand?: string
   persistCommand?: boolean
+  /** The Claude Code session this pane was deliberately pointed at. */
+  sessionId?: string
+  /**
+   * The conversation this pane was holding when you quit. Restored panes
+   * relaunch on `--resume <sessionId>`, so the thread is back rather than
+   * merely the directory it happened in.
+   */
+  resume?: ResumeBinding
   /**
    * The pane's terminal buffer as of the last save, ANSI escapes and all, so a
    * restarted pane comes back showing what it showed before. Cosmetic: the
@@ -253,6 +287,8 @@ export interface PersistedTab {
   /** Serialized layout tree; shape matches the renderer's LayoutNode. */
   layout: unknown
   activePaneId: string | null
+  /** A pane you zoomed is still zoomed tomorrow — part of "as you left it". */
+  zoomedPaneId?: string | null
 }
 
 export interface PersistedWorkspace {

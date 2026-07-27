@@ -19,6 +19,7 @@ import { getSettings, loadState, saveSession, saveSessionNow, saveSettings } fro
 import { detectShells } from './shells'
 import { dashboardPath, ensureDashboard, readDashboard, watchDashboard, writeDashboard } from './dashboard'
 import {
+  canResume,
   listConversations,
   startTranscripts,
   stopTranscripts,
@@ -256,6 +257,9 @@ ipcMain.handle('mcp:configPath', () => mcpConfigPath())
 ipcMain.handle('transcript:subscribe', (_e, cwd: string) => subscribeTranscript(cwd))
 ipcMain.on('transcript:unsubscribe', (_e, cwd: string) => unsubscribeTranscript(cwd))
 ipcMain.handle('conversations:list', () => listConversations())
+ipcMain.handle('transcript:canResume', (_e, cwd: string, sessionId: string) =>
+  canResume(cwd, sessionId)
+)
 
 /* --------------------------- control surface ------------------------------ */
 

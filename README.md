@@ -73,7 +73,12 @@ you press **launch**.
   you're in another app stays flagged.
 - **Drag and drop.** Reorder tabs, drag a tab onto a workspace to move it there, or drop a tab
   onto a pane to combine them into a split. Dragged panes keep running (see Architecture).
-- **Session persistence.** Workspaces, tabs, layouts, names and cwds survive a restart.
+- **Session persistence — including the conversations.** Workspaces, tabs, layouts, names, cwds,
+  which tab you were on and which pane you had zoomed all survive a restart. So does the *thread*:
+  a pane running Claude records the session it is holding, and on the next launch comes back on
+  `claude --resume <id>` with the whole conversation reopened, ready to continue. Nothing is
+  re-run — resuming asks the agent for nothing — and a conversation that has since been deleted is
+  dropped rather than resumed into a dead end.
 - **Pick your shell.** Defaults to Command Prompt; the ⚙ gear lists whatever you have installed
   (PowerShell, Git Bash, WSL, Nushell…).
 - **Panes keep running.** Switching workspace, zooming, or dragging a tab never unmounts a pane,
@@ -214,6 +219,10 @@ Five end-to-end suites, all driving the real app — no mocks:
   asserts both were seeded into the fresh checkout.
 - `smoke-session.cjs` — mutates a session, then **cold-starts a second process** and asserts
   the workspaces came back.
+- `smoke-resume.cjs` — drops a transcript into a fake `~/.claude` where a Claude pane is
+  working, asserts the pane captured that session id, then **cold-starts** and asserts the pane
+  relaunched on `claude --resume <id>` — while a second pane, bound to a conversation that no
+  longer exists, comes back as a plain shell.
 
 ## Architecture
 
@@ -240,6 +249,7 @@ src/
     store.ts            zustand: workspaces → tabs → panes + layout trees
     layout.ts           flattens a split tree into absolute rectangles
     titles.ts           smart pane naming (command / topic heuristics)
+    resume.ts           drops conversations that can no longer be resumed, at boot
     ptyPorts.ts         claims transferred ports by pty id
     components/
       Stage.tsx         ALL panes, flat, absolutely positioned (see below)
@@ -272,7 +282,9 @@ exists specifically to keep that true.
   Electron + xterm + ConPTY foundation. It has no worktree support, which is the gap
   claudify exists to fill. The zero-config browser-over-MCP idea comes from here — claudify's
   version reuses Electron's own Chromium (a `WebContentsView`) rather than driving an external
-  Chrome.
+  Chrome. So does the shape of conversation resume: a per-pane binding to the origin session id,
+  a hard cwd guard, and an existence probe before the resume is attempted. claudify captures that
+  binding from the transcripts it already watches, so it needs no hooks or daemon to do it.
 - [WezTerm](https://github.com/wezterm/wezterm) — Rust + wgpu. The bar for what "fast"
   actually means.
 
