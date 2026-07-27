@@ -86,6 +86,12 @@ const api = {
     ipcRenderer.send('transcript:unsubscribe', cwd),
   /** Every recent Claude Code session across all projects, newest first. */
   listConversations: (): Promise<ConversationInfo[]> => ipcRenderer.invoke('conversations:list'),
+  /**
+   * Is this conversation still resumable — transcript on disk, directory still
+   * there? Asked at boot, before a restored pane is told to `--resume` it.
+   */
+  canResume: (cwd: string, sessionId: string): Promise<boolean> =>
+    ipcRenderer.invoke('transcript:canResume', cwd, sessionId),
   /** Fires when any subscribed transcript changes on disk. Keyed by cwd. */
   onTranscript: (cb: (s: TranscriptStats) => void): (() => void) => {
     const handler = (_e: unknown, s: TranscriptStats) => cb(s)

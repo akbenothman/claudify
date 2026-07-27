@@ -18,6 +18,7 @@ import { CommandPalette } from './components/CommandPalette'
 import { TermSearch } from './components/TermSearch'
 import { ContextMenu, type MenuState } from './components/ContextMenu'
 import { startPersistence } from './persistence'
+import { pruneResume } from './resume'
 import { handleControlRequest } from './control'
 import { bumpFontSize, initFontSize, resetFontSize } from './termPrefs'
 
@@ -44,7 +45,7 @@ export function App() {
       window.claudify.loadState(),
       window.claudify.mcpConfigPath(),
       window.claudify.getSettings()
-    ]).then(([home, state, mcpPath, settings]) => {
+    ]).then(async ([home, state, mcpPath, settings]) => {
       if (cancelled) return
       // Learn the browser MCP config path before any pane launches Claude, so
       // its command carries the --mcp-config flag.
@@ -55,7 +56,11 @@ export function App() {
       setDefaultCwd(home)
 
       if (state.session.workspaces.length > 0) {
-        hydrate(state.session)
+        // Check which conversations can still be resumed before restoring, so a
+        // pane is only told to `--resume` a thread that is genuinely still there.
+        const session = await pruneResume(state.session)
+        if (cancelled) return
+        hydrate(session)
       }
       // The dashboard is permanent: recreate it if this is a first run, or if a
       // session saved before it existed comes back without one.

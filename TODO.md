@@ -36,6 +36,13 @@ known touch points:
       `@xterm/addon-serialize` and replayed at mount. It has to be scrolled up into
       the scrollback buffer first, because ConPTY opens a new shell with `ESC[2J`
       and would otherwise wipe it off the screen.
+- [x] Reopen the *conversation*, not just the pane. A Claude pane records the
+      session it is holding (captured from the transcript watcher, one owner per
+      thread) and comes back on `claude --resume <id>`; the active tab and the
+      zoomed pane come back too. Guarded by a cwd match and a transcript-exists
+      probe, because `--resume` on a purged id exits 0 and looks like success.
+      Permission flags are deliberately *not* restored — an automatic restore is
+      no place to silently re-grant `--dangerously-skip-permissions`.
 
 ## Dashboard
 

@@ -1,5 +1,5 @@
 import { type BrowserWindow } from 'electron'
-import { readdirSync, readFileSync, statSync, watch } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync, watch } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import type { ConversationInfo, TranscriptStats } from '../shared/types'
@@ -50,6 +50,27 @@ function newestSession(cwd: string): string | null {
     return null // no such project dir yet
   }
   return best?.file ?? null
+}
+
+/**
+ * Can this exact conversation still be resumed?
+ *
+ * Two things have to be true, and neither can be inferred after the fact:
+ * the transcript must still be on disk — `claude --resume <purged-id>` prints
+ * "No conversation found" and exits 0, so a dead id is indistinguishable from a
+ * healthy one once the pane has launched — and the directory it was recorded
+ * against must still exist, since resuming is cwd-scoped and a deleted worktree
+ * would strand the thread.
+ */
+export function canResume(cwd: string, sessionId: string): boolean {
+  // A session id comes off a filename; refuse anything that could climb out of
+  // the project directory rather than pasting it into a path.
+  if (!cwd || !/^[A-Za-z0-9._-]+$/.test(sessionId)) return false
+  try {
+    return existsSync(cwd) && existsSync(path.join(projectDir(cwd), `${sessionId}.jsonl`))
+  } catch {
+    return false
+  }
 }
 
 /* --------------------------------- pricing -------------------------------- */

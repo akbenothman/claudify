@@ -1,5 +1,12 @@
 import { create } from 'zustand'
-import type { PaneKind, Session, SplitPlan, TranscriptStats, Worktree } from '../../shared/types'
+import type {
+  PaneKind,
+  ResumeBinding,
+  Session,
+  SplitPlan,
+  TranscriptStats,
+  Worktree
+} from '../../shared/types'
 
 export type Direction = 'row' | 'col'
 
@@ -61,6 +68,12 @@ export interface Pane {
    * and this is where it keeps it.
    */
   sessionId?: string
+  /**
+   * The conversation this pane is holding, captured live so it can be brought
+   * back. Set from the transcript watcher while an agent runs here; persisted,
+   * and turned back into a `--resume` on the next boot.
+   */
+  resume?: ResumeBinding
   /**
    * Latest snapshot from this pane's Claude Code transcript, when one exists.
    * Drives the token/cost meter and the honest working/blocked/finished status.
@@ -182,6 +195,11 @@ interface State {
   toggleZoom: (wsId: string, tabId: string) => void
   setRatio: (wsId: string, tabId: string, splitId: string, ratio: number) => void
   updatePane: (wsId: string, tabId: string, paneId: string, patch: Partial<Pane>) => void
+  /**
+   * Remember which conversation is running in this pane, so a restart can put
+   * it back. Called by the pane itself as its transcript reports in.
+   */
+  bindSession: (wsId: string, tabId: string, paneId: string, sessionId: string, cwd: string) => void
 
   createSplitWorkspace: (plan: SplitPlan, worktrees: Worktree[]) => string
 
@@ -301,11 +319,26 @@ export function projectName(cwd: string): string {
   return cwd.split(/[\\/]/).filter(Boolean).pop() || cwd
 }
 
+/**
+ * Has this pane laid claim to the given Claude Code session?
+ *
+ * Only the two facts we're sure of: claudify pointed the pane at it
+ * (`--resume`), or the pane captured it from its own transcript while running.
+ * Deliberately excludes `stats.sessionId`, which is the watcher's newest-in-
+ * directory guess and is therefore the same answer for every pane sharing a
+ * cwd — no basis for one pane to own a thread.
+ */
+function paneClaims(p: Pane, sessionId: string): boolean {
+  if (p.kind !== 'terminal' || p.exited) return false
+  return p.sessionId === sessionId || p.resume?.sessionId === sessionId
+}
+
 /** Is this pane holding the given Claude Code session right now? */
 export function paneHasSession(p: Pane, sessionId: string): boolean {
   if (p.kind !== 'terminal' || p.exited) return false
-  // An explicit `--resume` beats the watcher's guess; see `Pane.sessionId`.
-  return p.sessionId === sessionId || (!p.sessionId && p.stats?.sessionId === sessionId)
+  // An explicit claim beats the watcher's guess; see `Pane.sessionId`.
+  if (paneClaims(p, sessionId)) return true
+  return !p.sessionId && !p.resume && p.stats?.sessionId === sessionId
 }
 
 /** The pane running a given Claude Code session, if one is open. */
@@ -448,6 +481,9 @@ export const useStore = create<State>((set, get) => ({
       title: 'claude',
       cwd,
       sessionId,
+      // Bound from birth: this pane is holding the thread before it has said a
+      // word, so closing claudify now still brings the same one back.
+      resume: { agent: 'claude', sessionId, cwd, ts: Date.now() },
       // `--resume` picks the thread up exactly where it was left, in the
       // directory it ran in — Claude Code keys its transcripts on the cwd, so
       // resuming from anywhere else would strand it from its own history.
@@ -980,6 +1016,50 @@ export const useStore = create<State>((set, get) => ({
       )
     ),
 
+  /*
+   * Capture the conversation running in a pane.
+   *
+   * The transcript watcher reports the NEWEST session for a directory, which is
+   * the right answer for the one agent normally working there and an ambiguous
+   * one when two panes share a cwd. So a session that another live pane has
+   * already claimed is never taken away from it: at worst the second pane comes
+   * back as a plain shell, which is a great deal better than two Claudes resumed
+   * onto one transcript.
+   */
+  bindSession: (wsId, tabId, paneId, sessionId, cwd) =>
+    set((s) => {
+      if (!sessionId || !cwd) return {}
+      const ws = s.workspaces.find((w) => w.id === wsId)
+      const pane = ws?.tabs.find((t) => t.id === tabId)?.panes[paneId]
+      if (!pane || pane.resume?.sessionId === sessionId) return {}
+
+      for (const w of s.workspaces) {
+        for (const t of w.tabs) {
+          for (const p of Object.values(t.panes)) {
+            if (p.id !== paneId && paneClaims(p, sessionId)) return {}
+          }
+        }
+      }
+
+      const resume: ResumeBinding = { agent: 'claude', sessionId, cwd, ts: Date.now() }
+      return mapWs(s, wsId, (w) =>
+        mapTab(w, tabId, (t) => ({
+          ...t,
+          panes: {
+            ...t.panes,
+            [paneId]: {
+              ...t.panes[paneId],
+              resume,
+              // A pane holds one thread at a time. If it was pointed at another
+              // one and has since moved on — `/clear`, or a second `claude` run
+              // in the same pane — the old pointer is simply out of date.
+              sessionId
+            }
+          }
+        }))
+      )
+    }),
+
   createSplitWorkspace: (plan, worktrees) => {
     const wsId = uid('ws')
     const panes: Record<string, Pane> = {}
@@ -1170,25 +1250,64 @@ export const useStore = create<State>((set, get) => ({
         flagged: t.flagged,
         layout: t.layout as LayoutNode | null,
         activePaneId: t.activePaneId,
-        zoomedPaneId: null,
+        // A zoomed pane comes back zoomed. You left it filling the tab.
+        zoomedPaneId:
+          t.zoomedPaneId && t.panes.some((p) => p.id === t.zoomedPaneId) ? t.zoomedPaneId : null,
         panes: Object.fromEntries(
-          t.panes.map((p) => [
-            p.id,
-            {
-              id: p.id,
-              kind: p.kind,
-              title: p.title,
-              cwd: p.cwd,
-              custom: p.custom,
-              branch: p.branch,
-              worktreePath: p.worktreePath,
-              // Only the dashboard's Claude comes back running; see persistCommand.
-              initialCommand: p.persistCommand ? p.initialCommand : undefined,
-              persistCommand: p.persistCommand,
-              scrollback: p.scrollback,
-              status: 'idle' as PaneStatus
-            }
-          ])
+          t.panes.map((p) => {
+            /*
+             * Bring the conversation back.
+             *
+             * `--resume <id>` reopens the exact thread — every message of it,
+             * scrolled back and ready to be continued — rather than starting a
+             * fresh agent in the same folder. Two guards, both borrowed from
+             * hard experience:
+             *
+             *   - the directory must still be the one the transcript was
+             *     recorded against, because resuming is cwd-scoped and a pane
+             *     that has since `cd`'d elsewhere would strand the thread;
+             *   - the transcript must still exist, which the boot path has
+             *     already probed (see `pruneResume`) — a purged id turns
+             *     `--resume` into a dead end that exits cleanly, so it cannot
+             *     be detected once the pane has launched.
+             *
+             * Deliberately NOT restored: permission flags. Whatever the pane
+             * was launched with, it comes back asking permission again — an
+             * automatic restore is no place to silently re-grant
+             * `--dangerously-skip-permissions`.
+             */
+            const resume =
+              p.resume && p.kind === 'terminal' && samePath(p.resume.cwd, p.cwd)
+                ? p.resume
+                : undefined
+
+            return [
+              p.id,
+              {
+                id: p.id,
+                kind: p.kind,
+                title: p.title,
+                cwd: p.cwd,
+                custom: p.custom,
+                branch: p.branch,
+                worktreePath: p.worktreePath,
+                // A conversation to resume wins; otherwise only the dashboard's
+                // Claude comes back running, see persistCommand.
+                initialCommand: resume
+                  ? claudeCommand(`--resume ${resume.sessionId}`)
+                  : p.persistCommand
+                    ? p.initialCommand
+                    : undefined,
+                persistCommand: p.persistCommand,
+                // Now pointed there on purpose, which is what `sessionId` means.
+                sessionId: resume ? resume.sessionId : p.sessionId,
+                resume,
+                agent: resume ? true : undefined,
+                scrollback: p.scrollback,
+                status: 'idle' as PaneStatus
+              }
+            ]
+          })
         )
       }))
     }))
@@ -1206,8 +1325,9 @@ export const useStore = create<State>((set, get) => ({
 /**
  * Snapshot for disk. Drops everything transient, and deliberately drops
  * `initialCommand`: restoring a worktree pane must not silently re-run an agent
- * on a task days after the fact. Shells come back in their saved cwd, freshly
- * spawned, showing the buffer they had when you quit.
+ * on a task days after the fact. What comes back instead is the CONVERSATION —
+ * `resume` carries the session id, and the restore turns that into a
+ * `claude --resume`, which asks for nothing and repeats no task.
  *
  * `scrollback` here is only the value we restored with — the *live* buffer lives
  * in xterm and is merged in by the persistence layer, which can reach the
@@ -1231,6 +1351,7 @@ export const serialize = (s: State): Session => ({
       flagged: t.flagged,
       layout: t.layout,
       activePaneId: t.activePaneId,
+      zoomedPaneId: t.zoomedPaneId,
       panes: Object.values(t.panes).map((p) => ({
         id: p.id,
         kind: p.kind,
@@ -1243,6 +1364,10 @@ export const serialize = (s: State): Session => ({
         // REPL, never a worktree task pane.
         initialCommand: p.persistCommand ? p.initialCommand : undefined,
         persistCommand: p.persistCommand,
+        sessionId: p.sessionId,
+        // The conversation, not the command that started it: what makes a
+        // restored pane pick the thread up instead of starting a new one.
+        resume: p.exited ? undefined : p.resume,
         scrollback: p.scrollback
       }))
     }))

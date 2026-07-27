@@ -56,6 +56,7 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
   const autoNamePane = useStore((s) => s.autoNamePane)
   const setPaneStatus = useStore((s) => s.setPaneStatus)
   const raiseAttentionFor = useStore((s) => s.raiseAttention)
+  const bindSession = useStore((s) => s.bindSession)
 
   useEffect(() => {
     const host = hostRef.current
@@ -146,7 +147,12 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
      */
     if (pane.scrollback) {
       term.write(pane.scrollback)
-      term.write('\r\n\x1b[90m── restored from previous session ──\x1b[0m\r\n')
+      // A pane that is picking its conversation back up says so: what follows is
+      // the thread reopening, not just a picture of one that ended.
+      const note = pane.resume
+        ? '── restored · resuming this conversation ──'
+        : '── restored from previous session ──'
+      term.write(`\r\n\x1b[90m${note}\x1b[0m\r\n`)
       term.write('\n'.repeat(term.rows))
     }
 
@@ -345,6 +351,17 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       if (disposed || s.cwd !== transcriptCwd) return
       stats = s
       updatePane(wsId, tabId, pane.id, { stats: s })
+      /*
+       * Remember which conversation is running here, so closing the app doesn't
+       * end it. The pane is saved with this id and comes back on
+       * `claude --resume <id>` — the whole thread, not a fresh agent in the same
+       * folder. Only for a Claude pane: the transcript belongs to whatever
+       * Claude Code is doing in this directory, and a plain shell that happens to
+       * sit in the same one has no claim on it.
+       */
+      if (agent === 'claude' && s.found && s.sessionId) {
+        bindSession(wsId, tabId, pane.id, s.sessionId, s.cwd)
+      }
       // A permission prompt appears in the transcript without any new bytes on
       // screen, so a pane that already settled to "finished" must be able to
       // flip to "blocked" when the transcript says a tool is pending. Only for
@@ -445,7 +462,13 @@ export function TerminalPane({ wsId, tabId, pane, focused }: Props) {
       }
     }
 
-    if (pane.initialCommand) {
+    /*
+     * Name the pane after what it was launched to do — except when that is
+     * `--resume`, which is not a new job. A restored pane already carries the
+     * name it earned ("claude: add dark mode"); renaming it to a flat "claude"
+     * on the way back in would throw that away.
+     */
+    if (pane.initialCommand && !pane.resume) {
       const title = commandTitle(pane.initialCommand)
       if (title) autoNamePane(wsId, tabId, pane.id, title)
     }
