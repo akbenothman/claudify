@@ -22,6 +22,8 @@ you patch it in the browser, save the `.gba` to Files, and import it into Delta.
 | [docs/SCOPE.md](docs/SCOPE.md) | What we can change, what each change costs, the hard limits |
 | [docs/TOOLCHAIN.md](docs/TOOLCHAIN.md) | Tools, build setup, repo layout |
 | [docs/DELTA_IOS.md](docs/DELTA_IOS.md) | Getting the hack onto an iPhone and testing it in Delta |
+| [docs/STARTERS.md](docs/STARTERS.md) | The three starter lines: Heesh, Omar, Ahmed |
+| [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) | Gemini prompts and workflow for the sprite art |
 
 ## Ground rules
 
