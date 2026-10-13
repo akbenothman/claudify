@@ -1,7 +1,9 @@
-# Raccoon face under the cuff: mask, two eyes with highlights, nose on the left
-row 53 12 5 8 8 8 8 8 8 8 8 8 8 8 5
-row 54 12 3 3 3 3 8 8 3 3 3 3 8 8 8 5
-row 55 12 3 9 2 3 3 8 3 9 2 3 3 8 8 5
-row 56 12 3 2 2 3 3 8 3 2 2 3 3 8 8 5
-row 57 12 5 3 3 3 8 8 8 3 3 3 8 8 5 5
-row 58 12 2 2 8 8 8 8 8 8 8 8 8 5 5
+# Bigger raccoon face peeking out under the cuff: two dark mask patches with 2x2 pupils and
+# white highlights, light fur bridge between them, black nose on the left, small mouth.
+row 53 10 2 8 4 4 4 4 8 8 4 4 4 4 8 8 8 5 5 2
+row 54 10 2 4 4 9 2 4 4 8 4 9 2 4 4 8 8 5 5 2
+row 55 10 2 4 4 2 2 4 4 8 4 2 2 4 4 8 8 5 5 2
+row 56 10 2 8 4 4 4 4 8 8 8 4 4 4 8 8 8 5 5 2
+row 57 10 2 2 2 8 8 8 8 8 8 8 8 8 8 8 5 5 5 2
+row 58 10 2 2 8 8 8 3 3 8 8 8 8 8 8 5 5 5 2
+row 59 10 _ 2 5 5 8 8 8 8 8 8 8 5 5 5 5 2

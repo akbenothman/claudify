@@ -7,6 +7,8 @@ EDITS.txt holds one edit per line ('#' starts a comment):
   row Y X0 i i i ...   set pixels (X0, Y), (X0+1, Y), ... to palette indices; '_' leaves one alone
   px X Y i             set one pixel
   remap A B            every pixel using index A now uses index B (frees slot A)
+  rremap X0 Y0 X1 Y1 A B [even|odd]
+                       same, but only inside the box (inclusive), optionally only even/odd columns
   color I R G B        change palette slot I (also written to PALETTE.pal if given)
 """
 import sys
@@ -35,6 +37,14 @@ def main():
             a[int(args[1]), int(args[0])] = int(args[2])
         elif op == "remap":
             a[a == int(args[0])] = int(args[1])
+        elif op == "rremap":
+            x0, y0, x1, y1, src, dst = map(int, args[:6])
+            box = a[y0:y1 + 1, x0:x1 + 1]
+            hit = box == src
+            if len(args) > 6:
+                cols = np.arange(x0, x1 + 1) % 2 == (0 if args[6] == "even" else 1)
+                hit &= cols[None, :]
+            box[hit] = dst
         elif op == "color":
             i = int(args[0])
             pal[i * 3:i * 3 + 3] = [int(v) for v in args[1:4]]

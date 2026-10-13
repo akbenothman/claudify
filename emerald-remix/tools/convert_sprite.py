@@ -60,7 +60,23 @@ def write_jasc(path, colors):
             f.write("%d %d %d\n" % c)
 
 
-def load(src, recolors):
+def lift_darks(rgb, solid, gamma, tint):
+    """Brighten dark fills so black-clothed creatures keep readable shading, as Gen 3 does for dark
+    Pokémon. Line work (near-black) stays black. Dark neutral fills get a cool `tint` (R,G,B added
+    at full strength for the darkest fills, fading out by mid-grey) so black cloth reads as blue-black."""
+    lum = rgb @ np.asarray([0.299, 0.587, 0.114], np.float32)
+    fill = solid & (lum > 28)
+    target = 255 * (lum / 255) ** gamma
+    k = np.where(fill, target / np.maximum(lum, 1), 1)
+    out = rgb * k[..., None]
+    sat = (rgb.max(-1) - rgb.min(-1)) / np.maximum(rgb.max(-1), 1)
+    w = fill & (sat < 0.25)
+    strength = np.clip((110 - lum) / 80, 0, 1) * w
+    out += strength[..., None] * np.asarray(tint, np.float32)
+    return np.clip(out, 0, 255)
+
+
+def load(src, recolors, lift=None, tint=(0, 0, 0)):
     rgb = np.asarray(Image.open(src).convert("RGB"), dtype=np.float32)
     solid = ~green_mask(rgb)
     # Green spill on edge pixels: pull green down to the other channels.
@@ -71,6 +87,8 @@ def load(src, recolors):
     rgb, solid = rgb[y0:y1, x0:x1], solid[y0:y1, x0:x1]
     for spec in recolors:
         rgb = recolor(rgb, solid, spec)
+    if lift:
+        rgb = lift_darks(rgb, solid, lift, tint)
     return rgb, solid
 
 
@@ -272,6 +290,10 @@ def main():
     ap.add_argument("--stage", type=int, choices=(1, 2, 3), required=True)
     ap.add_argument("--back", action="store_true", help="source is a back sprite")
     ap.add_argument("--no-icon", dest="icon", action="store_false")
+    ap.add_argument("--lift-darks", type=float, metavar="GAMMA",
+                    help="brighten dark fills (e.g. 0.7) so black-clothed designs keep shading")
+    ap.add_argument("--dark-tint", default="0,0,0", metavar="R,G,B",
+                    help="color added to dark neutral fills with --lift-darks, e.g. 0,6,24 for blue-black")
     ap.add_argument("--recolor", action="append", default=[],
                     help="HUE_FROM-HUE_TO:NEW_HUE[:SAT], e.g. 190-250:30:0.5 turns blue-grey into brown")
     ap.add_argument("--method", choices=("hybrid", "majority"), default="hybrid")
@@ -280,7 +302,7 @@ def main():
     a = ap.parse_args()
     LINE_SHARE, CONTRAST = a.line_share, a.contrast
     os.makedirs(a.out_dir, exist_ok=True)
-    rgb, solid = load(a.source, a.recolor)
+    rgb, solid = load(a.source, a.recolor, a.lift_darks, tuple(map(int, a.dark_tint.split(","))))
     make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method)
     msg = a.out_dir
     if a.icon and not a.back:

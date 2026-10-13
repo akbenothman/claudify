@@ -1,11 +1,15 @@
-# Free slot 12 (a near-black duplicate) and make it white for teeth
-remap 12 5
-color 12 248 248 248
-# Glowing slanted eyes
-row 29 43 5 5 5 _ _ _ 5 5 5
-row 30 42 5 4 4 4 5 _ 5 4 4 4 5
-row 31 43 4 4 5 _ _ _ 5 4 4
-# Wide toothy grin
-row 33 41 5 5 5 5 5 5 5 5 5 5 5 5
-row 34 41 5 12 12 7 12 12 7 12 12 7 12 5
-row 35 42 5 5 5 5 5 5 5 5 5 5
+# Converted with --lift-darks 0.7 --dark-tint 0,4,18.
+# Free slot 5 (a duplicate near-black) and make it white for teeth
+remap 5 8
+color 5 248 248 248
+# Ribbed cuff above the eyes
+rremap 38 24 54 29 14 11 odd
+# Glowing slanted eyes in the shadow of the cuff
+row 29 43 8 8 8 _ _ _ 8 8 8
+row 30 42 8 2 2 2 8 _ 8 2 2 2 8
+row 31 43 2 2 8 _ _ _ 8 2 2
+# Nose and wide toothy grin
+row 32 46 8 8
+row 33 41 8 8 8 8 8 8 8 8 8 8 8 8
+row 34 41 8 5 5 12 5 5 12 5 5 12 5 8
+row 35 42 8 8 8 8 8 8 8 8 8 8
