@@ -117,5 +117,17 @@ Heesh line: white fur and a gold jersey. Omar line: a red beanie and brown fur. 
 
 ## When you have images
 
-Drop them in `graphics/starters/<name>/` (any size, PNG), named `front.png`, `back.png` and `icon.png`. Claude converts them
-to proper GBA format and hooks them into the game.
+Put each image in `graphics/starters/<name>/` as `source_front.jpg` (or `source_back.jpg`), then run:
+
+```sh
+python3 tools/convert_sprite.py graphics/starters/heesh/source_front.jpg graphics/starters/heesh --stage 2
+python3 tools/convert_sprite.py graphics/starters/heesh/source_back.jpg  graphics/starters/heesh --stage 2 --back
+```
+
+The script cuts out the green, shrinks the creature to the right size for its stage (stage 1 is small,
+stage 3 fills the frame), picks the best 15 colors, redraws the dark outline, and writes `front.png`/`back.png`,
+`normal.pal`, a placeholder `shiny.pal`, and `icon.png` (matched to the closest of the game's 6 shared icon
+palettes). `tools/preview_sheet.py` puts sprites side by side at 4× scale so you can check them.
+
+After converting, open the PNG in Aseprite/LibreSprite and fix anything the color reduction merged
+(small details like the cheese or souvenirs). Keep the image in **indexed mode** so the palette stays intact.
