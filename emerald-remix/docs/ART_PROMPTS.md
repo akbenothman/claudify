@@ -140,6 +140,12 @@ stage 3 fills the frame), picks the best 15 colors, redraws the dark outline, an
 `normal.pal`, a placeholder `shiny.pal`, and `icon.png` (matched to the closest of the game's 6 shared icon
 palettes). `tools/preview_sheet.py` puts sprites side by side at 4× scale so you can check them.
 
+**Back sprites share the front's palette.** The game gives each Pokémon one 16-color palette for both
+sprites, so `--back` draws the back with the finished front's colors. Convert (and touch up) the front
+first. Colors that only exist on the back get the nearest front color, so a back with a different jersey
+color needs `--recolor` (see Heeshef in `tools/build_starters.sh`). `--mirror` flips a back sprite that
+faces left; the player's Pokémon should face right, toward the opponent.
+
 **Touch-ups.** Faces almost always need hand-placed pixels. Edits live in
 `graphics/starters/<name>/touchup_front.txt` (one line per row of pixels, see `tools/touchup.py`), so they
 survive re-converting. `tools/build_starters.sh` re-runs the converter and every touch-up, then rebuilds

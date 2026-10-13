@@ -38,7 +38,7 @@ later builds take seconds to a minute. The apply script is safe to re-run after 
 | Wally's third starter | `game/src/remix_rival.c`, `game/src/remix.h` | Heesh-line placeholder in Wally's teams; one hooked line in `CreateNPCTrainerPartyFromTrainer` swaps it at battle time |
 | Petalburg type-advice NPC | `game/petalburg_type_text.inc` | three text blocks replaced |
 | Tests | `game/tests/*.c` | copied into `test/`; run `make check TESTS="Remix"` |
-| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = May's Route 103 battle, Script 4 = Lv 70 Mewtwo + Wally's Mauville battle |
+| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = May's Route 103 battle, Script 4 = Lv 70 Mewtwo + Wally's Mauville battle, Script 5 = the three final forms at Lv 50 + a wild battle |
 
 Sprites are regenerated from the Gemini art with `tools/build_starters.sh` (see `docs/ART_PROMPTS.md`).
 
@@ -58,6 +58,5 @@ overworld opens the debug menu (Scripts → Script 1 opens the starter choice).
 
 ## Known placeholders
 
-- **Back sprites** are the front sprites mirrored, until the Gemini back sprites are done.
 - **Cries** borrow existing ones (Rattata/Raticate/Skuntank, Zigzagoon/Linoone/Obstagoon, Snubbull/Granbull).
 - **Footprints** borrow Rattata/Raticate, Zigzagoon/Linoone and Snubbull/Granbull.

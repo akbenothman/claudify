@@ -6,7 +6,8 @@ Usage: apply_to_expansion.py PATH/TO/pokeemerald-expansion [--debug-scripts]
 --debug-scripts fills the debug menu's Scripts 1 and 2 (debug builds only, R+START in the
 overworld): Script 1 opens the starter choice, Script 2 starts a wild battle with Omarauder,
 Script 3 starts May's Route 103 battle for the starter you picked, Script 4 gives you a level-70
-Mewtwo and starts Wally's Mauville battle (to check his third starter).
+Mewtwo and starts Wally's Mauville battle (to check his third starter), Script 5 gives the three
+final forms at level 50 and starts a wild battle (to check back sprites).
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -268,6 +269,10 @@ def main():
             rival = "".join(
                 "Debug_EventScript_Rival%s::\n\ttrainerbattle_no_intro TRAINER_MAY_ROUTE_103_%s, "
                 "Debug_Text_RivalDefeated\n\trelease\n\tend\n\n" % (s.title(), s) for s in ("TREECKO", "TORCHIC", "MUDKIP"))
+            t = t.replace("Debug_EventScript_Script_5::\n\trelease\n\tend\n",
+                          "Debug_EventScript_Script_5::\n\tgivemon SPECIES_HEESHEF, 50\n"
+                          "\tgivemon SPECIES_OMARAUDER, 50\n\tgivemon SPECIES_AHMEXEC, 50\n"
+                          "\tsetwildbattle SPECIES_ZIGZAGOON, 2\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_4::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_4::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
                           "\ttrainerbattle_no_intro TRAINER_WALLY_MAUVILLE, Debug_Text_RivalDefeated\n"

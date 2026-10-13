@@ -17,6 +17,16 @@ for spec in squeesh:1 heesh:2 heeshef:3 beanito:1 omar:2 omarauder:3 guardpup:1 
         python3 tools/touchup.py "$S/$name/front.png" "$S/$name/touchup_front.txt" "$S/$name/normal.pal"
         cp "$S/$name/normal.pal" "$S/$name/shiny.pal"
     fi
+    # Back sprite: drawn with the finished front palette. Same color fixes as the front, but not the
+    # head enlargement (its coordinates are for the front image).
+    if [ -f "$S/$name/source_back.jpg" ]; then
+        back_extra=$(echo "$extra" | sed 's/--enlarge [^ ]*//')
+        case $name in
+            beanito|omarauder) back_extra="$back_extra --mirror" ;;  # face right, toward the opponent
+            heeshef) back_extra="$back_extra --recolor 195-260:24" ;;  # his back art's jersey is blue; match the front's orange
+        esac
+        python3 tools/convert_sprite.py "$S/$name/source_back.jpg" "$S/$name" --stage "$stage" --back $back_extra
+    fi
 done
 python3 tools/preview_sheet.py $S/preview_sheet.png \
     $S/squeesh,$S/heesh,$S/heeshef $S/beanito,$S/omar,$S/omarauder $S/guardpup,$S/ahmed,$S/ahmexec

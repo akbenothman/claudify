@@ -30,6 +30,8 @@ ICON_PAL_DIR = os.path.join(HERE, "icon_palettes")
 
 # How big the creature may be inside the 64x64 frame, per evolution stage.
 STAGE_FIT = {1: 50, 2: 58, 3: 64}
+# Back sprites are the player's own Pokémon, seen up close; the battle textbox covers their lower edge.
+BACK_FIT = {1: 56, 2: 62, 3: 64}
 TRANSPARENT = (0, 255, 0)
 LINE_SHARE = 0.25 # a block becomes outline color if at least this much of it is line work
 CONTRAST = 1.5    # how strongly small high-contrast details (eyes, glints) beat the block's main color
@@ -251,8 +253,9 @@ def place(lab, box):
     return canvas
 
 
-def build(rgb, solid, fit, box, ncolors, method="hybrid"):
-    pal = kmeans_palette(rgb[solid], ncolors)
+def build(rgb, solid, fit, box, ncolors, method="hybrid", pal=None):
+    if pal is None:
+        pal = kmeans_palette(rgb[solid], ncolors)
     labels = np.full(solid.shape, -1, int)
     labels[solid] = nearest(rgb[solid], pal)
     line = min(range(len(pal)), key=lambda i: sum(pal[i]))
@@ -272,7 +275,13 @@ def save_indexed(path, lab, pal):
 
 
 def make_sprite(rgb, solid, out_dir, stage, back, method="hybrid"):
-    lab, pal, _ = build(rgb, solid, STAGE_FIT[stage], 64, 15, method)
+    if back:
+        # Front and back sprites share one palette in the game, so the back is drawn with the
+        # finished front's colors (convert the front, and do its touch-ups, first).
+        pal = read_jasc(os.path.join(out_dir, "normal.pal"))[1:16]
+        lab, pal, _ = build(rgb, solid, BACK_FIT[stage], 64, 15, method, pal)
+    else:
+        lab, pal, _ = build(rgb, solid, STAGE_FIT[stage], 64, 15, method)
     save_indexed(os.path.join(out_dir, "back.png" if back else "front.png"), lab, pal)
     if not back:
         write_jasc(os.path.join(out_dir, "normal.pal"), [TRANSPARENT] + pal)
@@ -313,7 +322,8 @@ def main():
     ap.add_argument("source")
     ap.add_argument("out_dir")
     ap.add_argument("--stage", type=int, choices=(1, 2, 3), required=True)
-    ap.add_argument("--back", action="store_true", help="source is a back sprite")
+    ap.add_argument("--back", action="store_true", help="source is a back sprite (uses the front's normal.pal)")
+    ap.add_argument("--mirror", action="store_true", help="flip the source left-right first")
     ap.add_argument("--no-icon", dest="icon", action="store_false")
     ap.add_argument("--enlarge", action="append", default=[], metavar="X0,Y0,X1,Y1:SCALE",
                     help="enlarge an oval region of the source (e.g. the head) before converting")
@@ -330,6 +340,8 @@ def main():
     LINE_SHARE, CONTRAST = a.line_share, a.contrast
     os.makedirs(a.out_dir, exist_ok=True)
     rgb, solid = load(a.source, a.recolor, a.lift_darks, tuple(map(int, a.dark_tint.split(","))), a.enlarge)
+    if a.mirror:
+        rgb, solid = rgb[:, ::-1].copy(), solid[:, ::-1].copy()
     make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method)
     msg = a.out_dir
     if a.icon and not a.back:

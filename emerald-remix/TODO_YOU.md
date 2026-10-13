@@ -33,7 +33,7 @@ below that Claude needs answered to build it.
       rival with the third starter (two story fights: Mauville and Victory Road). Keep them as they are,
       or turn either into one of your characters (new name, look and lines)?
       *Default: keep both for now; they get renamed when the character swap (Y6) happens.*
-- [ ] **Y4. Back sprites for all 9 starters** in Gemini, using the back-sprite prompt in
+- [x] **Y4. Back sprites for all 9 starters** in Gemini, using the back-sprite prompt in
       [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md). Upload them here like the fronts.
 - [ ] **Y5. Shiny colors.** One line per evolution line.
       *Default: Heesh line white fur + gold jersey; Omar line red beanie; Ahmed line white suit.*

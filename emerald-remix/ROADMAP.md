@@ -30,7 +30,8 @@ Make the three starter lines feel like they were always part of Emerald.
       their first move every turn, like the original. Two balance fixes came out of it: Guardpup now gets
       Intimidate on evolving (Inner Focus before that), and Beanito learns Sand Attack at 9 instead of 4
 - [ ] Balance check: each starter against the rival and gyms 1–4 (notes below)
-- [ ] Real back sprites *(waits on Y4)*
+- [x] Real back sprites from your Gemini art, drawn with each Pokémon's front palette (the game shares one
+      palette between them), checked in battle
 - [ ] Shiny colors *(waits on Y5)*
 - [ ] Menu icons cleaned up by hand
 
