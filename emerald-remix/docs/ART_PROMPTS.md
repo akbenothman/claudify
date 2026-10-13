@@ -89,6 +89,17 @@ Gemini can't output a true GBA sprite: an exact 64×64 image with 16 colors. So 
 
 ## Step 2: Pixel sprite prompts
 
+**Designing for 64×64 (read this, it matters most).** A Gen 3 sprite is only 64×64 pixels, so a design has to
+be readable at that size. Real sprites like Treecko or Poochyena look sharp because their **eyes are big on
+purpose** (3–4 pixels, a colored iris and a white highlight pixel), outlines are thick, and there are few
+tiny accessories. Gemini draws at roughly twice that size with realistic small eyes, and those details
+disappear when shrunk. Add this line to every sprite prompt:
+
+> Designed to read clearly as a tiny 64×64 game sprite: big expressive eyes with a white highlight,
+> thick dark outlines, simple bold shapes, no tiny details.
+
+Even then, eyes and mouths usually need hand-placed pixels afterward (see the touch-up step below).
+
 Upload the approved concept image, then:
 
 **Front sprite**
@@ -129,5 +140,8 @@ stage 3 fills the frame), picks the best 15 colors, redraws the dark outline, an
 `normal.pal`, a placeholder `shiny.pal`, and `icon.png` (matched to the closest of the game's 6 shared icon
 palettes). `tools/preview_sheet.py` puts sprites side by side at 4× scale so you can check them.
 
-After converting, open the PNG in Aseprite/LibreSprite and fix anything the color reduction merged
-(small details like the cheese or souvenirs). Keep the image in **indexed mode** so the palette stays intact.
+**Touch-ups.** Faces almost always need hand-placed pixels. Edits live in
+`graphics/starters/<name>/touchup_front.txt` (one line per row of pixels, see `tools/touchup.py`), so they
+survive re-converting. `tools/build_starters.sh` re-runs the converter and every touch-up, then rebuilds
+`preview_sheet.png`. You can also edit the PNG directly in Aseprite/LibreSprite. Keep it in **indexed mode**
+so the palette stays intact.

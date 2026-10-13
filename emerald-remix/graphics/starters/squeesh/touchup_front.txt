@@ -1,0 +1,6 @@
+# Eye: pupil with white highlight, plus a brow
+row 24 25 8 8 8 _ 4
+row 25 25 4 2 2 2 4
+row 26 25 4 2 12 14 2
+row 27 25 4 2 14 14 2
+row 28 25 4 4 2 2 4

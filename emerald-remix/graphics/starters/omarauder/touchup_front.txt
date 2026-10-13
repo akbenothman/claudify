@@ -1,0 +1,11 @@
+# Free slot 12 (a near-black duplicate) and make it white for teeth
+remap 12 5
+color 12 248 248 248
+# Glowing slanted eyes
+row 29 43 5 5 5 _ _ _ 5 5 5
+row 30 42 5 4 4 4 5 _ 5 4 4 4 5
+row 31 43 4 4 5 _ _ _ 5 4 4
+# Wide toothy grin
+row 33 41 5 5 5 5 5 5 5 5 5 5 5 5
+row 34 41 5 12 12 7 12 12 7 12 12 7 12 5
+row 35 42 5 5 5 5 5 5 5 5 5 5

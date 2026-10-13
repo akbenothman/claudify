@@ -31,7 +31,7 @@ ICON_PAL_DIR = os.path.join(HERE, "icon_palettes")
 # How big the creature may be inside the 64x64 frame, per evolution stage.
 STAGE_FIT = {1: 50, 2: 58, 3: 64}
 TRANSPARENT = (0, 255, 0)
-LINE_SHARE = 0.2  # a block becomes outline color if at least this much of it is line work
+LINE_SHARE = 0.25 # a block becomes outline color if at least this much of it is line work
 CONTRAST = 1.5    # how strongly small high-contrast details (eyes, glints) beat the block's main color
 
 
@@ -125,8 +125,14 @@ def nearest(pixels, pal):
     return ((pixels[:, None] - p[None]) ** 2).sum(-1).argmin(1)
 
 
-def majority_shrink(labels, fit, line_label, pal):
-    """Shrink a label map (-1 = transparent) so its long side is `fit`, by block majority vote."""
+def shrink(labels, rgb, fit, line_label, pal, method):
+    """Shrink a label map (-1 = transparent) so its long side is `fit`.
+
+    hybrid:   each block takes its average color snapped to the palette (keeps shading), but line
+              work wins when it covers LINE_SHARE of the block, and a small high-contrast detail
+              (an eye, a glint) wins when it stands out from the average.
+    majority: each block takes its most common color, with a boost for high-contrast colors.
+    """
     h, w = labels.shape
     scale = fit / max(h, w)
     ow, oh = max(1, round(w * scale)), max(1, round(h * scale))
@@ -137,18 +143,32 @@ def majority_shrink(labels, fit, line_label, pal):
     out = np.full((oh, ow), -1, int)
     for y in range(oh):
         for x in range(ow):
-            block = labels[ye[y]:max(ye[y + 1], ye[y] + 1), xe[x]:max(xe[x + 1], xe[x] + 1)].ravel()
+            ys = slice(ye[y], max(ye[y + 1], ye[y] + 1))
+            xs = slice(xe[x], max(xe[x + 1], xe[x] + 1))
+            block = labels[ys, xs].ravel()
             counts = np.bincount(block + 1, minlength=n)
             total = counts.sum()
             if counts[0] * 2 > total:
                 continue
             if counts[line_label + 1] >= LINE_SHARE * total:
                 out[y, x] = line_label
-            else:
-                c = counts[1:].astype(np.float32)
+                continue
+            c = counts[1:].astype(np.float32)
+            if method == "majority":
                 mean = (cols[: len(c)] * c[:, None]).sum(0) / c.sum()
                 contrast = np.sqrt(((cols[: len(c)] - mean) ** 2).sum(1)) / 255
                 out[y, x] = (c * (1 + CONTRAST * contrast)).argmax()
+                continue
+            opaque = block >= 0
+            avg = rgb[ys, xs].reshape(-1, 3)[opaque].mean(0)
+            choice = int(((cols - avg) ** 2).sum(1).argmin())
+            # A detail that covers a fair part of the block and differs strongly from the average wins.
+            dist = np.sqrt(((cols[: len(c)] - avg) ** 2).sum(1)) / 255
+            score = (c / c.sum()) * dist
+            j = int(score.argmax())
+            if c[j] / c.sum() >= 0.18 and dist[j] > 0.3:
+                choice = j
+            out[y, x] = choice
     return out
 
 
@@ -188,13 +208,14 @@ def place(lab, box):
     return canvas
 
 
-def build(rgb, solid, fit, box, ncolors):
+def build(rgb, solid, fit, box, ncolors, method="hybrid"):
     pal = kmeans_palette(rgb[solid], ncolors)
     labels = np.full(solid.shape, -1, int)
     labels[solid] = nearest(rgb[solid], pal)
     line = min(range(len(pal)), key=lambda i: sum(pal[i]))
-    small = majority_shrink(labels, fit, line, pal)
-    small = despeckle(small, line)
+    small = shrink(labels, rgb, fit, line, pal, method)
+    if method == "majority":
+        small = despeckle(small, line)
     small = outline(small, line)
     return place(small, box), pal, line
 
@@ -207,8 +228,8 @@ def save_indexed(path, lab, pal):
     im.save(path)
 
 
-def make_sprite(rgb, solid, out_dir, stage, back):
-    lab, pal, _ = build(rgb, solid, STAGE_FIT[stage], 64, 15)
+def make_sprite(rgb, solid, out_dir, stage, back, method="hybrid"):
+    lab, pal, _ = build(rgb, solid, STAGE_FIT[stage], 64, 15, method)
     save_indexed(os.path.join(out_dir, "back.png" if back else "front.png"), lab, pal)
     if not back:
         write_jasc(os.path.join(out_dir, "normal.pal"), [TRANSPARENT] + pal)
@@ -253,13 +274,14 @@ def main():
     ap.add_argument("--no-icon", dest="icon", action="store_false")
     ap.add_argument("--recolor", action="append", default=[],
                     help="HUE_FROM-HUE_TO:NEW_HUE[:SAT], e.g. 190-250:30:0.5 turns blue-grey into brown")
+    ap.add_argument("--method", choices=("hybrid", "majority"), default="hybrid")
     ap.add_argument("--line-share", type=float, default=LINE_SHARE)
     ap.add_argument("--contrast", type=float, default=CONTRAST)
     a = ap.parse_args()
     LINE_SHARE, CONTRAST = a.line_share, a.contrast
     os.makedirs(a.out_dir, exist_ok=True)
     rgb, solid = load(a.source, a.recolor)
-    make_sprite(rgb, solid, a.out_dir, a.stage, a.back)
+    make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method)
     msg = a.out_dir
     if a.icon and not a.back:
         msg += "  (icon palette %d)" % make_icon(rgb, solid, a.out_dir)

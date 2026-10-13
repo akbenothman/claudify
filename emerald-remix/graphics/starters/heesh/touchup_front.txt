@@ -1,0 +1,5 @@
+# Eye with highlight
+row 22 33 2 2 2
+row 23 32 2 15 14 14 2
+row 24 32 2 14 14 14 2
+row 25 33 2 2 2

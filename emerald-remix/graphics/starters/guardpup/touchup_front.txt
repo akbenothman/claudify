@@ -1,0 +1,4 @@
+# Determined eyes under the cap brim: angry brows, brown iris, highlight
+row 32 18 14 14 14 1 _ _ _ 1 14 14 14
+row 33 18 1 5 4 1 _ _ _ 1 5 4 1
+row 34 18 1 4 1 1 _ _ _ 1 4 1 1

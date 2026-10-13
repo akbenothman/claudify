@@ -1,0 +1,8 @@
+# Face under the beanie: grey mask patches, black pupils glancing left, nose, sly toothy grin
+row 34 16 1 1 1 1 1 1 1 1 1 1 1 1 14 14
+row 35 16 6 6 6 6 6 1 1 6 6 6 6 6 1 14
+row 36 16 6 2 2 8 6 1 1 6 2 2 8 6 1 14
+row 37 16 6 6 6 6 1 1 1 1 6 6 6 1 1 14
+row 38 16 2 2 1 1 1 1 1 1 1 1 1 1 14 14
+row 39 16 1 2 2 8 8 8 8 2 2 1 1 14 14 13
+row 40 16 _ 1 1 2 2 2 2 1 1 14 14 14 13

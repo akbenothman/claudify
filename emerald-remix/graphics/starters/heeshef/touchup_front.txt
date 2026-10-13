@@ -1,0 +1,5 @@
+# Eye under the hat brim: lighter fur around it, highlight, heavy smug lid
+row 16 26 6 6 2 2 2 6 6
+row 17 26 6 2 1 14 2 6 6
+row 18 26 6 2 14 14 2 6 6
+row 19 26 6 6 2 2 6 6 6
