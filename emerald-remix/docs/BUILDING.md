@@ -32,9 +32,12 @@ later builds take seconds to a minute. The apply script is safe to re-run after 
 | Level-up moves | `game/custom_learnsets.h` | one `#include` in `src/pokemon.c` |
 | TM / tutor moves | `game/custom_learnables.json` | merged into `all_learnables.json` |
 | Signature moves | `game/custom_moves.h` | `MOVE_*` in the custom-move slot, appended to `moves_info.h` |
-| Pokédex | — | National + Hoenn numbers, sort orders |
+| Pokédex | — | National numbers, Hoenn #001–009 (replacing Treecko–Swampert), sort orders |
 | Starters | — | Treecko/Torchic/Mudkip → Squeesh/Beanito/Guardpup in `starter_choose.c` |
-| Debug hooks (`--debug-scripts`) | — | Debug menu Script 1 = starter choice, Script 2 = wild Omarauder Lv 20 |
+| Rival teams | — | Starter species swapped in every May/Brendan battle |
+| Petalburg type-advice NPC | `game/petalburg_type_text.inc` | three text blocks replaced |
+| Tests | `game/tests/*.c` | copied into `test/`; run `make check TESTS="Remix"` |
+| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = May's Route 103 battle |
 
 Sprites are regenerated from the Gemini art with `tools/build_starters.sh` (see `docs/ART_PROMPTS.md`).
 
@@ -57,4 +60,3 @@ overworld opens the debug menu (Scripts → Script 1 opens the starter choice).
 - **Back sprites** are the front sprites mirrored, until the Gemini back sprites are done.
 - **Cries** borrow existing ones (Rattata/Raticate/Skuntank, Zigzagoon/Linoone/Obstagoon, Snubbull/Granbull).
 - **Footprints** borrow Rattata/Raticate, Zigzagoon/Linoone and Snubbull/Granbull.
-- **Rival:** May/Brendan still pick from the old starter list for their teams. That's next on the roadmap.

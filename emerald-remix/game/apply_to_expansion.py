@@ -4,7 +4,8 @@
 Usage: apply_to_expansion.py PATH/TO/pokeemerald-expansion [--debug-scripts]
 
 --debug-scripts fills the debug menu's Scripts 1 and 2 (debug builds only, R+START in the
-overworld): Script 1 opens the starter choice, Script 2 starts a wild battle with Omarauder.
+overworld): Script 1 opens the starter choice, Script 2 starts a wild battle with Omarauder,
+Script 3 starts May's Route 103 battle for the starter you picked.
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -63,6 +64,8 @@ def main():
                    ("custom_learnsets.h", "src/data/pokemon/custom_learnsets.h"),
                    ("pokemon_custom_gfx.h", "src/data/graphics/pokemon_custom.h")):
         shutil.copy(os.path.join(HERE, f), os.path.join(ROOT, dst))
+    for f in os.listdir(os.path.join(HERE, "tests")):  # run with: make check TESTS="Remix"
+        shutil.copy(os.path.join(HERE, "tests", f), os.path.join(ROOT, "test", f))
 
     # TM/tutor compatibility: the expansion generates teachable lists from all_learnables.json.
     def learnables(t):
@@ -89,18 +92,21 @@ def main():
 
     # 4. Pokédex: National and Hoenn numbers, and the sort orders.
     nat = "".join("    NATIONAL_DEX_%s,\n" % n.upper() for n in SPECIES)
-    hoenn = "".join(" \\\n    F(%s)" % n.upper() for n in SPECIES)
+    vanilla_starters = ("TREECKO", "GROVYLE", "SCEPTILE", "TORCHIC", "COMBUSKEN", "BLAZIKEN",
+                        "MUDKIP", "MARSHTOMP", "SWAMPERT")
     last = SPECIES[-1].upper()
 
     def dex(t):
         t = insert_once(t, "    NATIONAL_DEX_PECHARUNT,\n", nat)
         t = t.replace("#define NATIONAL_DEX_COUNT  NATIONAL_DEX_PECHARUNT",
                       "#define NATIONAL_DEX_COUNT  NATIONAL_DEX_%s" % last)
-        # The Hoenn dex is an X-macro list ending in F(DEOXYS); append ours after it.
-        t = insert_once(t, "    F(DEOXYS)", hoenn)
-        t = t.replace("#define HOENN_DEX_COUNT (HOENN_DEX_DEOXYS + 1)",
-                      "#define HOENN_DEX_COUNT (HOENN_DEX_%s + 1)" % last)
-        return t
+        # Our starters take Hoenn #001-009 from Treecko..Swampert, like the originals did. The old
+        # starters can't be obtained any more, so leaving them in the Hoenn dex would make the
+        # dex diploma impossible.
+        old = "".join("    F(%s) \\\n" % n for n in vanilla_starters)
+        new = "".join("    F(%s) \\\n" % n.upper() for n in SPECIES)
+        return t.replace("#define FOREACH_SPECIES_IN_HOENN_DEX_ORDER(F) \\\n" + old,
+                         "#define FOREACH_SPECIES_IN_HOENN_DEX_ORDER(F) \\\n" + new)
     edit("include/constants/pokedex.h", dex)
 
     def orders(t):
@@ -130,6 +136,12 @@ def main():
         return t[:end] + "\n" + moves.rstrip("\n") + t[end:]
     edit("src/data/moves_info.h", move_info)
 
+    # The Sheer Force test hard-codes every move Sheer Force should boost; ours have secondary effects
+    # (a burn chance, can't-escape) so they belong on it, like Lava Plume and Anchor Shot.
+    edit("test/battle/ability/sheer_force.c", lambda t: insert_once(
+        t, "static inline bool32 IsMoveSheerForceBoosted(enum Move move)\n{\n    switch (move) {\n",
+        "        case MOVE_TOXIC_FONDUE: // Emerald Remix\n        case MOVE_LOCKDOWN: // Emerald Remix\n"))
+
     # 6. The starters Birch offers.
     def starters(t):
         for old, new in zip(("SPECIES_TREECKO)", "SPECIES_TORCHIC)", "SPECIES_MUDKIP )"),
@@ -138,14 +150,54 @@ def main():
         return t
     edit("src/starter_choose.c", starters)
 
+    # 7. The rival gets the starter that beats yours, like in the original. Our type triangle runs
+    # the same way round as Grass/Fire/Water, so it's a straight swap, stage for stage.
+    swap = {"Treecko": "Squeesh", "Grovyle": "Heesh", "Sceptile": "Heeshef",
+            "Torchic": "Beanito", "Combusken": "Omar", "Blaziken": "Omarauder",
+            "Mudkip": "Guardpup", "Marshtomp": "Ahmed", "Swampert": "Ahmexec"}
+
+    def rival(t):
+        blocks = t.split("\n=== ")
+        for i, b in enumerate(blocks):
+            if b.startswith(("TRAINER_MAY_", "TRAINER_BRENDAN_")):
+                blocks[i] = "\n".join(swap.get(l, l) for l in b.split("\n"))
+        return "\n=== ".join(blocks)
+    edit("src/data/trainers.party", rival)
+
+    # 8. The Petalburg Pokémon Center NPC who explains your starter's type.
+    texts = open(os.path.join(HERE, "petalburg_type_text.inc")).read()
+
+    def petalburg(t):
+        for label in ("TreeckoIsGrassType", "TorchicIsFireType", "MudkipIsWaterType"):
+            head = "PetalburgCity_PokemonCenter_1F_Text_%s:\n" % label
+            start, new_start = t.index(head), texts.index(head)
+            end = t.index('$"\n', start) + 3
+            new_end = texts.index('$"\n', new_start) + 3
+            t = t[:start] + texts[new_start:new_end] + t[end:]
+        return t
+    edit("data/maps/PetalburgCity_PokemonCenter_1F/scripts.inc", petalburg)
+
+    # 9. The debug menu's "give starters" shortcut hands out ours.
+    edit("data/scripts/debug.inc", lambda t: t.replace("givemon SPECIES_TREECKO,", "givemon SPECIES_SQUEESH,")
+         .replace("givemon SPECIES_TORCHIC,", "givemon SPECIES_BEANITO,")
+         .replace("givemon SPECIES_MUDKIP,", "givemon SPECIES_GUARDPUP,"))
+
     if DEBUG_SCRIPTS:
         def debug_scripts(t):
             t = t.replace("Debug_EventScript_Script_1::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_1::\n\tspecial ChooseStarter\n"
                           "\trelease\n\tend\n")
-            return t.replace("Debug_EventScript_Script_2::\n\trelease\n\tend\n",
-                             "Debug_EventScript_Script_2::\n\tsetwildbattle SPECIES_OMARAUDER, 20\n"
-                             "\tdowildbattle\n\trelease\n\tend\n")
+            t = t.replace("Debug_EventScript_Script_2::\n\trelease\n\tend\n",
+                          "Debug_EventScript_Script_2::\n\tsetwildbattle SPECIES_OMARAUDER, 20\n"
+                          "\tdowildbattle\n\trelease\n\tend\n")
+            rival = "".join(
+                "Debug_EventScript_Rival%s::\n\ttrainerbattle_no_intro TRAINER_MAY_ROUTE_103_%s, "
+                "Debug_Text_RivalDefeated\n\trelease\n\tend\n\n" % (s.title(), s) for s in ("TREECKO", "TORCHIC", "MUDKIP"))
+            return t.replace("Debug_EventScript_Script_3::\n\trelease\n\tend\n",
+                             "Debug_EventScript_Script_3::\n\tswitch VAR_STARTER_MON\n"
+                             "\tcase 0, Debug_EventScript_RivalTreecko\n\tcase 1, Debug_EventScript_RivalTorchic\n"
+                             "\tcase 2, Debug_EventScript_RivalMudkip\n\trelease\n\tend\n\n" + rival +
+                             "Debug_Text_RivalDefeated:\n\t.string \"Debug: rival defeated.$\"\n")
         edit("data/scripts/debug.inc", debug_scripts)
 
 

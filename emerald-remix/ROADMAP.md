@@ -1,107 +1,94 @@
-# Roadmap
+# Claude's roadmap
 
-Estimates are **hours of focused work by one hobbyist working with Claude**. Claude writes most of the code,
-data, scripts and dialogue. The person does the art, playtesting, and taste calls.
-At **~8 hrs/week**, divide the hours by 8 to get weeks.
+This is **the work Claude does**: code, data, scripts, sprite conversion, testing. The decisions and
+art that come from you are in **[TODO_YOU.md](TODO_YOU.md)**. When an item here waits on one of
+yours, it says so with its number, e.g. *(waits on Y3)*.
 
-The plan is built so **every phase ends with a playable, complete game**. You can stop after any phase and still
-have something finished to play on Delta.
-
----
-
-## Phase 0: Foundation (6–12 hrs, about 1 week)
-
-Goal: an unmodified build of pokeemerald-expansion running on your iPhone.
-
-> **Status:** the game builds from pokeemerald-expansion 1.17.1 with the nine new starters, their
-> signature moves and Pokédex entries, verified in an emulator. See [docs/BUILDING.md](docs/BUILDING.md).
-> Still open: the GitHub repo, CI, the `.bps` patch, testing on Delta, and the config pass.
-
-- [ ] Create the GitHub repo and seed it from `rh-hideout/pokeemerald-expansion`. Keep the full history and
-      add RHH as the `upstream` remote so we can pull their bug fixes later.
-- [x] Install the toolchain (see [TOOLCHAIN.md](docs/TOOLCHAIN.md)): `arm-none-eabi-gcc`, `make`, `libpng`, Porymap, mGBA.
-- [x] The game builds and boots in mGBA (debug build; `make release` still to check).
-- [x] **Starters in the game:** Squeesh, Beanito and Guardpup replace Treecko, Torchic and Mudkip, and all nine
-      species, their Dex entries and their three signature moves are in.
-- [ ] Add a GitHub Actions workflow that builds every push and attaches a `.bps` patch as an artifact.
-- [ ] Patch your own Emerald ROM, import it into Delta, play 15 minutes, save, quit, and reload. Check that the
-      save and the clock both work (see [DELTA_IOS.md](docs/DELTA_IOS.md)).
-- [ ] Go through `include/config/*.h` and pick our settings: Gen-3 or Gen-9 battle mechanics, physical/special
-      split, EXP share, running indoors, followers on/off, etc. This is the cheapest high-impact step in the project.
-
-**Exit:** You can play the base hack on your phone, and CI builds a patch on every push.
-
-## Phase 1: Design doc (4–8 hrs)
-
-Before we build anything, write down what the game *is*. Content creep kills most ROM hacks.
-
-- [ ] One-paragraph pitch: what's different, and why someone would replay Emerald for it.
-- [ ] Pokémon list: which real Pokémon from Gen 4–9 appear (cheap), and how many original "fakemon" (expensive).
-- [ ] Move list: new moves, and for each one whether it reuses an existing effect.
-- [ ] Story changes: which characters get rewritten dialogue, and any new scenes.
-- [ ] Encounter tables per route, plus gym leader and Elite Four teams.
-- [ ] Decide which tier we're targeting (see [SCOPE.md](docs/SCOPE.md#three-sizes-of-project)).
-
-**Exit:** `docs/DESIGN.md` exists, and we've agreed on a tier.
-
-## Phase 2: Remix: "Emerald, but ours" (40–80 hrs, about 1–2.5 months)
-
-Everything here uses assets that already exist. No new art needed.
-
-- [ ] **Wild encounters**: rewrite `src/data/wild_encounters.json` (or edit in Porymap) to mix in Gen 4–9 Pokémon.
-- [ ] **Trainers**: rebuild every gym leader, rival, Aqua/Magma admin and Elite Four team. The expansion's
-      Showdown-style `trainers.party` format makes this fast.
-- [ ] **Learnsets / TMs / tutors**: adjust them for the new roster.
-- [ ] **Dialogue pass 1**: rewrite major NPCs (rival, Birch, gym leaders, Archie/Maxie, Steven, Wally).
-      Roughly 150–300 text boxes.
-- [ ] **Items & shops**: place new items, change shop stock.
-- [ ] **Balance playthrough**: play from start to credits on Delta and keep a bug/balance log.
-
-**Exit (v0.1):** A complete, balanced, rewritten-dialogue Emerald with a new Pokémon roster. You could release this on its own.
-
-## Phase 3: Originals: new Pokémon, moves, sprites (80–200 hrs, about 2.5–6 months)
-
-This is the phase where art is the bottleneck. Do a single fakemon all the way through first,
-then run the rest in batches.
-
-- [ ] **Pipeline test**: one original Pokémon end to end. That means its species data, front/back/icon/footprint
-      sprites, normal and shiny palettes, Pokédex entry, cry (reuse one), learnset, evolution, and a spot on a
-      route. **Time this** and use it to re-estimate the rest.
-- [ ] **Fakemon batch 1**: 5–10 species, including their evolution lines.
-- [ ] **New moves batch 1**: 10–20 moves. Most reuse existing effects and animations (cheap). Pick 3–5 to get
-      custom effects and animations (expensive).
-- [ ] **(Optional) new ability or two**: C code in the battle engine.
-- [ ] **(Optional) follower sprites** for the new species, if followers are on.
-- [ ] Battle tests: the expansion has a test framework (`make check`). Write tests for every new move effect.
-
-**Exit (v0.2):** The new Pokémon and moves show up throughout the game and have been tested in real battles.
-
-## Phase 4: Story & world additions (40–150 hrs, optional)
-
-- [ ] **Dialogue pass 2**: rewrite the remaining NPCs, signs, and flavor text.
-- [ ] **New side areas**: 1–3 new maps (a cave, an island, a post-game zone) built in Porymap from existing tilesets.
-- [ ] **New events**: a few scripted scenes or quests, written in Poryscript.
-- [ ] **New trainer sprites / overworld sprites** if new characters are introduced.
-- [ ] **Title screen / intro** tweaks.
-
-**Exit (v0.3):** The game has things to do that the original never had.
-
-## Phase 5: Polish & release (15–30 hrs)
-
-- [ ] 2–3 outside playtesters on Delta, plus at least one on a different emulator (mGBA, or My Boy! on Android).
-- [ ] Fix-it list from the testers.
-- [ ] Release notes, a `.bps` patch, and the clean-ROM checksum people need to match.
-- [ ] Tag `v1.0`.
+Every milestone ends with a game that builds, boots and has been played through in an emulator.
 
 ---
 
-## Totals
+## M1: Starters, done properly ← **we are here**
 
-| Stop after | Hours | At 8 hrs/week | At 15 hrs/week |
-|---|---|---|---|
-| Phase 2 (Remix) | ~50–100 | 1.5–3 months | 1–1.5 months |
-| Phase 3 (+ originals) | ~130–300 | 4–9 months | 2–5 months |
-| Phase 5 (full v1.0) | ~185–480 | 6–14 months | 3–8 months |
+Make the three starter lines feel like they were always part of Emerald.
 
-The biggest variable is **how many original sprites you draw, and how fast**. Everything else is mostly work
-Claude can do quickly.
+- [x] 9 species: stats, types, abilities, Pokédex text, sprites, icons, level-up moves, TM/tutor moves
+- [x] Signature moves at level 26: Toxic Fondue, Sticky Fingers, Lockdown
+- [x] Squeesh, Beanito and Guardpup are the three choices in Birch's bag
+- [x] **Rival gets the starter that beats yours** in all 30 rival battles (Squeesh → rival Beanito,
+      Beanito → rival Guardpup, Guardpup → rival Squeesh), stage for stage
+- [x] Starters are **Hoenn Pokédex #001–009** (the old starters can't be caught, so leaving them in the
+      Hoenn dex would have made the Pokédex diploma impossible)
+- [x] Petalburg Pokémon Center NPC explains your starter's real types
+- [x] Automated tests: signature moves, the type triangle, evolution levels, Pokédex numbers. The
+      expansion's full suite (5,868 tests) also passes with our changes
+- [x] Played each starter through the first rival battle in the emulator: all three win by just using
+      their first move every turn, like the original. Two balance fixes came out of it: Guardpup now gets
+      Intimidate on evolving (Inner Focus before that), and Beanito learns Sand Attack at 9 instead of 4
+- [ ] Balance check: each starter against the rival and gyms 1–4 (notes below)
+- [ ] Real back sprites *(waits on Y4)*
+- [ ] Shiny colors *(waits on Y5)*
+- [ ] Menu icons cleaned up by hand
+
+**Early balance notes** (to verify in play):
+
+| Starter | Roxanne (Rock) | Brawly (Fighting) | Wattson (Electric) | Flannery (Fire) |
+|---|---|---|---|---|
+| Squeesh / Heesh | Hard: Poison and Fire are both resisted | Easy: Poison resists Fighting | Even | Easy: Fire resists Fire |
+| Beanito / Omar | Even | **Hard: Dark is weak to Fighting** | Even | Even |
+| Guardpup / Ahmed | **Easy: Fighting beats Rock** | Even | Even | Even (Ahmexec is weak to it later) |
+
+Vanilla Emerald has the same kind of spread (Torchic struggles with Roxanne), so this is fine as long as
+each route has a Pokémon that covers the hard gym.
+
+## M2: Playable on your phone
+
+- [ ] Your own GitHub repo, with this project and the expansion checkout *(waits on Y1)*
+- [ ] CI: build on every push and run the tests
+- [ ] `.bps` patch against your clean ROM *(waits on Y2)*
+- [ ] On Delta: start a game, save, quit, reload; check the clock (berries, tides)
+- [ ] `make release` build (turns off the debug menu)
+- [ ] Config pass: battle mechanics generation, EXP share, running shoes, followers *(waits on Y16)*
+
+## M3: Remix: "Emerald, but ours" (v0.1)
+
+Uses art that already exists, so it moves fast once the decisions are in.
+
+- [ ] New wild Pokémon on every route *(waits on Y11)*
+- [ ] Rebuilt gym leader, rival, team admin and Elite Four teams
+- [ ] Rewritten dialogue for the main characters *(waits on Y6–Y10)*
+- [ ] Title screen and intro *(waits on Y13–Y15)*
+- [ ] Items and shops
+- [ ] Full playthrough in the emulator, then on Delta, with a bug/balance log
+
+## M4: Originals (v0.2)
+
+- [ ] More original Pokémon through the same art pipeline *(waits on Y12)*
+- [ ] More custom moves, with a test for each
+- [ ] Overworld follower sprites, if followers are on
+
+## M5: Story and world (v0.3)
+
+- [ ] New characters, events and scenes in Poryscript *(waits on Y6–Y10)*
+- [ ] 1–3 new areas built from existing tilesets
+- [ ] New trainer sprites for new characters
+
+## M6: Release (v1.0)
+
+- [ ] 2–3 friends playtest on their phones
+- [ ] Fix list, release notes, final `.bps`
+
+---
+
+## Time estimates
+
+| Milestone | Claude's part | Your part |
+|---|---|---|
+| M1 | nearly done | 9 back sprites in Gemini, about 2–4 hrs |
+| M2 | a few hours | Create repo, upload ROM, test on phone: about 1 hr |
+| M3 | 30–60 hrs | Answer TODO_YOU questions, playtest: 10–20 hrs |
+| M4 | 3–5 hrs per Pokémon line | Art: 3–6 hrs per Pokémon |
+| M5 | 20–80 hrs | Story decisions, playtest |
+| M6 | a few hours | Playtest with friends |
+
+How it's built: [docs/BUILDING.md](docs/BUILDING.md). What's possible: [docs/SCOPE.md](docs/SCOPE.md).

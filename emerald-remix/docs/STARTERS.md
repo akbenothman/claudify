@@ -142,12 +142,34 @@ final stage: the steel briefcase and the corporate armor.
 | Ahmed | 70 | 90 | 80 | 40 | 65 | 60 | 405 |
 | Ahmexec | 90 | 120 | 110 | 55 | 85 | 70 | 530 |
 
-- **Abilities:** Intimidate (security-guard stare). Hidden ability: Inner Focus.
+- **Abilities:** Guardpup has Inner Focus (a rookie who stays on task) and gains **Intimidate** when it evolves
+  into Ahmed, head of security. Hidden ability: the other one. (Intimidate on a level-5 starter made the first
+  rival battle unwinnable for Beanito.)
 - **Signature move: Lockdown**: Steel, Physical, 80 power, 100% accuracy, **the target can't switch out or flee**.
   This reuses the effect of the move Anchor Shot.
 - **Learns along the way:** Tackle, Leer, Rock Smash, Protect, Bite, Brick Break, Bulk Up, Iron Head, Close Combat, Bullet Punch, Lockdown.
 
 ---
+
+## In the game
+
+- **Birch's bag:** Squeesh (left), Beanito (middle), Guardpup (right), replacing Treecko, Torchic and Mudkip.
+- **Rival:** May/Brendan always picks the starter that beats yours, and evolves it on the same schedule as in
+  the original (Lv 5 and 15 unevolved, Lv 20–34 middle stage):
+
+  | You pick | Rival's line |
+  |---|---|
+  | Squeesh | Beanito → Omar |
+  | Beanito | Guardpup → Ahmed |
+  | Guardpup | Squeesh → Heesh |
+
+- **Pokédex:** Hoenn #001–009 (taking Treecko–Swampert's numbers), and at the end of the National Dex.
+- **Signature moves** are learned at level 26. Each line's first attacking move of its own type comes at
+  level 7 or later, so the rival's level-5 starter can't hit you super-effectively.
+- **Petalburg Pokémon Center:** the NPC who explains your starter's strengths and weaknesses describes
+  the new types.
+- **Tests:** `make check TESTS="Remix"` checks the signature moves, the type triangle, evolution levels and
+  Pokédex numbers.
 
 ## Game hooks (story ideas, optional)
 

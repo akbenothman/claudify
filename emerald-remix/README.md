@@ -18,7 +18,8 @@ you patch it in the browser, save the `.gba` to Files, and import it into Delta.
 
 | File | What's in it |
 |---|---|
-| [ROADMAP.md](ROADMAP.md) | Phases, milestones, hour estimates |
+| [ROADMAP.md](ROADMAP.md) | **Claude's roadmap:** milestones, status, what's next |
+| [TODO_YOU.md](TODO_YOU.md) | **Your to-do list:** decisions, questions and art only you can supply |
 | [docs/SCOPE.md](docs/SCOPE.md) | What we can change, what each change costs, the hard limits |
 | [docs/TOOLCHAIN.md](docs/TOOLCHAIN.md) | Tools, build setup, repo layout |
 | [docs/DELTA_IOS.md](docs/DELTA_IOS.md) | Getting the hack onto an iPhone and testing it in Delta |

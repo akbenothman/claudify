@@ -23,8 +23,8 @@ static const struct LevelUpMove sHeeshLineLevelUpLearnset[] = {
 static const struct LevelUpMove sOmarLineLevelUpLearnset[] = {
     LEVEL_UP_MOVE( 1, MOVE_SCRATCH),
     LEVEL_UP_MOVE( 1, MOVE_LEER),
-    LEVEL_UP_MOVE( 4, MOVE_SAND_ATTACK),
     LEVEL_UP_MOVE( 8, MOVE_THIEF),
+    LEVEL_UP_MOVE( 9, MOVE_SAND_ATTACK),
     LEVEL_UP_MOVE(12, MOVE_MUD_SLAP),
     LEVEL_UP_MOVE(16, MOVE_BITE),
     LEVEL_UP_MOVE(20, MOVE_FURY_SWIPES),
@@ -41,7 +41,7 @@ static const struct LevelUpMove sOmarLineLevelUpLearnset[] = {
 static const struct LevelUpMove sAhmedLineLevelUpLearnset[] = {
     LEVEL_UP_MOVE( 1, MOVE_TACKLE),
     LEVEL_UP_MOVE( 1, MOVE_LEER),
-    LEVEL_UP_MOVE( 4, MOVE_ROCK_SMASH),
+    LEVEL_UP_MOVE( 7, MOVE_ROCK_SMASH),
     LEVEL_UP_MOVE( 8, MOVE_PROTECT),
     LEVEL_UP_MOVE(12, MOVE_BITE),
     LEVEL_UP_MOVE(16, MOVE_BRICK_BREAK),
