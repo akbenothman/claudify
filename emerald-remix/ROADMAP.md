@@ -13,10 +13,16 @@ have something finished to play on Delta.
 
 Goal: an unmodified build of pokeemerald-expansion running on your iPhone.
 
+> **Status:** the game builds from pokeemerald-expansion 1.17.1 with the nine new starters, their
+> signature moves and Pokédex entries, verified in an emulator. See [docs/BUILDING.md](docs/BUILDING.md).
+> Still open: the GitHub repo, CI, the `.bps` patch, testing on Delta, and the config pass.
+
 - [ ] Create the GitHub repo and seed it from `rh-hideout/pokeemerald-expansion`. Keep the full history and
       add RHH as the `upstream` remote so we can pull their bug fixes later.
-- [ ] Install the toolchain (see [TOOLCHAIN.md](docs/TOOLCHAIN.md)): `arm-none-eabi-gcc`, `make`, `libpng`, Porymap, mGBA.
-- [ ] `make release` runs and boots in mGBA.
+- [x] Install the toolchain (see [TOOLCHAIN.md](docs/TOOLCHAIN.md)): `arm-none-eabi-gcc`, `make`, `libpng`, Porymap, mGBA.
+- [x] The game builds and boots in mGBA (debug build; `make release` still to check).
+- [x] **Starters in the game:** Squeesh, Beanito and Guardpup replace Treecko, Torchic and Mudkip, and all nine
+      species, their Dex entries and their three signature moves are in.
 - [ ] Add a GitHub Actions workflow that builds every push and attaches a `.bps` patch as an artifact.
 - [ ] Patch your own Emerald ROM, import it into Delta, play 15 minutes, save, quit, and reload. Check that the
       save and the clock both work (see [DELTA_IOS.md](docs/DELTA_IOS.md)).
