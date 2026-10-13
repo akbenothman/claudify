@@ -53,6 +53,45 @@ def insert_once(text, anchor, addition, after=True):
     return text[:i] + addition + text[i:]
 
 
+def apply_text_overrides(path):
+    """Replace labelled text blocks in game files with the ones in a game/text/*.inc file."""
+    target = None
+    blocks = {}
+    label = None
+    for line in open(path, encoding="utf-8"):
+        if line.startswith("@@ file:"):
+            target = line.split(":", 1)[1].strip()
+            continue
+        if line.startswith("@") or not line.strip():
+            continue
+        if not line.startswith(("\t", " ")):
+            label = line.strip()
+            blocks.setdefault(target, []).append([label, line])
+        else:
+            blocks[target][-1][1] += line
+    for target, items in blocks.items():
+        def replace(t, items=items):
+            for label, block in items:
+                start = 0 if t.startswith(label + "\n") else t.index("\n" + label + "\n") + 1
+                end = t.index('$"\n', start) + 3
+                t = t[:start] + block + t[end:]
+            return t
+        edit(target, replace)
+
+
+def rename_in_strings(old, new, files):
+    """Rename text only inside .string lines (data) or string literals (src), never in labels or code."""
+    for path in files:
+        def fix(t):
+            out = []
+            for line in t.split("\n"):
+                if old in line and (".string" in line or '"' in line):
+                    line = line.replace(old, new)
+                out.append(line)
+            return "\n".join(out)
+        edit(path, fix)
+
+
 def main():
     # 1. Files we own: copy them in.
     for name in SPECIES:
@@ -201,7 +240,19 @@ def main():
         return t
     edit("data/maps/PetalburgCity_PokemonCenter_1F/scripts.inc", petalburg)
 
-    # 9. The debug menu's "give starters" shortcut hands out ours.
+    # 9. Characters. Rewritten scenes live in game/text/*.inc; names are renamed everywhere they're shown.
+    for f in sorted(os.listdir(os.path.join(HERE, "text"))):
+        apply_text_overrides(os.path.join(HERE, "text", f))
+    text_files = [os.path.relpath(os.path.join(d, f), ROOT)
+                  for d, _, fs in os.walk(os.path.join(ROOT, "data")) for f in fs if f.endswith(".inc")]
+    text_files += ["src/strings.c", "src/pokenav_match_call_data.c", "src/battle_message.c",
+                   "src/field_screen_effect.c"]
+    rename_in_strings("PROF. BIRCH", "PROF. MO", text_files)
+    rename_in_strings("My name is BIRCH", "My name is MO", ["data/text/birch_speech.inc"])
+    # Professor Mo shows off his Omar in the intro instead of Lotad.
+    edit("src/main_menu.c", lambda t: t.replace("SPECIES_LOTAD", "SPECIES_OMAR"))
+
+    # 10. The debug menu's "give starters" shortcut hands out ours.
     edit("data/scripts/debug.inc", lambda t: t.replace("givemon SPECIES_TREECKO,", "givemon SPECIES_SQUEESH,")
          .replace("givemon SPECIES_TORCHIC,", "givemon SPECIES_BEANITO,")
          .replace("givemon SPECIES_MUDKIP,", "givemon SPECIES_GUARDPUP,"))

@@ -40,7 +40,8 @@ below that Claude needs answered to build it.
 
 ## Characters and story
 
-- [ ] **Y6. The new cast.** You want to swap out every character. Start with the ones players meet most:
+- [ ] **Y6. The new cast.** Started: **Professor Mo** is in the game. The full checklist of who and what
+      can be replaced is [docs/REPLACE_LIST.md](docs/REPLACE_LIST.md). You want to swap out every character. Start with the ones players meet most:
       Mom, Professor Birch, Dad (Norman), the rival(s), Steven, Mr. Briney, and the named NPCs in each town.
       For each: a name, one line about who they are, and whether they look different. *Different looks
       need a Gemini sprite each; a new name and new lines with the old look cost nothing.*
@@ -80,8 +81,8 @@ below that Claude needs answered to build it.
 - [ ] **Y13. The hack's name** (shown on the title screen and in the patch). *Default: "Emerald Remix".*
 - [ ] **Y14. Title screen.** Keep Rayquaza, or put one of the starters (e.g. Omarauder) on it? A new logo
       means one Gemini image from you. *Default: new name on the logo, Rayquaza stays.*
-- [ ] **Y15. Professor Birch's intro.** He shows off Lotad during the opening speech; use one of the
-      starters instead? *Default: Squeesh.*
+- [x] **Y15. The professor's intro.** Professor Mo shows off his Omar (and explains why his Ahmed is in
+      time-out).
 
 ## How the game plays
 

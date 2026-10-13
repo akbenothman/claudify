@@ -32,6 +32,9 @@ jobs:
       - name: Apply Emerald Remix
         run: python3 emerald-remix/game/apply_to_expansion.py emerald-src
 
+      - name: Check dialogue fits the textbox
+        run: python3 emerald-remix/tools/text_width.py emerald-src emerald-remix/game/text/*.inc emerald-remix/game/*.inc
+
       - name: Build
         run: make -C emerald-src -j"$(nproc)" release
 

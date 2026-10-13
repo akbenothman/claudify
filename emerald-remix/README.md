@@ -20,6 +20,7 @@ you patch it in the browser, save the `.gba` to Files, and import it into Delta.
 |---|---|
 | [ROADMAP.md](ROADMAP.md) | **Claude's roadmap:** milestones, status, what's next |
 | [TODO_YOU.md](TODO_YOU.md) | **Your to-do list:** decisions, questions and art only you can supply |
+| [docs/REPLACE_LIST.md](docs/REPLACE_LIST.md) | **Everything you can replace:** characters, gyms, villains, towns, with blanks to fill in |
 | [docs/SCOPE.md](docs/SCOPE.md) | What we can change, what each change costs, the hard limits |
 | [docs/TOOLCHAIN.md](docs/TOOLCHAIN.md) | Tools, build setup, repo layout |
 | [docs/DELTA_IOS.md](docs/DELTA_IOS.md) | Getting the hack onto an iPhone and testing it in Delta |

@@ -80,6 +80,10 @@ Uses art that already exists, so it moves fast once the decisions are in.
 
 ## M5: Story and world (v0.3)
 
+- [x] Tooling for the cast swap: rewritten scenes live in `game/text/*.inc`, names are renamed everywhere
+      they appear in text, and `tools/text_width.py` checks every line fits the textbox
+- [x] **Professor Mo** replaces Professor Birch: name everywhere, intro speech (with his Omar), Route 101
+      rescue, the lab scenes, and the Champion ending
 - [ ] **The whole cast swapped**: every named NPC, the gym leaders, Elite Four, Champion and the villain
       team's leaders get new names, lines and (where you supply art) new looks *(waits on Y3, Y6, Y8, Y10)*
 - [ ] New events and scenes in Poryscript *(waits on Y6–Y9)*
