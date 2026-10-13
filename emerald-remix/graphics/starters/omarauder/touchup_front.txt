@@ -1,15 +1,19 @@
 # Converted with --lift-darks 0.7 --dark-tint 0,4,18.
-# Free slot 5 (a duplicate near-black) and make it white for teeth
+# Free slot 5 (a duplicate near-black) and make it white for fangs
 remap 5 8
 color 5 248 248 248
 # Ribbed cuff above the eyes
 rremap 38 24 54 29 14 11 odd
-# Glowing slanted eyes in the shadow of the cuff
-row 29 43 8 8 8 _ _ _ 8 8 8
-row 30 42 8 2 2 2 8 _ 8 2 2 2 8
-row 31 43 2 2 8 _ _ _ 8 2 2
-# Nose and wide toothy grin
-row 32 46 8 8
-row 33 41 8 8 8 8 8 8 8 8 8 8 8 8
-row 34 41 8 5 5 12 5 5 12 5 5 12 5 8
-row 35 42 8 8 8 8 8 8 8 8 8 8
+# Face kept in the hood's shadow: narrow glowing eyes slanting down toward the nose,
+# nose, a smirk that lifts on one side, two small fangs. Menacing, not goofy.
+row 29 39 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+row 30 39 7 7 2 2 8 7 7 7 7 7 8 2 2 7
+row 31 39 7 7 8 2 2 8 7 7 7 8 2 2 8 7
+row 32 39 7 7 7 8 8 7 7 8 8 7 8 8 7 7
+row 33 39 7 7 7 7 7 11 11 11 11 11 11 8 7 7
+row 34 39 7 7 7 7 8 8 8 8 8 8 8 11 7 7
+row 35 39 7 7 7 7 7 5 11 11 5 11 7 7 7 7
+row 36 39 3 7 7 7 7 7 7 7 7 7 7 7 7 7
+# Tone the belly down a shade so the dark hood dominates (a bright round belly read as goofy)
+rremap 28 36 56 60 12 6
+rremap 28 36 56 60 4 12
