@@ -30,8 +30,8 @@ Gemini can't output a true GBA sprite: an exact 64×64 image with 16 colors. So 
 > Full body, single character, centered, simple clean shapes, bold dark outline, flat cel shading, limited color palette,
 > cute and readable silhouette. Plain flat solid bright green background (#00FF00). No text, no logos, no watermark.
 
-### Heeshlet
-> [style block] A tiny baby sewer rat Pokémon named Heeshlet. Grey-brown fur, big round ears with pink insides, pink nose,
+### Squeesh
+> [style block] A tiny baby sewer rat Pokémon named Squeesh. Grey-brown fur, big round ears with pink insides, pink nose,
 > long thin pink tail, huge shiny black eyes. It wears an oversized orange and blue basketball jersey that hangs on it like a dress.
 > It is hugging a big red strawberry almost as big as its head. Cheese crumbs on its cheeks. Sitting on its back legs. Cute and mischievous.
 
@@ -47,24 +47,29 @@ Gemini can't output a true GBA sprite: an exact 64×64 image with 16 colors. So 
 > with purple stains. Holds a ladle like a royal scepter, a whole wheel of cheese under one arm. Long tail ending in a big purple
 > flame. Smug, powerful expression. Looks like a boss.
 
-### Omarlet
-> [style block] A small baby raccoon Pokémon named Omarlet. Scruffy grey fur smudged with dirt, black bandit mask around its eyes,
-> ringed striped tail. A dark beanie hat pulled down so low it almost covers its eyes. A little cloud of dust floats around it.
-> It holds a stolen soft pretzel in its paws. Sneaky but cute expression.
+### Beanito
+> [style block] A tiny baby raccoon Pokémon named Beanito whose defining feature is a giant black knit beanie. The beanie is
+> far too big for it and covers almost its whole body like a shell or sleeping bag; the beanie is the biggest part of the design.
+> Solid black beanie with a ribbed folded-up cuff, ribs shown in dark grey. Only the raccoon's face peeks out under the cuff:
+> light grey fur, black bandit mask, big eyes. Tiny paws grip the cuff, a ringed striped tail sticks out the back.
+> The beanie is dusty, a stolen soft pretzel pokes out of it. Sneaky but cute.
 
 ### Omar
-> [style block] The evolved form of the attached raccoon Pokémon, named Omar. A taller raccoon standing on two legs, scruffy grey fur,
-> black bandit mask, ringed tail. Wears a slouchy dark beanie and an open hoodie with a mud stain. Has a tourist backpack overflowing
-> with stolen souvenirs: a tiny Statue of Liberty, a foam finger, a hot dog. One hand hidden behind its back. Sly grin.
+> [style block] The evolved form of the attached raccoon Pokémon, named Omar. The huge black knit beanie is the most important part of
+> the design: a slouchy solid black beanie with a ribbed folded cuff (ribs in dark grey), almost as tall as its body, flopping to one
+> side and overstuffed with stolen souvenirs poking out — a tiny Statue of Liberty, a foam finger, a hot dog. Below it, a raccoon
+> standing on two legs: light grey fur, black bandit mask peeking from under the cuff, sly grin, ringed tail, open hoodie with
+> a mud stain. One paw reaches up into the beanie, hiding something.
 
 ### Omarauder
-> [style block] The final evolution of the attached raccoon Pokémon, named Omarauder — the king of city thieves. Big, burly raccoon,
-> dark grey fur, black bandit mask, glowing yellow eyes, wide toothy grin. Tall patched beanie, long brown coat with pockets stuffed
-> with stolen goods. Its arms are covered in hardened brown mud that looks like armor. A loot sack slung over one shoulder.
-> Mud dripping at its feet. Intimidating but fun.
+> [style block] The final evolution of the attached raccoon Pokémon, named Omarauder — the king of city thieves. Its signature black
+> knit beanie has grown into an enormous patched hood that drapes down its back like a cape and drags on the ground; it is the
+> biggest part of the design. Solid black with a ribbed cuff (ribs in dark grey), bulging with stolen loot, gold coins and gadgets
+> spilling from holes. Big burly raccoon underneath, light grey fur, glowing yellow eyes and a wide toothy grin in the shadow of
+> the cuff. Arms covered in hardened brown mud like armor. Intimidating but fun.
 
-### Ahmedlet
-> [style block] A short stocky bulldog puppy Pokémon named Ahmedlet, dressed as a rookie security guard. Tan and white fur,
+### Guardpup
+> [style block] A short stocky bulldog puppy Pokémon named Guardpup, dressed as a rookie security guard. Tan and white fur,
 > droopy jowls, small underbite. Wears an oversized navy blue security guard cap that is too big for it, a navy shirt with a yellow
 > "security" style shield patch (no readable text), a small flashlight and a walkie-talkie on its belt. Serious face, trying hard
 > to look tough. Adorable.

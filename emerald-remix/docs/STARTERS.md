@@ -6,13 +6,19 @@ Three starter lines with a New York theme. Each one is based on a real city anim
 |---|---|---|---|
 | Animal | Sewer rat | City raccoon | Bulldog (guard dog) |
 | Theme | Chef, cheese, strawberries, Knicks fan | Beanie, NYC tourist, thief, grimy | Security guard → CEO of **Safety Zone** |
-| Stage 1 (Lv 5) | **Heeshlet**: Poison | **Omarlet**: Dark | **Ahmedlet**: Fighting |
+| Stage 1 (Lv 5) | **Squeesh**: Poison | **Beanito**: Dark | **Guardpup**: Fighting |
 | Stage 2 (Lv 16) | **Heesh**: Poison/Fire | **Omar**: Dark | **Ahmed**: Fighting |
 | Stage 3 (Lv 36) | **Heeshef**: Poison/Fire | **Omarauder**: Dark/Ground | **Ahmexec**: Fighting/Steel |
 | Style | Fast special attacker | Fast physical attacker | Slow, bulky physical tank |
 | Signature move | Toxic Fondue | Sticky Fingers | Lockdown |
 
-Names can be up to 10 characters (we stay under the game's limit), and any of them can be renamed later.
+Each line's middle stage carries the friend's name. The first and last stages each get their own kind of wordplay:
+
+- **Squeesh** (squeak + Heesh) → **Heesh** → **Heeshef** (Heesh + chef)
+- **Beanito** (beanie + "-ito", little) → **Omar** → **Omarauder** (Omar + marauder)
+- **Guardpup** (guard + pup) → **Ahmed** → **Ahmexec** (Ahmed + exec)
+
+All names fit the game's 10-character limit, and any of them can be changed later.
 
 ## How the three types beat each other
 
@@ -32,7 +38,7 @@ Omarauder's Ground moves also hit Ahmexec for super-effective damage, so that ma
 (a Knicks fan), snacking on cheese and strawberries. When he evolves, he finds a chef's hat and starts *cooking*.
 That's where his Fire type comes from: he lights sewer gas to cook.
 
-### Heeshlet (Stage 1): Poison
+### Squeesh (Stage 1): Poison
 - **Looks:** A tiny grey-brown rat with big round ears, a pink nose, a long pink tail, and big shiny eyes. He wears an
   **oversized orange-and-blue basketball jersey that hangs on him like a dress**. He hugs a strawberry nearly as big as his head.
   There are cheese crumbs on his cheeks.
@@ -52,7 +58,7 @@ That's where his Fire type comes from: he lights sewer gas to cook.
 
 | | HP | Atk | Def | SpA | SpD | Spe | Total |
 |---|---|---|---|---|---|---|---|
-| Heeshlet | 40 | 45 | 40 | 60 | 45 | 80 | 310 |
+| Squeesh | 40 | 45 | 40 | 60 | 45 | 80 | 310 |
 | Heesh | 55 | 60 | 55 | 80 | 60 | 95 | 405 |
 | Heeshef | 75 | 75 | 65 | 115 | 85 | 115 | 530 |
 
@@ -65,29 +71,38 @@ That's where his Fire type comes from: he lights sewer gas to cook.
 
 ## Omar line: the Beanie Pokémon
 
-**Concept:** A grimy raccoon from the city who always wears a beanie. He loves trips to New York and "collects
-souvenirs" (he steals them). He never takes a bath. When he evolves, the mud and dirt he's covered in become his Ground type.
+**Concept:** A grimy city raccoon whose **black beanie is the most important thing about him**. It's the first thing
+you see at every stage, and it grows as he evolves. He hides inside it, sleeps in it, and stuffs everything he steals
+into it. He loves trips to New York and "collects souvenirs" (he steals them). He never takes a bath, and the mud he's
+covered in becomes his Ground type at the final stage.
 
-### Omarlet (Stage 1): Dark
-- **Looks:** A small, scruffy raccoon kit with a dark bandit mask and a ringed tail. A **beanie is pulled down so low it
-  almost covers his eyes**. His fur is smudged with dirt, and a little cloud of dust hangs around him. He's holding a stolen soft pretzel.
-- **Dex:** *It slips into tourists' bags without a sound. Its beanie is never washed and never taken off.*
+**Beanie rules for the art:** The beanie is always **solid black with a ribbed, folded-up cuff**. The ribs are drawn
+in dark grey so the hat doesn't turn into one black blob at 64×64. His fur is light grey, so the black beanie stands
+out against it. At every stage the beanie takes up more of the sprite than his face does.
+
+### Beanito (Stage 1): Dark
+- **Looks:** A tiny raccoon kit who **lives inside a black beanie that's far too big for him**. The beanie covers almost all of
+  his body like a sleeping bag or a shell. Only his masked face peeks out from under the cuff, his little paws grip the edge,
+  and his ringed tail sticks out of the back. The beanie is dusty, and a stolen soft pretzel pokes out of it.
+- **Dex:** *It hides inside a black beanie it stole as a baby, and runs off when anyone tries to take it away. The beanie has never once been washed.*
 
 ### Omar (Stage 2): Dark
-- **Looks:** A taller raccoon standing on two legs, in a **slouchy beanie and an unzipped hoodie**. He wears a tourist backpack
-  stuffed with stolen souvenirs: a mini Statue of Liberty, a foam finger, a hot dog. One hand is behind his back, hiding something.
-  There's a mud stain on his hoodie and a sly grin on his face.
-- **Dex:** *It loves visiting big cities and never leaves without a souvenir. Nobody remembers it paying for one.*
+- **Looks:** A raccoon standing on two legs under a **huge, slouchy black beanie** that's nearly as tall as his body. It flops over
+  to one side and is so stuffed with stolen souvenirs that they stick out of it: a mini Statue of Liberty, a foam finger, a hot dog.
+  He wears an open hoodie with a mud stain, and one paw is reaching up into the beanie to hide something. Under the cuff,
+  only his bandit mask and a sly grin are visible.
+- **Dex:** *It loves visiting big cities and never leaves without a souvenir. Anything it steals vanishes into its beanie, which seems to have no bottom.*
 
 ### Omarauder (Stage 3): Dark/Ground
-- **Looks:** A big, burly raccoon who has become the **king of the city's thieves**. His beanie is tall and patched, and he wears a long
-  **coat with pockets stuffed full** of stolen goods. A trail of mud follows him, and caked dirt has hardened into armor on his
-  arms. He has a wide toothy grin, glowing eyes, and a sack of loot slung over his shoulder.
-- **Dex:** *It is so filthy that dirt has hardened into armor on its body. It can empty an entire market stall in the blink of an eye.*
+- **Looks:** A big, burly raccoon, now the **king of the city's thieves**. His black beanie has grown into an **enormous, patched hood
+  that drapes down his back like a cape** and drags on the ground behind him. It bulges with stolen loot, and gold and gadgets spill
+  out of the holes. Glowing yellow eyes and a wide toothy grin shine out from the shadow of the cuff. Hardened mud covers his arms
+  like armor.
+- **Dex:** *Its giant beanie holds a whole city's worth of stolen goods. It is so filthy that dirt has hardened into armor on its body.*
 
 | | HP | Atk | Def | SpA | SpD | Spe | Total |
 |---|---|---|---|---|---|---|---|
-| Omarlet | 45 | 60 | 45 | 35 | 45 | 80 | 310 |
+| Beanito | 45 | 60 | 45 | 35 | 45 | 80 | 310 |
 | Omar | 60 | 80 | 60 | 50 | 55 | 100 | 405 |
 | Omarauder | 80 | 115 | 75 | 65 | 70 | 125 | 530 |
 
@@ -104,7 +119,7 @@ souvenirs" (he steals them). He never takes a bath. When he evolves, the mud and
 up as the **boss of Safety Zone**, a security company, in a black suit and tie. His Steel type shows up at the
 final stage: the steel briefcase and the corporate armor.
 
-### Ahmedlet (Stage 1): Fighting
+### Guardpup (Stage 1): Fighting
 - **Looks:** A short, stocky bulldog puppy in an **oversized security guard uniform**: a navy cap that's too big for him,
   a navy shirt with a yellow "SECURITY" patch, a little flashlight, and a walkie-talkie clipped to his belt. He has a serious face
   and droopy jowls, and he's trying very hard to look tough.
@@ -123,7 +138,7 @@ final stage: the steel briefcase and the corporate armor.
 
 | | HP | Atk | Def | SpA | SpD | Spe | Total |
 |---|---|---|---|---|---|---|---|
-| Ahmedlet | 55 | 65 | 60 | 30 | 55 | 45 | 310 |
+| Guardpup | 55 | 65 | 60 | 30 | 55 | 45 | 310 |
 | Ahmed | 70 | 90 | 80 | 40 | 65 | 60 | 405 |
 | Ahmexec | 90 | 120 | 110 | 55 | 85 | 70 | 530 |
 
