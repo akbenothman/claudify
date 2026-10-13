@@ -6,6 +6,21 @@ which points back to these numbers.
 
 Mark one done by changing `[ ]` to `[x]` and writing your answer underneath.
 
+## Your big goals
+
+From your notes, these are the changes you want the finished game to have. Each one links to the questions
+below that Claude needs answered to build it.
+
+| Goal | Questions | Rough size |
+|---|---|---|
+| At least 10 new Pokémon lines | Y12 | ~30 Pokémon of art from you (front + back each); 1–2 hrs of Claude's work per line |
+| Some Digimon | Y20 | Built exactly like the new Pokémon lines |
+| New gym leaders, each with a new ace Pokémon | Y10, Y12 | 8 characters, 8 aces, rebuilt teams |
+| New Elite Four, Champion and villain-team leaders | Y8, Y10 | 7–9 characters |
+| Every NPC and character swapped out | Y3, Y6 | Names and dialogue are cheap; new trainer *sprites* need art |
+| New city and town names | Y19 | Cheap: about 16 towns plus their signs and dialogue |
+| All important dialogue rewritten | Y9, Y21 | Scenes you can't skip: intro, rivals, gyms, villains, ending |
+
 ---
 
 ## Needed now (blocks M1/M2)
@@ -14,8 +29,10 @@ Mark one done by changing `[ ]` to `[x]` and writing your answer underneath.
       The project moves there from its current folder.
 - [ ] **Y2. Upload your clean Pokémon Emerald (USA) ROM**, dumped from your own cartridge. Claude uses it
       only to make the `.bps` patch you'll apply on your phone; it never goes in the repo.
-- [ ] **Y3. Your rival.** Keep May/Brendan as they are, rename them, or make the rival one of your friends?
-      *Default: keep May/Brendan, rewrite some of their lines to mention the new starters.*
+- [ ] **Y3. Your two rivals.** May/Brendan has the starter that beats yours. **Wally** is now the second
+      rival with the third starter (two story fights: Mauville and Victory Road). Keep them as they are,
+      or turn either into one of your characters (new name, look and lines)?
+      *Default: keep both for now; they get renamed when the character swap (Y6) happens.*
 - [ ] **Y4. Back sprites for all 9 starters** in Gemini, using the back-sprite prompt in
       [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md). Upload them here like the fronts.
 - [ ] **Y5. Shiny colors.** One line per evolution line.
@@ -23,24 +40,40 @@ Mark one done by changing `[ ]` to `[x]` and writing your answer underneath.
 
 ## Characters and story
 
-- [ ] **Y6. New characters?** Who are they (friends, inside jokes, rivals), where do they show up, and do
-      they battle? A rough list is enough, e.g. "X runs the Slateport market and sells stolen goods".
+- [ ] **Y6. The new cast.** You want to swap out every character. Start with the ones players meet most:
+      Mom, Professor Birch, Dad (Norman), the rival(s), Steven, Mr. Briney, and the named NPCs in each town.
+      For each: a name, one line about who they are, and whether they look different. *Different looks
+      need a Gemini sprite each; a new name and new lines with the old look cost nothing.*
 - [ ] **Y7. Safety Zone.** Should Ahmexec's company exist in the world (a building, guards, a boss
       fight)? *Default: a small Safety Zone office in Mauville with one trainer battle.*
-- [ ] **Y8. The villains.** Keep Team Aqua and Team Magma, rename them, or replace them with something
-      else? *Default: keep them.*
-- [ ] **Y9. Main plot changes.** Same story as Emerald with new jokes and dialogue, or a different goal
-      or ending? *Default: same story, new dialogue.*
-- [ ] **Y10. Gym leaders and Elite Four.** Keep the originals, swap any for your own characters, or
-      change their types? *Default: keep them, new teams.*
+- [ ] **Y8. The villains.** Emerald's villains are **Team Aqua and Team Magma** (leaders Archie and Maxie);
+      Team Rocket isn't in this game. Replace them with your own team(s)? Give a team name, a leader, two
+      admins, what they want, and their look. Or bring in Team Rocket instead?
+      *Default: one new team replaces both, with a leader and two admins.*
+- [ ] **Y9. Main plot.** Same story beats as Emerald with your characters and jokes, or a different goal
+      or ending? *Default: same beats, new characters and dialogue.*
+- [ ] **Y10. Gym leaders, Elite Four and Champion.** For each of the 8 gyms: leader name, type (keep or
+      change), personality, and their **ace** (a new Pokémon from Y12 or a Digimon from Y20). Same for the
+      4 Elite Four members and the Champion.
+      *Default: Claude drafts a full cast list for you to edit, using the original types.*
+- [ ] **Y19. Town and city names.** You want them all renamed. Is there a theme (New York neighborhoods,
+      places from your lives, food)? Give some names, and Claude fills in the rest.
+      *Default: NYC-inspired names drafted by Claude for you to approve.*
+- [ ] **Y21. Dialogue tone.** For the scenes you can't skip: how should it sound (funny, roasting each
+      other, serious with jokes)? Any running jokes or catchphrases to include?
 
 ## Pokémon
 
 - [ ] **Y11. Wild Pokémon.** Which real Pokémon (any generation) do you want to find, and roughly where?
       Favorites, must-haves, any to remove? *Default: Claude mixes Gen 4–9 into every route, keeping
       each area's feel.*
-- [ ] **Y12. More original Pokémon?** Names and ideas, like you did for the starters. Each one needs
-      art from you. *Default: none until v0.2.*
+- [ ] **Y12. At least 10 new Pokémon lines.** For each: a name, a concept (like your starter notes:
+      animal, personality, quirks, type) and how many stages. Claude turns them into full designs and Gemini
+      prompts, same as the starters. Mark which ones are gym leader aces.
+- [ ] **Y20. Digimon.** Which ones, and should they appear as wild Pokémon, gym aces, or special
+      encounters? Claude makes them Gen 3-style creatures from your Gemini art, like the new lines.
+      *Note: Digimon belong to Bandai, so they're in the same gray area as the hack itself. That's fine
+      for a free game shared with friends; just don't publish it widely.*
 
 ## Title screen and intro
 

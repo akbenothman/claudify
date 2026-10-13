@@ -5,7 +5,8 @@ Usage: apply_to_expansion.py PATH/TO/pokeemerald-expansion [--debug-scripts]
 
 --debug-scripts fills the debug menu's Scripts 1 and 2 (debug builds only, R+START in the
 overworld): Script 1 opens the starter choice, Script 2 starts a wild battle with Omarauder,
-Script 3 starts May's Route 103 battle for the starter you picked.
+Script 3 starts May's Route 103 battle for the starter you picked, Script 4 gives you a level-70
+Mewtwo and starts Wally's Mauville battle (to check his third starter).
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -64,6 +65,8 @@ def main():
                    ("custom_learnsets.h", "src/data/pokemon/custom_learnsets.h"),
                    ("pokemon_custom_gfx.h", "src/data/graphics/pokemon_custom.h")):
         shutil.copy(os.path.join(HERE, f), os.path.join(ROOT, dst))
+    shutil.copy(os.path.join(HERE, "src", "remix_rival.c"), os.path.join(ROOT, "src", "remix_rival.c"))
+    shutil.copy(os.path.join(HERE, "src", "remix.h"), os.path.join(ROOT, "include", "remix.h"))
     for f in os.listdir(os.path.join(HERE, "tests")):  # run with: make check TESTS="Remix"
         shutil.copy(os.path.join(HERE, "tests", f), os.path.join(ROOT, "test", f))
 
@@ -164,6 +167,27 @@ def main():
         return "\n=== ".join(blocks)
     edit("src/data/trainers.party", rival)
 
+    # 7b. Wally is the second rival and battles with the third starter. His teams get a Heesh-line
+    # placeholder that src/remix_rival.c swaps for the leftover line when the battle starts.
+    def wally(t):
+        blocks = t.split("\n=== ")
+        for i, b in enumerate(blocks):
+            if b.startswith("TRAINER_WALLY_MAUVILLE ===") and "\nSqueesh\n" not in b:
+                blocks[i] = b.rstrip("\n") + "\n\nSqueesh\nLevel: 15\nIVs: 3 HP / 3 Atk / 3 Def / 3 SpA / 3 SpD / 3 Spe\n"
+            elif b.startswith("TRAINER_WALLY_VR_") and "\nDelcatty\n" in b:
+                start = b.index("\nDelcatty\n") + 1
+                end = b.index("\n\n", start) + 2
+                level = int(b[start:end].split("Level: ")[1].split("\n")[0]) + 1
+                ivs = b[start:end].split("IVs: ")[1].split("\n")[0]
+                blocks[i] = b[:start] + "Heeshef\nLevel: %d\nIVs: %s\n\n" % (level, ivs) + b[end:]
+        return "\n=== ".join(blocks)
+    edit("src/data/trainers.party", wally)
+    edit("src/battle_setup.c", lambda t: insert_once(
+        t, '#include "data.h"\n', '#include "remix.h" // Emerald Remix\n').replace(
+        "        GenerateMonFromTrainerMon(&party[i], &trainer->party[monIndex], trainerGen);\n",
+        "        struct TrainerMon remixMon; // Emerald Remix: Wally's third starter\n"
+        "        GenerateMonFromTrainerMon(&party[i], Remix_TrainerMon(trainer, &trainer->party[monIndex], &remixMon), trainerGen);\n"))
+
     # 8. The Petalburg Pokémon Center NPC who explains your starter's type.
     texts = open(os.path.join(HERE, "petalburg_type_text.inc")).read()
 
@@ -193,6 +217,10 @@ def main():
             rival = "".join(
                 "Debug_EventScript_Rival%s::\n\ttrainerbattle_no_intro TRAINER_MAY_ROUTE_103_%s, "
                 "Debug_Text_RivalDefeated\n\trelease\n\tend\n\n" % (s.title(), s) for s in ("TREECKO", "TORCHIC", "MUDKIP"))
+            t = t.replace("Debug_EventScript_Script_4::\n\trelease\n\tend\n",
+                          "Debug_EventScript_Script_4::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
+                          "\ttrainerbattle_no_intro TRAINER_WALLY_MAUVILLE, Debug_Text_RivalDefeated\n"
+                          "\trelease\n\tend\n")
             return t.replace("Debug_EventScript_Script_3::\n\trelease\n\tend\n",
                              "Debug_EventScript_Script_3::\n\tswitch VAR_STARTER_MON\n"
                              "\tcase 0, Debug_EventScript_RivalTreecko\n\tcase 1, Debug_EventScript_RivalTorchic\n"

@@ -35,9 +35,10 @@ later builds take seconds to a minute. The apply script is safe to re-run after 
 | Pokédex | — | National numbers, Hoenn #001–009 (replacing Treecko–Swampert), sort orders |
 | Starters | — | Treecko/Torchic/Mudkip → Squeesh/Beanito/Guardpup in `starter_choose.c` |
 | Rival teams | — | Starter species swapped in every May/Brendan battle |
+| Wally's third starter | `game/src/remix_rival.c`, `game/src/remix.h` | Heesh-line placeholder in Wally's teams; one hooked line in `CreateNPCTrainerPartyFromTrainer` swaps it at battle time |
 | Petalburg type-advice NPC | `game/petalburg_type_text.inc` | three text blocks replaced |
 | Tests | `game/tests/*.c` | copied into `test/`; run `make check TESTS="Remix"` |
-| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = May's Route 103 battle |
+| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = May's Route 103 battle, Script 4 = Lv 70 Mewtwo + Wally's Mauville battle |
 
 Sprites are regenerated from the Gemini art with `tools/build_starters.sh` (see `docs/ART_PROMPTS.md`).
 

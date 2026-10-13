@@ -163,6 +163,10 @@ final stage: the steel briefcase and the corporate armor.
   | Beanito | Guardpup → Ahmed |
   | Guardpup | Squeesh → Heesh |
 
+- **Second rival, Wally:** battles with the third starter, the one left over after you and May
+  (you Squeesh → Wally Guardpup line; you Beanito → Squeesh line; you Guardpup → Beanito line). It's a
+  starter yours beats, so Wally stays the friendlier rival. Mauville: Lv 15 next to his Ralts. Victory Road
+  and rematches: the final form, replacing Delcatty.
 - **Pokédex:** Hoenn #001–009 (taking Treecko–Swampert's numbers), and at the end of the National Dex.
 - **Signature moves** are learned at level 26. Each line's first attacking move of its own type comes at
   level 7 or later, so the rival's level-5 starter can't hit you super-effectively.

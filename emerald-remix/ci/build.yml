@@ -1,0 +1,58 @@
+# GitHub Actions workflow for Emerald Remix. Moves to .github/workflows/build.yml once the project has its
+# own repo (TODO_YOU Y1).
+#
+# Every push: build the game on top of pokeemerald-expansion and run the Remix tests.
+# If the repo has a CLEAN_ROM_B64 secret (your own Emerald ROM, base64-encoded), it also makes the .bps patch
+# and uploads it as a build artifact. The ROM never leaves the runner and never goes in the repo.
+name: Build
+
+on:
+  push:
+  pull_request:
+
+env:
+  EXPANSION_TAG: expansion/1.17.1
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: emerald-remix
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi libpng-dev
+
+      - name: Fetch pokeemerald-expansion
+        run: git clone --depth 1 --branch "$EXPANSION_TAG" https://github.com/rh-hideout/pokeemerald-expansion emerald-src
+
+      - name: Apply Emerald Remix
+        run: python3 emerald-remix/game/apply_to_expansion.py emerald-src
+
+      - name: Build
+        run: make -C emerald-src -j"$(nproc)" release
+
+      - name: Remix tests
+        run: make -C emerald-src -j"$(nproc)" check TESTS="Remix"
+
+      - name: Make .bps patch
+        env:
+          CLEAN_ROM_B64: ${{ secrets.CLEAN_ROM_B64 }}
+        if: env.CLEAN_ROM_B64 != ''
+        run: |
+          echo "$CLEAN_ROM_B64" | base64 -d > clean.gba
+          echo "f3ae088181bf583e55daf962a92bb46f4f1d07b7  clean.gba" | sha1sum -c -
+          git clone --depth 1 https://github.com/Alcaro/Flips flips-src
+          make -C flips-src TARGET=cli
+          flips-src/flips --create --bps clean.gba emerald-src/pokeemerald.gba emerald-remix.bps
+          rm clean.gba
+
+      - name: Upload patch
+        if: hashFiles('emerald-remix.bps') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: emerald-remix-patch
+          path: emerald-remix.bps
