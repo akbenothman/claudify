@@ -76,8 +76,33 @@ def lift_darks(rgb, solid, gamma, tint):
     return np.clip(out, 0, 255)
 
 
-def load(src, recolors, lift=None, tint=(0, 0, 0)):
+def enlarge(rgb, spec):
+    """'X0,Y0,X1,Y1:SCALE' scales the oval inside that box (source pixels) up from its bottom centre.
+
+    Real Gen 3 sprites give Pokémon slightly oversized heads so the face survives at 64x64; doing
+    the same to the source lets the converter keep the artist's own eyes and mouth."""
+    box, scale = spec.split(":")
+    x0, y0, x1, y1 = map(int, box.split(","))
+    scale = float(scale)
+    crop = rgb[y0:y1, x0:x1]
+    h, w = crop.shape[:2]
+    yy, xx = np.mgrid[0:h, 0:w]
+    oval = ((xx - w / 2) / (w / 2)) ** 2 + ((yy - h / 2) / (h / 2)) ** 2 <= 1
+    keep = oval & ~green_mask(crop)
+    nw, nh = round(w * scale), round(h * scale)
+    big = np.stack([np.asarray(Image.fromarray(crop[..., c]).resize((nw, nh), Image.LANCZOS)) for c in range(3)], -1)
+    bigmask = np.asarray(Image.fromarray(keep.astype(np.float32)).resize((nw, nh), Image.BILINEAR)) > 0.5
+    px, py = round((x0 + x1) / 2 - nw / 2), y1 - nh
+    out = rgb.copy()
+    region = out[py:py + nh, px:px + nw]
+    region[bigmask] = np.clip(big, 0, 255)[bigmask]
+    return out
+
+
+def load(src, recolors, lift=None, tint=(0, 0, 0), enlarges=()):
     rgb = np.asarray(Image.open(src).convert("RGB"), dtype=np.float32)
+    for spec in enlarges:
+        rgb = enlarge(rgb, spec)
     solid = ~green_mask(rgb)
     # Green spill on edge pixels: pull green down to the other channels.
     spill = solid & (rgb[..., 1] > np.maximum(rgb[..., 0], rgb[..., 2]) + 20)
@@ -290,6 +315,8 @@ def main():
     ap.add_argument("--stage", type=int, choices=(1, 2, 3), required=True)
     ap.add_argument("--back", action="store_true", help="source is a back sprite")
     ap.add_argument("--no-icon", dest="icon", action="store_false")
+    ap.add_argument("--enlarge", action="append", default=[], metavar="X0,Y0,X1,Y1:SCALE",
+                    help="enlarge an oval region of the source (e.g. the head) before converting")
     ap.add_argument("--lift-darks", type=float, metavar="GAMMA",
                     help="brighten dark fills (e.g. 0.7) so black-clothed designs keep shading")
     ap.add_argument("--dark-tint", default="0,0,0", metavar="R,G,B",
@@ -302,7 +329,7 @@ def main():
     a = ap.parse_args()
     LINE_SHARE, CONTRAST = a.line_share, a.contrast
     os.makedirs(a.out_dir, exist_ok=True)
-    rgb, solid = load(a.source, a.recolor, a.lift_darks, tuple(map(int, a.dark_tint.split(","))))
+    rgb, solid = load(a.source, a.recolor, a.lift_darks, tuple(map(int, a.dark_tint.split(","))), a.enlarge)
     make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method)
     msg = a.out_dir
     if a.icon and not a.back:

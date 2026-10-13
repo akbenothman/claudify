@@ -9,7 +9,8 @@ for spec in squeesh:1 heesh:2 heeshef:3 beanito:1 omar:2 omarauder:3 guardpup:1 
     case $name in
         ahmexec) extra="--recolor 180-260:28:0.55" ;;  # match Ahmed's tan/brown fur
         omar) extra="--lift-darks 0.7 --dark-tint 0,4,18" ;;  # readable blue-black instead of a black blob
-        omarauder) extra="--lift-darks 0.85" ;;  # just enough lift to show the hood patches; stays black
+        # Just enough lift to show the hood patches; head enlarged so the original face survives
+        omarauder) extra="--lift-darks 0.85 --enlarge 640,170,945,350:1.5" ;;
     esac
     python3 tools/convert_sprite.py "$S/$name/source_front.jpg" "$S/$name" --stage "$stage" $extra
     if [ -f "$S/$name/touchup_front.txt" ]; then

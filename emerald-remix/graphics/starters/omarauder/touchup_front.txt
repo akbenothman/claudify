@@ -1,19 +1,9 @@
-# Converted with --lift-darks 0.85 (no tint) so the hood stays truly black, like the Gemini original.
-# Free slot 12 (a duplicate near-black) and make it white for teeth
-remap 12 11
-color 12 248 248 248
-# Ribbed grey cuff, clearly lighter than the black hood
-row 25 39 13 15 13 15 13 15 13 15 13 15 13 15 13 15 13
-row 26 39 4 15 4 15 4 15 4 15 4 15 4 15 4 15 4
-row 27 39 13 15 13 15 13 15 13 15 13 15 13 15 13 15 13
-row 28 39 13 15 13 15 13 15 13 15 13 15 13 15 13 15 13
-row 29 39 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11
-# Face as in the original: light grey fur, black mask band, slanted glowing yellow eyes,
-# nose at the right, wide crescent grin with sharp teeth, black cloak under the chin.
-row 30 38 11 11 11 11 3 3 3 11 11 11 11 3 3 3 11
-row 31 38 8 11 11 11 11 11 3 3 11 11 3 3 11 11 11
-row 32 38 8 8 8 8 11 11 11 8 8 8 8 8 11 11 11
-row 33 38 6 8 8 8 8 8 8 8 8 8 8 8 8 11 11
-row 34 38 6 11 8 8 8 8 8 8 8 8 8 8 11 8 6
-row 35 38 6 6 11 12 12 4 12 12 4 12 12 11 6 6 6
-row 36 39 11 11 11 11 11 11 11 11 11 11 11 11
+# Converted with --lift-darks 0.85 --enlarge 640,170,945,350:1.5 (head enlarged 1.5x, like Gen 3's
+# big-headed sprites, so the original face survives). Only small fixes on top of that:
+# Match the right eye to the left one: outer end high, inner end low (mirrored)
+row 27 53 12 11
+row 28 51 12 12 12
+px 52 29 7
+# Thin smirk: one dark line rising from under the nose to the left cheek
+row 33 41 3 3
+row 34 43 3 3 3 3 3
