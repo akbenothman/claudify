@@ -53,7 +53,7 @@ each route has a Pokémon that covers the hard gym.
       if your ROM is stored as a repository secret
 - [ ] `.bps` patch against your clean ROM *(waits on Y2)*
 - [ ] On Delta: start a game, save, quit, reload; check the clock (berries, tides)
-- [ ] `make release` build (turns off the debug menu)
+- [x] `make release` build (turns off the debug menu): builds and boots
 - [ ] Config pass: battle mechanics generation, EXP share, running shoes, followers *(waits on Y16)*
 
 ## M3: Remix: "Emerald, but ours" (v0.1)
