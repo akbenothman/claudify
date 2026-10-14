@@ -156,3 +156,45 @@ face and body use more pixels. `tools/build_starters.sh` zooms stage 2 fronts 1.
 survive re-converting. Edits are pixel coordinates, so they must be redone if the size or zoom changes. `tools/build_starters.sh` re-runs the converter and every touch-up, then rebuilds
 `preview_sheet.png`. You can also edit the PNG directly in Aseprite/LibreSprite. Keep it in **indexed mode**
 so the palette stays intact.
+
+---
+
+## Legendary sprite prompts (Snickers, Haleeb, Ceaser)
+
+The first concept art for the legendaries came out mushy as sprites. That wasn't the converter: the
+art was wide, full of fur texture and thin lines, so at 64×64 most of it disappeared. These prompts ask
+for art that's already built for 64×64. Upload the concept image with each prompt so the design stays
+the same.
+
+**Add this to each one:**
+
+> Pokémon Emerald (Game Boy Advance, Generation 3) legendary battle sprite. Pixel art on a 64×64 grid,
+> every pixel a crisp square, no anti-aliasing, no blur, no gradients, at most 15 colors. Thick black
+> 1-pixel outline, flat colors with 2–3 shades each, no fur texture lines, no sparkles or floating
+> particles. Compact pose that fills a square frame edge to edge, like Groudon's and Kyogre's Gen 3
+> sprites. Oversized head (about a third of the sprite) with big clear eyes: colored iris, black pupil,
+> white highlight. Faces left. Flat solid bright green (#00FF00) background.
+
+**Snickers front**
+> [block above] Same design as the attached image: white serpent cat, cream-orange face with red
+> stripes. Its long body is coiled into a tight S-curve that fills the square, like Rayquaza's Gen 3
+> sprite. The head is big, at top left, with glowing red eyes and a fanged grin. Two front paws reach
+> forward with big red claws; the red lightning is a few bold zigzag shapes on the claws, not loose sparks.
+
+**Haleeb front**
+> [block above] Same design as the attached image: white cloud cat, cream-orange ears, face and paws,
+> pale blue swirl markings. Sitting upright on a round cloud, wings raised up and folded behind it
+> (not spread wide), a simple mist halo above its head. Sleepy, half-closed pale blue eyes, big
+> enough to read.
+
+**Ceaser front**
+> [block above] Same design as the attached image: big golden lion with dark stripes and a laurel leaf
+> crown. Sitting upright like a lion statue, three-quarter view, the huge mane taking up most of the
+> sprite. Calm half-closed amber eyes, a big dark nose. The black-tipped tail curls up beside it with
+> 2–3 simple flowers. No grass or ground under it.
+
+**Backs (all three)**
+> Same character, same pixel style, 64×64 grid, at most 15 colors, as a Generation 3 BACK battle sprite:
+> seen from behind and slightly above, turned slightly to the right, in a compact pose that fills the
+> square. Show the back of the head and [the coiled body / the folded wings / the mane]. Flat solid
+> bright green (#00FF00) background.
