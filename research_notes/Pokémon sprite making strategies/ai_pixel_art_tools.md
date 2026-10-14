@@ -1,0 +1,123 @@
+# AI-Assisted Pixel Art Tools for Gen 3-Style (GBA 64x64, ≤15 colors) Creature Battle Sprites (state as of Oct 2026)
+
+Method note: direct page fetches (pixellab.ai, retrodiffusion.ai, cinevva, etc.) were blocked by this environment's network proxy (DNS/403). All findings come from web-search result summaries of the cited pages. Treat exact prices/parameter names as "verify on the vendor page". Many 2026 comparison articles are SEO/vendor blogs (Ludo, Sprite-AI, Gamelabs, Layer rank themselves or compete with the tools), so they're flagged where used.
+
+## Which tools exist and are actively maintained (PixelLab, Retro Diffusion, Scenario, Leonardo, general models, open models, others)?
+
+### Takeaway
+The two purpose-built leaders in 2025-2026 are **PixelLab** (web app + Aseprite extension + v2 REST API + official MCP server) and **Retro Diffusion** by Astropulse (web app + v2 REST API + MCP connector + one-time-purchase Aseprite extension + models on Replicate/Scenario/Runware). Scenario is a platform that hosts pixel models (including Retro Diffusion's) plus cleanup tools. Leonardo, Midjourney, GPT-image and Gemini produce "pixel-look" images that need grid snapping and downscaling. Open SDXL LoRAs exist, including Pokémon-sprite-specific ones, but they're older (2023-24 era) and also need downscaling.
+
+### Cited Findings
+- 2026 comparison guides name Retro Diffusion as the most consistently praised for true grid output, PixelLab as the deepest dedicated toolset (4/8-direction rotation, skeleton posing), Scenario as a broad platform with pixel models plus grid/palette cleanup, and Leonardo/Midjourney as weaker on grid fidelity ("painterly detail that needs downsampling") — [Ludo.ai comparison](https://ludo.ai/compare/best-ai-pixel-art-generators); [Cinevva guide](https://app.cinevva.com/guides/ai-pixel-art-generators); [Sprite-AI (vendor, ranks itself first)](https://www.sprite-ai.art/blog/best-pixel-art-generators-2026)
+- Cinevva calls PixelLab the dedicated pixel-art generator with the largest user base (third-party claim, unverified) — [Cinevva](https://app.cinevva.com/guides/ai-pixel-art-generators)
+- PixelLab "ways to use": web app, Aseprite extension, API, MCP ("Vibe Coding") — [PixelLab docs](https://www.pixellab.ai/docs/ways-to-use-pixellab); [PixelLab MCP page](https://www.pixellab.ai/mcp); [pixellab-mcp GitHub](https://github.com/pixellab-code/pixellab-mcp)
+- Retro Diffusion API v2 is documented on GitHub (`POST /v2/inferences`, `X-RD-Token` header) — [Retro-Diffusion/api-examples](https://github.com/Retro-Diffusion/api-examples). Its models are also on Replicate — [Replicate blog](https://replicate.com/blog/retro-diffusions-pixel-art-models-are-now-on-replicate) — and as third-party models inside Scenario — [Scenario docs](https://docs.scenario.com/get-started/generation/third-party-model-generation/third-party-model-generation-retro-diffusion/); [Scenario help](https://help.scenario.com/articles/4202673551-retro-diffusion-models-the-essentials)
+- The Retro Diffusion Aseprite extension is still sold on itch.io (full: $65+, LITE: $20+) — [itch.io purchase](https://astropulse.itch.io/retrodiffusion/purchase); [LITE](https://astropulse.itch.io/retrodiffusionlite/purchase). A devlog adds "QoL and Palettes" — [devlog](https://astropulse.itch.io/retrodiffusion/devlog/903094/retro-diffusion-update-qol-and-palettes)
+- Scenario hosts "Pixel Art XL" and a "Pixel Snapper" cleanup model — [Scenario Pixel Art XL](https://www.scenario.com/models/pixel-art-xl); [Scenario Pixel Snapper](https://www.scenario.com/models/pixel-snapper)
+- Other 2026 entrants advertised in comparisons: Ludo.ai, Layer.ai, Gamelabs Studio, Sprite-AI, Sprite Fusion (exact 16/32/64 px outputs), Pixa "Pokemon sprite generator", SEELE, Adobe Firefly's Pixel Art effect (for beginners) — [Ludo vs PixelLab](https://ludo.ai/compare/ludo-vs-pixellab); [Layer vs PixelLab](https://layer.ai/vs/pixellab); [Gamelabs vs PixelLab](https://gamelabstudio.co/blog/gamelabs-studio-vs-pixellab); [Sprite Fusion](https://www.spritefusion.com/pixel-art-generator); [Pixa](https://www.pixa.com/create/pokemon-sprite-generator); [SEELE](https://www.seeles.ai/resources/blogs/ai-sprite-sheet-generator-gba-pixel-art); [Ludo list](https://ludo.ai/compare/best-ai-pixel-art-generators)
+- Open models: nerijs **Pixel Art XL** (SDXL LoRA, trigger "pixel art", recommended with LCM LoRA at 8 steps, guidance 1.5, LoRA strength 1.2). It was trained on commissioned art plus curated OpenGameArt assets — [Hugging Face](https://huggingface.co/nerijs/pixel-art-xl); [CivArchive](https://civarchive.com/models/120096?modelVersionId=135931). A third-party site marks it deprecated in favor of "Flux Retro Aesthetics" — [Comflowy](https://www.comflowy.com/model/pixel-art-xl)
+- Pokémon-specific open LoRAs (SDXL): "Pokemon Sprites XL" only works at 768x384, then nearest-neighbor downscale to 192x96 (a front+back pair at 96x96 each, so Gen 4/5 size, not Gen 3's 64x64) — [Civitai](https://civitai.com/models/255424/pokemon-sprites-xl). Also "Pokemon Trainer Sprite PixelArt XL" (768/512 versions) — [Civitai](https://civitai.com/models/159333/pokemon-trainer-sprite-pixelart) — and a hosted "pokemon sprite xl pixelart lora back front" — [ModelsLab](https://modelslab.com/models/modelslab/pokemon-sprite-xl-pixelart-lora-back-front-xl-v1-0)
+
+### Inferences
+- For a 64x64, ≤15-color target, PixelLab and Retro Diffusion are the only actively developed tools that natively target small exact canvases. Everything else is "generate big, then fix".
+- The Pokémon front/back LoRA shows that a single generation can produce paired front and back views, which helps consistency. It's SDXL-era and outputs 96x96 cells, so Gen 3 use would need a further 96→64 redraw or resample.
+
+### Gaps
+- Couldn't verify current Leonardo, Midjourney or Scenario pricing, or whether Leonardo still ships dedicated pixel models in 2026 (no search hits; fetches blocked).
+- No Flux-native, Pokémon-specific pixel LoRA was found.
+
+## Per-tool capabilities: true pixel grid at 64x64, palette limiting, img2img from concept, rotation/back views, style reference, transparency
+
+### Takeaway
+Retro Diffusion offers the most explicit palette control: palette image input, force_palette, up to 9 reference images (RD Pro), sizes down to 12 px, and background removal. PixelLab's standout is character rotation: 4/8-direction characters from a south-facing reference image, sizes like 48/64 px, and style/palette references. Neither offers a documented "Pokémon battle front + back" mode. A back view would come from a rotation (north-facing) output, which is top-down RPG framing rather than the Gen 3 over-the-shoulder battle back sprite.
+
+### Cited Findings
+- **Retro Diffusion grid:** Its models produce native pixel art at exact sizes from 16x16 to 384x384. It's described as the only tool in one comparison that natively generates clean integer-pixel grids with limited palettes — [Ludo/Cinevva comparisons via search](https://ludo.ai/compare/best-ai-pixel-art-generators); [Cinevva](https://app.cinevva.com/guides/ai-pixel-art-generators)
+- **Retro Diffusion API v2:** `width`/`height` required, global range 12–512 with tighter per-style limits (most cap at 256 or 384; several RD Pro styles go down to 12). `num_images` is clamped to the style max. A styles endpoint returns per-style limits. `input_image` (base64) is optional. Image-driven styles may take an empty prompt. Don't put "pixel art" in the prompt; the style handles it — [api-examples](https://github.com/Retro-Diffusion/api-examples)
+- **Retro Diffusion palette:** `input_palette` constrains output to a supplied palette image, `return_pre_palette` also returns the un-quantized image, and custom styles can `force_palette` — [api-examples](https://github.com/Retro-Diffusion/api-examples); [Replicate rd-plus API](https://replicate.com/retro-diffusion/rd-plus/versions/60eb48db78cbd38cc6473d309a311db08244ed021567a9234970af971bab0d87/api). Scenario says palette upload applies to RD Plus, not every model — [Scenario help](https://help.scenario.com/articles/4202673551-retro-diffusion-models-the-essentials)
+- **Retro Diffusion references/consistency:** RD Pro styles accept up to 9 per-inference reference images that "guide style and content without being redrawn". The recommended way to keep a character consistent is to generate it once and feed that output back as a reference. Custom user styles can bake in one style reference image — [api-examples](https://github.com/Retro-Diffusion/api-examples); [Glama create_user_style](https://glama.ai/mcp/connectors/ai.retrodiffusion/pixel-art/tools/create_user_style)
+- **Retro Diffusion img2img:** On Replicate's rd-plus, `strength` (default 0.8) sets the balance: higher follows the prompt, lower keeps more of the input image — [Replicate rd-plus](https://replicate.com/retro-diffusion/rd-plus/versions/60eb48db78cbd38cc6473d309a311db08244ed021567a9234970af971bab0d87/api)
+- **Retro Diffusion transparency:** a `remove_bg` option exists. Guidance says it works best when the prompt specifies a flat contrasting background — [Glama connector tool](https://glama.ai/mcp/connectors/ai.retrodiffusion/pixel-art/tools/start_inference_job)
+- **Retro Diffusion versions:** The website models differ from the Aseprite extension's models, so outputs won't match between them — [Gumroad page](https://astropulse.gumroad.com/l/RetroDiffusion). An older npm wrapper lists sizes 64/128/256/512 only (likely outdated) — [npm](https://www.npmjs.com/package/@superbuilders/retrodiffusion)
+- **PixelLab endpoints:** `/v2/create-character-with-4-directions` and `/v2/create-character-with-8-directions`. `create-character-v3` can build an 8-direction character from a south-facing reference image. `create-character-pro` is a reference-based generator for higher quality and style control — [PixelLab API docs](https://api.pixellab.ai/v2/docs); [PixelLab API page](https://www.pixellab.ai/pixellab-api)
+- **PixelLab features (third-party listings):** skeleton-based animation, 4/8-direction rotation, inpainting, tilesets, image-to-pixel-art. Base generators take a style/palette colour reference plus size, outline, shading and seed options (secondhand, not confirmed in official docs) — [Layer vs PixelLab](https://layer.ai/vs/pixellab); [Glama PixelLab Forge MCP](https://glama.ai/mcp/servers/rabbitcannon/pixellab-forge-mcp/tools/create_character_4dir)
+- PixelLab's mid tier allows images up to 400x400 — [Ludo vs PixelLab](https://ludo.ai/compare/ludo-vs-pixellab); [Ludo sprite list](https://ludo.ai/compare/best-ai-sprite-generators)
+- PixelLab Aseprite extension requires Aseprite v1.3.7+ (a paid Aseprite licence) — [GameDevAIHub PixelLab vs Aseprite](https://gamedevaihub.com/pixellab-vs-aseprite/)
+- General models: guides treat ChatGPT/Midjourney as "inspiration only" with poor grid consistency — [Cinevva](https://app.cinevva.com/guides/ai-pixel-art-generators). Retro Diffusion's open-source pixel-art-fixer README explains why: generator "fake" pixel art has cells that don't line up on a lattice and sits at non-integer sizes, so plain fixed-integer nearest-neighbor slices through cells — [Retro-Diffusion/pixel-art-fixer](https://github.com/Retro-Diffusion/pixel-art-fixer)
+
+### Inferences
+- For a Gen 3 sprite, the most controllable path is Retro Diffusion at width/height 64 with `input_palette` set to a 15-color palette image, `remove_bg`, and the concept image as `input_image` or a reference. For the back sprite, pass the finished front sprite as a reference (RD Pro) and prompt for a back view.
+- PixelLab's rotation is designed for overworld (top-down/side) directions. A "north" view gives a back silhouette, but Gen 3 back sprites are a cropped, larger, over-the-shoulder view, so expect manual redraw.
+- Neither vendor documents a hard color count. Palette-image constraining is the practical way to get ≤15 colors plus transparency.
+
+### Gaps
+- Exact PixelLab parameter names for init image and color palette, and its max/min sizes per endpoint, couldn't be confirmed (API doc schemas not retrievable).
+- No source documents a dedicated "battle back sprite" mode in any tool.
+- Whether Retro Diffusion's palette mode guarantees ≤N colors after `remove_bg` is unverified.
+
+## Pricing, free tiers, and commercial/fan-use terms (2025-2026)
+
+### Takeaway
+PixelLab uses subscriptions (about $12/$24/$50 per month, from secondhand listings with inconsistent figures) plus a free trial of about 40 generations, with per-call API pricing (about $0.017 for a 64x64 8-direction character). Retro Diffusion charges per image via a prepaid balance (about $0.015–0.18/image depending on model) or a one-time $20/$65 Aseprite extension. Both let you use outputs commercially. Neither can resolve the Pokémon IP problem or the fan-community AI bans.
+
+### Cited Findings
+- PixelLab tiers (secondhand; sources disagree): Pixel Apprentice $12/mo (~2,000 generations); Pixel Artisan $24/mo (priority queue, up to 400x400, early access to experimental tools); Pixel Architect $50/mo (10,000 generations, 20 simultaneous jobs). Annual billing is ~25% off, and a loyalty discount reportedly brings the entry tier toward $9 — [Ludo vs PixelLab](https://ludo.ai/compare/ludo-vs-pixellab); [Knowara review](https://knowara.com/ai-tools/image/pixellab-review/); [Gamelabs vs PixelLab](https://gamelabstudio.co/blog/gamelabs-studio-vs-pixellab). Reviewers themselves note the tier names and caps disagree across sources — [Knowara](https://knowara.com/ai-tools/image/pixellab-review/)
+- PixelLab free trial: 40 free generations, then reportedly ~5 slow generations/day — [Ludo sprite list](https://ludo.ai/compare/best-ai-sprite-generators); [topai.tools](https://topai.tools/t/pixellab)
+- PixelLab API: separate pay-per-generation pricing per endpoint. The 8-direction character costs $0.0133 at 48x48 and $0.0173 at 64x64 — [PixelLab API page](https://www.pixellab.ai/pixellab-api); [API docs](https://api.pixellab.ai/v2/docs)
+- Layer's comparison lists a PixelLab Aseprite extension as a one-time $20/$65 purchase (competitor source). This looks like a confusion with Retro Diffusion's extension prices, so treat it as unreliable — [Layer vs PixelLab](https://layer.ai/vs/pixellab)
+- Retro Diffusion API (competitor table, ~6 months old): RD Fast ~$0.015–0.04/image, RD Plus ~$0.025–0.06 scaling with resolution, RD Pro flat ~$0.18. Prepaid USD balance, new accounts get $0.50 free — [Gamelabs vs Retro Diffusion](https://gamelabstudio.co/blog/gamelabs-studio-vs-retro-diffusion)
+- Retro Diffusion Aseprite extension: one-time purchase, no subscription or credits (full $65+, LITE $20+) — [Gumroad](https://astropulse.gumroad.com/l/RetroDiffusion); [itch.io](https://astropulse.itch.io/retrodiffusion/purchase)
+- PixelLab ToS: you retain ownership of content you create. You may not use outputs to train other models without permission. You're responsible for not infringing third-party rights — [PixelLab ToS](https://www.pixellab.ai/termsofservice). FAQ: commercial use "Yes, we only ask that you do not train new models with the images", and PixelLab says it doesn't train on user inputs or outputs — [PixelLab FAQ](https://www.pixellab.ai/docs/faq)
+- Retro Diffusion website: "Everything you generate is yours, for personal and commercial projects alike" — [retrodiffusion.ai](https://retrodiffusion.ai/). The extension's model files have a separate personal, non-transferable licence. Outputs reportedly belong to the user (secondhand itch comment, unverified) — [itch.io comments](https://astropulse.itch.io/retrodiffusion/comments?after=0)
+- Fan-community stance: a PokéCommunity notice reportedly bars generative-AI content, including inside fan games published there, and content that looks AI-generated is removed (seen via search summary; exact notice URL not confirmed; nearest hit) — [PokéCommunity](https://www.pokecommunity.com/threads/hacks-with-sprites-using-art-by-ken-sugimori.542508/). Pokémon Infinite Fusion faced 2024 backlash over generative-AI Pokédex entries — [Sportskeeda](https://www.sportskeeda.com/pokemon/news-pokemon-infinite-fusion-ai-descriptions-sprite-removal-what-s-controversy). Some fakemon sprite packs forbid use in AI projects — [snoblin itch](https://snoblin.itch.io/catchimon-14-15-16)
+
+### Inferences
+- For a single creature (front + back plus iterations), per-call API costs are cents. PixelLab's free trial or Retro Diffusion's $0.50 starter balance is enough to test.
+- Any project distributed through PokéCommunity or similar fan hubs risks removal if the sprites look AI-made. Heavy manual cleanup or redraw is advisable both for quality and for community acceptance. (No r/PokemonROMhacks-specific AI rule was found.)
+
+### Gaps
+- Official PixelLab and Retro Diffusion pricing pages couldn't be read directly. Figures above are from third-party listings.
+- Scenario and Leonardo 2026 pricing weren't found.
+
+## Reported quality for Pokémon-like creature sprites; failure modes
+
+### Takeaway
+No rigorous, independent 64x64 Gen 3 creature benchmark exists. The evidence is prompt galleries, vendor claims, and general reviews. Reviewers praise PixelLab's consistency and rotations but report silhouette and detail drift ("80% in minutes, last 20% is fixing"). Common failure modes are fake or misaligned pixel grids, non-integer pixel sizes, stray intermediate colors, and drift between views.
+
+### Cited Findings
+- jonathanyu.xyz (Dec 31 2025, updated Feb 2026) calls PixelLab the only tool they've tried that reliably produces usable, style-accurate pixel art. It's an endorsement without measurements — [jonathanyu review](https://www.jonathanyu.xyz/2025/12/31/pixellab-review-the-best-ai-tool-for-2d-pixel-art-games/)
+- Techsy's 2026 test: "Pixellab gets you 80% of a sprite set in minutes. The last 20% is fixing the frames where the character's silhouette wandered"; small details drift across sequences — [Techsy](https://techsy.io/en/blog/meshy-vs-higgsfield-vs-pixellab)
+- GameDevAIHub: rotation is PixelLab's main advantage over Retro Diffusion, and nothing beats it for 8-direction top-down characters — [GameDevAIHub RD vs PixelLab](https://gamedevaihub.com/retro-diffusion-vs-pixellab/)
+- Sprite-AI's gallery has user prompts like "pixel art 64x64, pokemon gen 3 style, insect…" with front view and transparent background, but no evaluation — [Sprite-AI gallery](https://www.sprite-ai.art/gallery/dark-mantis-creature-525a); [Gen 3 gallery](https://www.sprite-ai.art/gallery/pokemon-gen-3-pixel-art-4daa)
+- SEELE claims 92% first-generation usability (its own testing, unverified) and recommends 32x32 for characters — [SEELE](https://www.seeles.ai/resources/blogs/ai-sprite-sheet-generator-gba-pixel-art)
+- An AI fakemon/pixel pack seller describes generating thousands, keeping a few hundred best, using color-reduction extensions, and warns buyers of imperfections to edit — [itch.io AI-generated sprites tag](https://itch.io/game-assets/newest/released/tag-ai-generated/tag-monsters/tag-sprites)
+- Failure modes: cells not on a lattice, non-integer size, oversized storage — [pixel-art-fixer](https://github.com/Retro-Diffusion/pixel-art-fixer). "AI doesn't understand grids," with drifting squares and inconsistent spacing — [qwe.edu.pl tutorial](https://www.qwe.edu.pl/tutorial/create-pixel-art-with-ai-tools/). Leonardo/Midjourney produce painterly detail — [Ludo list](https://ludo.ai/compare/best-ai-pixel-art-generators). Grid detectors can damage already-on-grid sprites: a 68x76 sprite collapsed to 14x17 after a 5.5 px grid was misread from shading — [pixel-forge](https://github.com/miiny1206/pixel-forge)
+
+### Inferences
+- Expect AI to give a good starting silhouette and color blocking at 64x64. Gen 3-specific traits (1 px dark selective outlines, limited dithering, consistent top-left lighting, back-sprite framing) will likely need hand work.
+
+### Gaps
+- No Reddit, YouTube or Twitter head-to-head on Pokémon-style 64x64 creature sprites could be retrieved (search returned none; fetch blocked).
+- No quantitative front-vs-back consistency data for any tool.
+
+## Recommended workflows and cleanup; APIs a coding assistant can call
+
+### Takeaway
+The consensus workflow is: generate at or near the target size → snap to the grid and nearest-neighbor downscale (if the output isn't native) → quantize to a fixed palette (≤15 + transparent) → hand-clean in Aseprite. Both PixelLab (official MCP server + REST v2) and Retro Diffusion (REST v2 + MCP connector + Replicate) can be called directly by a coding assistant such as Claude Code.
+
+### Cited Findings
+- Cleanup order: snap to the pixel grid first, then nearest-neighbor downscale, avoiding bilinear/bicubic (they blur by averaging) — [Playgama](https://playgama.com/blog/business-faqs/how-to-clean-up-and-downscale-ai-generated-pixel-art-without/). Reduce to true sprite size, remove intermediate colors left by smoothing, then upscale by an integer for display — [imagetools guide](https://imagetools.com.br/en/blog/pixel-art-with-ai-prompts)
+- Tools: Sprite Fusion **Pixel Snapper** (open source, Rust CLI + WASM web app) detects the grid or takes an override, and quantizes to a custom PNG palette of 1–256 colors — [GitHub](https://github.com/Hugo-Dz/spritefusion-pixel-snapper); [web](https://www.spritefusion.com/pixel-snapper). Retro Diffusion's open-source **pixel-art-fixer** handles non-integer, phase-shifted grids — [GitHub](https://github.com/Retro-Diffusion/pixel-art-fixer). **pixel-forge** votes output onto a tool-chosen grid instead of guessing — [GitHub](https://github.com/miiny1206/pixel-forge). Scenario also offers Pixel Snapper as a hosted model — [Scenario](https://help.scenario.com/articles/1753861053-pixel-snapper-the-essentials)
+- Retro Diffusion's `return_pre_palette` returns both the palette-quantized and the raw image, so you can compare and pick — [api-examples](https://github.com/Retro-Diffusion/api-examples)
+- PixelLab has an official MCP server for AI coding assistants. A review says it works with Cursor and Claude Code — [pixellab-mcp GitHub](https://github.com/pixellab-code/pixellab-mcp); [PixelLab MCP page](https://www.pixellab.ai/mcp); [mcpservers.org](https://mcpservers.org/servers/pixellab-code/pixellab-mcp). Community skills and wrappers exist, e.g. a Claude-style "pixellab-create-character" skill and the pixelkiln integration — [LobeHub](https://lobehub.com/skills/cautiouskurns-game-template-pixellab-create-character); [pixelkiln PR](https://github.com/gfargo/pixelkiln/pull/125)
+- Retro Diffusion has an MCP connector (create_inference, create_user_style, start_inference_job) — [Glama](https://glama.ai/mcp/connectors/ai.retrodiffusion.mcp/retro-diffusion-pixel-art-mcp); [mcpservers.org](https://mcpservers.org/servers/retro-diffusion/retro-diffusion-mcp) — plus REST v2 — [api-examples](https://github.com/Retro-Diffusion/api-examples) — and Replicate API — [Replicate](https://replicate.com/retro-diffusion/rd-plus/versions/60eb48db78cbd38cc6473d309a311db08244ed021567a9234970af971bab0d87/api)
+- Fan sprite references (hand-made, usable as style references or palette sources): PokéCommunity 64x64 DS-style sprite resources — [resource 1](https://www.pokecommunity.com/threads/the-ds-style-64x64-pok%C3%A9mon-sprite-resource-completed.267728/); [resource 2](https://www.pokecommunity.com/threads/64x64-pokemon-sprite-resource.284264/)
+
+### Inferences
+- Suggested pipeline for this project: (1) the concept image goes to Retro Diffusion (RD Pro/Plus) or PixelLab via API at 64x64 with a 15-color palette PNG and background removal; (2) generate the back view using the accepted front sprite as a reference; (3) run Pixel Snapper/pixel-art-fixer only if output isn't native-grid, with an explicit grid size to avoid misdetection; (4) quantize to an exact 15-color GBA palette, with index 0 transparent (and 5-bit-per-channel colors for GBA, which a script can enforce); (5) hand-fix outlines, anatomy and back-sprite framing in Aseprite.
+- Using official Gen 3 sprites as style references is technically possible (Retro Diffusion references or custom style; PixelLab style reference). It raises the same Nintendo IP issues as any fan project and conflicts with PixelLab's no-training clause only if used to train models (not for references).
+- No ROM-hacker-authored guide on using these specific AI tools was found.
+
+### Gaps
+- No found guides by ROM hackers or fan-game devs documenting an AI-to-GBA sprite workflow.
+- Unverified whether either API can enforce a GBA 15-bit color constraint. Post-processing will likely be required.
