@@ -33,7 +33,7 @@ LEGENDS = {
         stats=(100, 150, 130, 90, 90, 110),
         types="MON_TYPES(TYPE_GRASS, TYPE_GROUND)",
         abilities="{ ABILITY_DROUGHT, ABILITY_NONE, ABILITY_NONE }",
-        color="BODY_COLOR_YELLOW", category="Sun King", height=32, weight=6500, icon=3,
+        color="BODY_COLOR_YELLOW", category="Sun King", height=32, weight=6500, icon=5,
         description=[
             "The ancient king of all land. Flowers",
             "bloom wherever Ceaser lies down, and its",

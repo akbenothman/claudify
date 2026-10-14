@@ -1,4 +1,5 @@
 """Haleeb, hand-built at 64x64 (concept: source_front.jpg). Run: python3 draw.py"""
+import math
 import os
 import sys
 
@@ -7,71 +8,84 @@ sys.path.insert(0, os.path.join(HERE, "..", "..", "..", "tools"))
 from pixelsprite import Sprite  # noqa: E402
 
 s = Sprite({
-    "outline": (40, 48, 80),
-    "w0": (160, 168, 208), "w1": (208, 216, 240), "w2": (248, 248, 248),
-    "b0": (104, 128, 176), "b1": (152, 176, 216), "b2": (200, 216, 240),
-    "o0": (200, 120, 72), "o1": (240, 168, 112), "o2": (248, 216, 168),
-    "eye": (56, 144, 224), "glow": (160, 224, 248), "pink": (232, 136, 144),
+    "K": (40, 48, 88),
+    "v": (176, 184, 216), "w": (224, 228, 244), "W": (248, 248, 248),
+    "x": (104, 128, 176), "y": (152, 176, 216), "z": (200, 216, 240),
+    "n": (208, 120, 72), "o": (240, 168, 112), "p": (248, 216, 168),
+    "E": (48, 128, 216), "g": (160, 224, 248), "r": (232, 136, 144),
 })
-WHITE = ["w0", "w1", "w2"]
-WING = ["b0", "b1", "b2"]
-POINT = ["o0", "o1", "o2"]
+WHITE = ["v", "w", "W"]
+WING = ["x", "y", "z"]
+SAME = {ch: ch for ch in "KvwWxyznopEgr"}
 
-# Wings raised in a V behind her, three layers of feathers each
-s.shape(s.polygon([(30, 32), (14, 18), (2, 4), (6, 16), (1, 14), (8, 25), (3, 26), (14, 33), (22, 38)]), WING)
-s.shape(s.polygon([(29, 30), (16, 16), (8, 6), (12, 17), (10, 22), (18, 30), (24, 35)]), WING, line="b0")
-s.shape(s.polygon([(36, 30), (50, 16), (62, 2), (59, 15), (63, 13), (56, 25), (61, 26), (50, 33), (42, 38)]), WING)
-s.shape(s.polygon([(37, 29), (48, 16), (56, 6), (53, 17), (55, 22), (46, 30), (40, 35)]), WING, line="b0")
+
+def wing(root, angles, lengths, width, flip):
+    """A wing: a fan of long feathers from the shoulder, drawn outer (primaries) to inner."""
+    rx, ry = root
+    for ang, ln in zip(angles, lengths):
+        a = math.radians(ang)
+        dx, dy = math.cos(a) * (-1 if flip else 1), -math.sin(a)
+        tip = (rx + dx * ln, ry + dy * ln)
+        mid = (rx + dx * ln * 0.55, ry + dy * ln * 0.55)
+        s.shape(s.curve([root, mid, tip], [width, width, 2]), WING, line="x", soft=1)
+
+
+# Wings raised in a V behind her: long primaries, then shorter rows over them
+for flip, root in ((True, (27, 33)), (False, (37, 33))):
+    wing(root, [62, 52, 42, 32, 22], [30, 30, 28, 25, 21], 6, flip)
+    wing(root, [58, 46, 34, 24], [21, 21, 19, 16], 6, flip)
+    wing(root, [52, 38, 26], [13, 12, 11], 7, flip)
 # Cloud she sits on
-for cx, cy, rx, ry in [(14, 57, 9, 6), (27, 59, 10, 5), (41, 58, 11, 6), (53, 56, 9, 6), (33, 54, 9, 5)]:
-    s.shape(s.ellipse(cx, cy, rx, ry), WHITE, line="w0")
-# Tail around the front of the cloud, cream tip
-s.shape(s.curve([(44, 50), (46, 58), (34, 61), (18, 59), (9, 52)], [5, 5, 4, 4, 4]), WHITE)
-s.shape(s.ellipse(9, 50, 3, 4, 20), POINT)
-# Body, sitting upright
-s.shape(s.ellipse(35, 44, 11, 10), WHITE, soft=4)
-s.shape(s.ellipse(30, 44, 6, 7), ["w1", "w2"], soft=2, line="w1")  # chest
-# Front legs and paws
-s.shape(s.ellipse(28, 51, 3, 5), WHITE, line="w0")
-s.shape(s.ellipse(36, 52, 3, 5), WHITE, line="w0")
-s.shape(s.ellipse(27, 56, 3, 2.2), POINT)
-s.shape(s.ellipse(36, 57, 3, 2.2), POINT)
-# Ears, head, face mask
-s.shape(s.polygon([(17, 18), (15, 6), (25, 12)]), POINT)
-s.shape(s.polygon([(32, 12), (40, 5), (41, 18)]), POINT)
-s.shape(s.ellipse(28, 21, 12, 10), WHITE, soft=3)
-s.shape(s.ellipse(26, 23, 8, 5.5), ["o1", "o2"], soft=2, line="o1", bands=(0.62,))
-s.outline()
+for cx, cy, rx, ry in [(13, 57, 9, 6), (26, 59, 10, 5), (40, 59, 11, 5), (52, 56, 9, 6), (32, 55, 9, 4)]:
+    s.shape(s.ellipse(cx, cy, rx, ry), ["y", "z", "W"], line="y")
+# Tail curling round the front of the cloud, cream tip
+s.shape(s.curve([(42, 51), (46, 58), (34, 61), (19, 59), (10, 53)], [5, 5, 4, 4, 4]), WHITE, line="v")
+s.shape(s.ellipse(9, 51, 3, 4, 20), ["n", "o", "p"])
+# Body, sitting upright and slim; fluffy chest
+s.shape(s.ellipse(40, 49, 9, 8), WHITE, soft=3)   # haunch
+s.shape(s.ellipse(31, 42, 9, 9), WHITE, soft=3, line="v")   # chest
+s.shape(s.polygon([(24, 38), (35, 37), (37, 44), (34, 49), (31, 46), (29, 50), (26, 46), (23, 49), (23, 43)]), ["w", "W"], line="v")
+# Front legs and cream paws
+s.shape(s.ellipse(29, 52, 2.5, 5), WHITE, line="v")
+s.shape(s.ellipse(36, 53, 2.5, 5), WHITE, line="v")
+s.shape(s.ellipse(29, 57, 3, 2), ["n", "o", "p"])
+s.shape(s.ellipse(36, 58, 3, 2), ["n", "o", "p"])
 
-# Cloud swirl markings on the body
-s.grid(36, 38, [
-    ".gg.",
-    "g..g",
-    "g.g.",
-    ".g..",
-], {"g": "glow"})
-s.grid(40, 46, ["gg.", "..g", "gg."], {"g": "glow"})
-# Calm, slightly sleepy eyes with a glint, pink nose, small cat mouth
-s.grid(19, 19, [
-    "kkkkk....kkkkk",
-    "keege....egeek",
-    ".eee......eee.",
-    "..............",
-], {"k": "outline", "e": "eye", "g": "glow"})
-s.grid(23, 23, [
-    "..pp.",
-    "k.k.k",
-    ".k.k.",
-], {"k": "outline", "p": "pink"})
-# Ear insides
-s.px(18, 12, "pink"); s.px(19, 13, "pink"); s.px(38, 10, "pink"); s.px(38, 11, "pink")
-# Halo of mist floating above her head (no outline, it glows)
-s.grid(18, 1, [
-    "....bbbbbbbbbb....",
-    "..bbgggggggggggbb.",
-    ".bg............gb.",
-    "..bbgggggggggggbb.",
-    "....bbbbbbbbbb....",
-], {"g": "glow", "b": "b1", "2": "b2"})
+# Neck and shoulders joining the head to the body
+s.shape(s.ellipse(31, 33, 7, 5), WHITE, line="v")
+s.outline("K")
+# Head and face, pixel by pixel: Siamese mask, sleepy blue eyes with a glint, pink nose, small smile
+FACE = [
+    "...K..............K...",
+    "..KnK............KnK..",
+    "..KonK..........KnoK..",
+    ".KoopnK........KnpooK.",
+    ".KooppnKKKKKKKKnppooK.",
+    ".KoowwwwWWWWWWwwwwooK.",
+    "KvwwwwwwWWWWWWwwwwwwvK",
+    "KvwwpppwwwWWwwwpppwwvK",
+    "KvwpoooopwwwwpoooopwvK",
+    "KvpoKKKKKopoKKKKKopwvK",
+    "KvpKEEEgKoooKEEEgKpwvK",
+    "KvpoKEEKoooooKEEKopwvK",
+    "KvwpooooooooooooopwwvK",
+    ".KvwpoooorroooooopwvK.",
+    ".KvwwpoooKKooooopwwvK.",
+    "..KvwwpoKooKoppwwwvK..",
+    "...KvvwwppppppwwvvK...",
+    ".....KKvvwwwwvvKK.....",
+    ".......KKKKKKKK.......",
+]
+s.grid(20, 11, FACE, SAME)
+# Swirl markings on the body
+s.grid(41, 45, [".gg.", "g..g", "g.g.", ".g.."], SAME)
+# Halo of mist above her head
+s.grid(22, 3, [
+    "...xxxxxxxxxxx...",
+    ".xxgggggggggggxx.",
+    "xg.............gx",
+    ".xxgggggggggggxx.",
+    "...xxxxxxxxxxx...",
+], SAME)
 
 s.save(os.path.join(HERE, "front.png"), os.path.join(HERE, "normal.pal"), os.path.join(HERE, "preview.png"))

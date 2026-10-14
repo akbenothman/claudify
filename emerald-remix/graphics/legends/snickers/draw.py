@@ -42,12 +42,8 @@ for x, y, a in [(9, 42, 200), (56, 45, 330), (60, 30, 345), (61, 18, 0), (56, 8,
 s.shape(s.curve([(32, 50), (28, 56), (26, 59)], [6, 5, 5]), FUR, bands=CONTRAST)
 # Neck ruff behind the head: a spiky collar, a shade darker so it reads
 s.shape(s.polygon(spikes(21, 27, 16, 11, 9, 0.85, 10)), ["f0", "f1", "f2"], soft=4)
-# Ears
-s.shape(s.polygon([(6, 15), (2, 1), (14, 8)]), FACE)
-s.shape(s.polygon([(22, 8), (31, 0), (32, 14)]), FACE)
 # Head and face mask
-s.shape(s.ellipse(18, 19, 12, 10), FUR, soft=3, bands=CONTRAST)
-s.shape(s.ellipse(15, 20, 9.5, 7), FACE, soft=2, line="c0")
+s.shape(s.ellipse(15, 17, 12, 11), FUR, soft=3, bands=CONTRAST)
 s.shape(s.polygon([(14, 27), (19, 25), (26, 24), (30, 22), (29, 27), (32, 29), (26, 30), (27, 33), (21, 31), (16, 33)]), FUR[1:], line="f1")
 # Front arm reaching forward, in front of everything
 s.shape(s.curve([(22, 38), (13, 46), (8, 51)], [8, 7, 6]), FUR, bands=CONTRAST)
@@ -69,29 +65,36 @@ s.grid(22, 61, [
     "rRk.Rk.Rk",
     "Rk..k..k.",
 ], {"r": "r1", "R": "r0", "k": "outline"})
-# Inner ears
-s.grid(4, 4, ["r..", "rr.", "rrr", ".rr"], {"r": "r0"})
-s.grid(27, 4, ["..r", ".rr", "rrr", "rr."], {"r": "r0"})
-# Red stripes on the forehead
-s.grid(10, 13, [
-    "..r..r..r",
-    ".r..r..r.",
-], {"r": "r1"})
-# Angry glowing eyes: brows slant down to the middle, red irises, yellow glints
-s.grid(6, 16, [
-    "kk........kk",
-    ".kkk....kkk.",
-    ".kyrR..Rryk.",
-    "..kRR..RRk..",
-], {"k": "outline", "r": "r1", "R": "r0", "y": "y"})
-# Nose at the tip of the snout, open snarl with two fangs
-s.grid(4, 22, [
-    "kk..........",
-    "kkkkkkkkkk..",
-    "kfrrrrrrfk..",
-    ".kfrrrrfk...",
-    "..kkkkkk....",
-], {"k": "outline", "r": "r0", "f": "f3"})
+# The head, pixel by pixel: big ears with red insides, cream-orange mask with red stripes, brows
+# slanting down to the middle over glowing red eyes, snout to the left, open snarl with two fangs
+L = {"K": "outline", "p": "c2", "o": "c1", "n": "c0", "r": "r1", "R": "r0", "y": "y", "W": "f3", "g": "f2"}
+HEAD = [
+    "...K...................K......",
+    "..KoK.................KoK.....",
+    "..KRoK...............KoRK.....",
+    "..KRRoK.............KoRRK.....",
+    "..KRRooK...........KooRRK.....",
+    "..KRRoooKKKKKKKKKKKoooRRK.....",
+    "..KRooopppppppppppppooRRK.....",
+    "..KoooppprpppprpppprppooK.....",
+    ".KoooppprpppprpppprpppooK.....",
+    ".KoooppppppppppppppppppoonK...",
+    ".KKKoppppppppppppppppKKKonK...",
+    ".KooKKKppppppppppppKKKoooonK..",
+    ".KoKyrrKKppppppppKKrryKoonK...",
+    ".KoKRRrrKppppppppKrrRRKoonK...",
+    ".KooKKKKoppppppppoKKKKooonK...",
+    ".KoooooooppppppppooooooonK....",
+    "KKooooooppppppppppoooooonK....",
+    "KKKoooopppppppppppooooonK.....",
+    "KKKKooopppppppppppoooonK......",
+    ".KWWKKKKKKKKKKKKKpoonnK.......",
+    ".KWRRRRRRRRRRRRWKoonK.........",
+    "..KWRRRRRRRRRRWKonnK..........",
+    "...KKRRRRRRRRKKnnK............",
+    ".....KKKKKKKKKKK..............",
+]
+s.grid(0, 1, HEAD, L)
 # Red lightning down the body
 s.grid(15, 40, ["r..", ".r.", "rr.", ".r.", "..r"], {"r": "r1"})
 s.grid(34, 50, ["rr.r", ".rr.", "...r"], {"r": "r1"})
