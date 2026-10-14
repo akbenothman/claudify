@@ -1,0 +1,41 @@
+# Haleeb: hand-drawn head (sleepy half-closed eyes) and mist halo on top of the converted sprite
+color o 16 16 8
+color W 248 248 240
+color w 224 232 232
+color O 248 208 152
+color R 208 168 128
+color E 88 168 232
+color e 176 224 248
+color N 216 128 120
+grid 30 3
+_ _ _ _ _ e e e e e e e e e e _ _ _ _ _
+_ _ _ e e E E E E E E E E E E e e _ _ _
+_ _ e E E _ _ _ _ _ _ _ _ _ _ E E e _ _
+_ _ _ E E e _ _ _ _ _ _ _ _ e E E _ _ _
+_ _ _ _ _ E E E E E E E E E E _ _ _ _ _
+end
+grid 32 9
+_ o _ _ _ _ _ _ _ _ _ _ _ o _ _
+_ o o _ _ _ _ _ _ _ _ _ o o _ _
+_ o O o _ _ _ _ _ _ _ o O o _ _
+_ o O O o o o o o o o O O o _ _
+o O O W W W W W W W W W O O o _
+o O W W W W W W W W W W W O o _
+o W W O O W W W W W O O W W o _
+o W O O O O W W W O O O O W o _
+o W O o o o O W O o o o O W o _
+o W O e E e O O O e E e O W o _
+o W O O O O O O O O O O O W o _
+o W W O O O N N N O O O W W o _
+_ o W W O O O N O O O W W o _ _
+_ o W W W O o W o O W W W o _ _
+_ _ o W W W W W W W W W o _ _ _
+_ _ _ o w W W W W W w o _ _ _ _
+_ _ _ w W W W W W W W w _ _ _ _
+_ _ w W W W W W W W W W w _ _ _
+end
+# Dark specks in the wings and fur become soft greys
+color g 136 144 160
+color h 176 188 200
+swap 56 56 48 g
+swap 96 104 96 h

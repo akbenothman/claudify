@@ -1,0 +1,25 @@
+# Snickers: hand-drawn angry face (glowing red eyes, fanged grin) on top of the converted sprite
+color o 0 8 8
+color P 248 176 136
+color C 248 224 192
+color S 232 144 112
+color R 224 88 72
+color r 152 64 64
+color W 232 240 248
+grid 4 21
+_ P S P P S P P S P P S P P _ _ _
+P P S P P S P P S P P S P P P _ _
+P P P P P P P P P P P P P P P P _
+P o P P P P P P P P P P P o P P _
+P r o o P P P P P P P o o r P P _
+P r R R o o P P P P o o R R r P _
+P P r R C o P P P P o C R r P P _
+P P P r r P P C C P P r r P P P _
+C C P P P C C C C C C P P P P P _
+o o C C C C C C C C C C C P P _ _
+o o o o o o o o o o C C C P _ _ _
+_ o W o C C C o W o C C C P _ _ _
+_ _ o C C C C C o C C C C _ _ _ _
+_ _ _ C C C C C C C C C _ _ _ _ _
+_ _ _ _ C C C C C C C _ _ _ _ _ _
+end

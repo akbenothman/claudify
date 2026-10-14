@@ -19,7 +19,7 @@ LEGENDS = {
         stats=(110, 70, 100, 90, 150, 150),  # HP, Atk, Def, Spe, SpA, SpD
         types="MON_TYPES(TYPE_FAIRY, TYPE_FLYING)",
         abilities="{ ABILITY_DRIZZLE, ABILITY_NONE, ABILITY_NONE }",
-        color="BODY_COLOR_WHITE", category="Cloud Cat", height=38, weight=2100, icon=3,
+        color="BODY_COLOR_WHITE", category="Cloud Cat", height=38, weight=2100, icon=0,
         description=[
             "Haleeb is said to have spread the clouds",
             "across the sky. It naps on them for years",
@@ -33,7 +33,7 @@ LEGENDS = {
         stats=(100, 150, 130, 90, 90, 110),
         types="MON_TYPES(TYPE_GRASS, TYPE_GROUND)",
         abilities="{ ABILITY_DROUGHT, ABILITY_NONE, ABILITY_NONE }",
-        color="BODY_COLOR_YELLOW", category="Sun King", height=32, weight=6500, icon=2,
+        color="BODY_COLOR_YELLOW", category="Sun King", height=32, weight=6500, icon=4,
         description=[
             "The ancient king of all land. Flowers",
             "bloom wherever Ceaser lies down, and its",

@@ -326,14 +326,14 @@ def save_indexed(path, lab, pal):
     im.save(path)
 
 
-def make_sprite(rgb, solid, out_dir, stage, back, method="hybrid", zoom=1.0):
+def make_sprite(rgb, solid, out_dir, stage, back, method="hybrid", zoom=1.0, colors=15):
     if back:
         # Front and back sprites share one palette in the game, so the back is drawn with the
         # finished front's colors (convert the front, and do its touch-ups, first).
         pal = read_jasc(os.path.join(out_dir, "normal.pal"))[1:16]
         lab, pal, _ = build(rgb, solid, round(BACK_FIT[stage] * zoom), 64, 15, method, pal)
     else:
-        lab, pal, _ = build(rgb, solid, round(STAGE_FIT[stage] * zoom), 64, 15, method)
+        lab, pal, _ = build(rgb, solid, round(STAGE_FIT[stage] * zoom), 64, colors, method)
     save_indexed(os.path.join(out_dir, "back.png" if back else "front.png"), lab, pal)
     if not back:
         write_jasc(os.path.join(out_dir, "normal.pal"), [TRANSPARENT] + pal)
@@ -381,6 +381,9 @@ def main():
     ap.add_argument("--no-icon", dest="icon", action="store_false")
     ap.add_argument("--enlarge", action="append", default=[], metavar="X0,Y0,X1,Y1:SCALE",
                     help="enlarge an oval region of the source (e.g. the head) before converting")
+    ap.add_argument("--colors", type=int, default=15,
+                    help="colors to pick (max 15); fewer gives cleaner, flatter shading and leaves free "
+                         "slots for hand-painted details (tools/paint.py)")
     ap.add_argument("--crop", metavar="X0,Y0,X1,Y1", help="keep only this box of the source")
     ap.add_argument("--clear", action="append", default=[], metavar="X0,Y0,X1,Y1[:H0-H1]",
                     help="erase a box of the source, optionally only one hue range (e.g. a grass patch)")
@@ -400,7 +403,7 @@ def main():
                       a.crop, a.clear)
     if a.mirror:
         rgb, solid = rgb[:, ::-1].copy(), solid[:, ::-1].copy()
-    make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method, a.zoom)
+    make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method, a.zoom, a.colors)
     msg = a.out_dir
     if a.icon and not a.back:
         msg += "  (icon palette %d)" % make_icon(rgb, solid, a.out_dir)

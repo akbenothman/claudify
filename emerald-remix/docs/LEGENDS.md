@@ -41,7 +41,17 @@ way to reach them.
 
 ## Converting the art
 
-`tools/build_legends.sh` rebuilds all three. The source images are wide, so the converter **frames** the
-important part (`--crop`), **enlarges the head** like Gen 3's big Pokémon do (`--enlarge`), and erases the
-grass patch under Ceaser (`--clear`). Ask Gemini for compact poses that fill a square: wide poses shrink
-to almost nothing at 64×64.
+`tools/build_legends.sh` rebuilds all three (it needs `pip install opencv-python-headless`). Your concept
+art is wide and painterly, which shrinks to mush at 64×64, so each one goes through four steps:
+
+1. `tools/recompose.py` **rearranges the pose** to fit a square: Ceaser's tail tucked behind his back,
+   Haleeb's wings pulled in, Snickers' tail squeezed closer. It also **flattens the fur texture** into
+   clean areas of color and drops loose sparks and grass.
+2. `tools/convert_sprite.py` shrinks it with an **enlarged head**, like Gen 3's big Pokémon, and fewer
+   colors (`--colors`) for cleaner shading.
+3. `tools/paint.py` **hand-draws the details** that never survive shrinking, from each
+   `graphics/legends/<name>/paint_front.txt`: faces and eyes, Ceaser's laurel crown and tail flowers,
+   Haleeb's halo. The edits name their colors, so they keep working when the conversion changes.
+4. A placeholder back sprite (the front, mirrored).
+
+![Before and after](legends_before_after.png)
