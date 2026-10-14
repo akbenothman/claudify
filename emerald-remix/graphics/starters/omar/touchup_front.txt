@@ -1,17 +1,18 @@
 # Converted with --lift-darks 0.7 --dark-tint 0,4,18: black beanie = 3/10, hoodie = 5/14 greys.
 # Beanie cuff: pull it back to the beanie's blue-black and rib it with alternating columns
-rremap 14 24 37 33 5 3
-rremap 14 24 37 33 14 10 even
-rremap 14 24 37 33 14 3 odd
+rremap 12 20 38 30 5 3
+rremap 12 20 38 30 14 10 even
+rremap 12 20 38 30 14 3 odd
 # Sheen on the beanie dome
-row 13 27 10 10 10 10 10 10
-row 14 25 10 10 _ _ _ _ _ _ _ _ 10
-row 15 24 10
+row 8 27 10 10 10 10 10 10 10
+row 9 25 10 10 _ _ _ _ _ _ _ _ _ 10
+row 10 24 10
 # Face: light fur, grey mask patches, black pupils glancing left, nose, sly grin
-row 34 17 11 11 11 11 11 11 11 11 11 11 11 8 8
-row 35 17 3 3 3 3 11 11 3 3 3 3 11 11 8
-row 36 17 3 2 6 3 11 11 3 2 6 3 11 11 8
-row 37 17 3 3 3 11 11 11 11 3 3 11 11 8 8
-row 38 17 2 2 11 11 11 11 11 11 11 11 11 8 8
-row 39 17 11 2 2 6 6 6 2 2 11 11 8 8 14
-row 40 17 _ 11 11 2 2 2 11 11 8 8 8 14
+row 31 17 11 11 11 11 11 11 11 11 11 11 11 11 8 8
+row 32 17 3 3 3 3 3 11 11 3 3 3 3 3 11 11 8
+row 33 17 3 2 2 6 3 11 11 3 2 2 6 3 11 11 8
+row 34 17 3 2 2 3 3 11 11 3 2 2 3 3 11 11 8
+row 35 17 3 3 3 11 11 11 11 11 3 3 11 11 8 8 8
+row 36 17 2 2 11 11 11 11 11 11 11 11 11 11 8 8
+row 37 17 11 2 2 6 6 6 2 2 11 11 11 8 8 14
+row 38 17 _ 11 11 2 2 2 11 11 11 8 8 8 14

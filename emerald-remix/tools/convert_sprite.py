@@ -245,8 +245,18 @@ def outline(lab, line_label):
 
 
 def place(lab, box):
-    """Center horizontally, sit on the bottom edge of a box x box canvas."""
+    """Center horizontally, sit on the bottom edge of a box x box canvas.
+
+    A zoomed creature can be bigger than the box: it's cut off at the bottom (its feet, or for a back
+    sprite the part the battle textbox hides anyway) and evenly at the sides, never at the top."""
     h, w = lab.shape
+    if h > box:
+        lab = lab[:box]
+        h = box
+    if w > box:
+        cut = (w - box) // 2
+        lab = lab[:, cut:cut + box]
+        w = box
     canvas = np.full((box, box), -1, int)
     x = (box - w) // 2
     canvas[box - h:, x:x + w] = lab
@@ -274,14 +284,14 @@ def save_indexed(path, lab, pal):
     im.save(path)
 
 
-def make_sprite(rgb, solid, out_dir, stage, back, method="hybrid"):
+def make_sprite(rgb, solid, out_dir, stage, back, method="hybrid", zoom=1.0):
     if back:
         # Front and back sprites share one palette in the game, so the back is drawn with the
         # finished front's colors (convert the front, and do its touch-ups, first).
         pal = read_jasc(os.path.join(out_dir, "normal.pal"))[1:16]
-        lab, pal, _ = build(rgb, solid, BACK_FIT[stage], 64, 15, method, pal)
+        lab, pal, _ = build(rgb, solid, round(BACK_FIT[stage] * zoom), 64, 15, method, pal)
     else:
-        lab, pal, _ = build(rgb, solid, STAGE_FIT[stage], 64, 15, method)
+        lab, pal, _ = build(rgb, solid, round(STAGE_FIT[stage] * zoom), 64, 15, method)
     save_indexed(os.path.join(out_dir, "back.png" if back else "front.png"), lab, pal)
     if not back:
         write_jasc(os.path.join(out_dir, "normal.pal"), [TRANSPARENT] + pal)
@@ -324,6 +334,8 @@ def main():
     ap.add_argument("--stage", type=int, choices=(1, 2, 3), required=True)
     ap.add_argument("--back", action="store_true", help="source is a back sprite (uses the front's normal.pal)")
     ap.add_argument("--mirror", action="store_true", help="flip the source left-right first")
+    ap.add_argument("--zoom", type=float, default=1.0,
+                    help="draw the creature this much bigger; what doesn't fit is cut off at the bottom")
     ap.add_argument("--no-icon", dest="icon", action="store_false")
     ap.add_argument("--enlarge", action="append", default=[], metavar="X0,Y0,X1,Y1:SCALE",
                     help="enlarge an oval region of the source (e.g. the head) before converting")
@@ -342,7 +354,7 @@ def main():
     rgb, solid = load(a.source, a.recolor, a.lift_darks, tuple(map(int, a.dark_tint.split(","))), a.enlarge)
     if a.mirror:
         rgb, solid = rgb[:, ::-1].copy(), solid[:, ::-1].copy()
-    make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method)
+    make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method, a.zoom)
     msg = a.out_dir
     if a.icon and not a.back:
         msg += "  (icon palette %d)" % make_icon(rgb, solid, a.out_dir)

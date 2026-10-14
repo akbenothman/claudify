@@ -1,5 +1,3 @@
 # Glints on the sunglasses
-px 25 13 5
-px 26 13 5
-px 34 13 5
-px 35 13 5
+row 8 29 5 5
+row 8 35 5 5

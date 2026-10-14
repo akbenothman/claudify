@@ -32,6 +32,8 @@ Make the three starter lines feel like they were always part of Emerald.
 - [ ] Balance check: each starter against the rival and gyms 1–4 (notes below)
 - [x] Real back sprites from your Gemini art, drawn with each Pokémon's front palette (the game shares one
       palette between them), checked in battle
+- [x] Bigger sprites: evolved forms are zoomed and cut off at the bottom like Gen 3's big Pokémon, backs
+      fill the frame, faces redrawn on the new sizes
 - [ ] Shiny colors *(waits on Y5)*
 - [ ] Menu icons cleaned up by hand
 

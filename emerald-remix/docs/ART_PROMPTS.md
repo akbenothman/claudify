@@ -136,7 +136,8 @@ python3 tools/convert_sprite.py graphics/starters/heesh/source_back.jpg  graphic
 ```
 
 The script cuts out the green, shrinks the creature to the right size for its stage (stage 1 is small,
-stage 3 fills the frame), picks the best 15 colors, redraws the dark outline, and writes `front.png`/`back.png`,
+stage 3 fills the frame; `--zoom` makes it bigger than the frame and cuts it off at the bottom and sides,
+never the top), picks the best 15 colors, redraws the dark outline, and writes `front.png`/`back.png`,
 `normal.pal`, a placeholder `shiny.pal`, and `icon.png` (matched to the closest of the game's 6 shared icon
 palettes). `tools/preview_sheet.py` puts sprites side by side at 4× scale so you can check them.
 
@@ -146,8 +147,12 @@ first. Colors that only exist on the back get the nearest front color, so a back
 color needs `--recolor` (see Heeshef in `tools/build_starters.sh`). `--mirror` flips a back sprite that
 faces left; the player's Pokémon should face right, toward the opponent.
 
+**Bigger sprites.** Real Gen 3 sprites of big Pokémon often run off the bottom of the frame, which lets the
+face and body use more pixels. `tools/build_starters.sh` zooms stage 2 fronts 1.1×, stage 3 fronts 1.15×
+(feet cut off), and backs 1.3× (the back sprite's bottom is hidden by the textbox in battle anyway).
+
 **Touch-ups.** Faces almost always need hand-placed pixels. Edits live in
 `graphics/starters/<name>/touchup_front.txt` (one line per row of pixels, see `tools/touchup.py`), so they
-survive re-converting. `tools/build_starters.sh` re-runs the converter and every touch-up, then rebuilds
+survive re-converting. Edits are pixel coordinates, so they must be redone if the size or zoom changes. `tools/build_starters.sh` re-runs the converter and every touch-up, then rebuilds
 `preview_sheet.png`. You can also edit the PNG directly in Aseprite/LibreSprite. Keep it in **indexed mode**
 so the palette stays intact.
