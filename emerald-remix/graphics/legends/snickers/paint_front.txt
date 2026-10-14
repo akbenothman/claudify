@@ -1,0 +1,20 @@
+# Snickers (from source_front_v3.jpg): the face blurs when shrunk, so eyes, nose and fangs are redrawn
+color K 8 8 8
+color R 232 56 64
+color D 144 24 40
+color Y 248 224 184
+color W 232 232 248
+grid 3 17
+K K _ _ _ _ _ _ _ _ K K
+_ K K K _ _ _ _ K K K _
+_ K Y R K _ _ K R Y K _
+_ _ D D _ _ _ _ D D _ _
+end
+grid 1 21
+K K _ _ _ _ _ _ _ _
+_ _ _ _ _ _ _ _ _ _
+K K K K K K K K K K
+K W R R R R R R W K
+_ K W R R R R W K _
+_ _ K K K K K K _ _
+end
