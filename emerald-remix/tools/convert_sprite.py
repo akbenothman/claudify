@@ -101,11 +101,53 @@ def enlarge(rgb, spec):
     return out
 
 
-def load(src, recolors, lift=None, tint=(0, 0, 0), enlarges=()):
+PAD = 300
+
+
+def shift_box(spec, d):
+    """Move the 'X0,Y0,X1,Y1' box at the start of a spec by d pixels right and down."""
+    box, sep, rest = spec.partition(":")
+    return ",".join(str(int(v) + d) for v in box.split(",")) + sep + rest
+
+
+def clear(rgb, solid, spec):
+    """'X0,Y0,X1,Y1[:HUE_FROM-HUE_TO]' erases source pixels inside the box (only those in the hue
+    range, if given), e.g. a grass patch drawn under the creature."""
+    box, _, hues = spec.partition(":")
+    x0, y0, x1, y1 = map(int, box.split(","))
+    hit = np.zeros_like(solid)
+    hit[y0:y1, x0:x1] = True
+    if hues:
+        lo, hi = map(float, hues.split("-"))
+        mx, mn = rgb.max(-1), rgb.min(-1)
+        r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+        d = np.maximum(mx - mn, 1e-6)
+        h = np.where(mx == r, (g - b) / d % 6, np.where(mx == g, (b - r) / d + 2, (r - g) / d + 4)) * 60
+        hit &= (h >= lo) & (h <= hi) & ((mx - mn) / np.maximum(mx, 1) > 0.15)
+    return solid & ~hit
+
+
+def load(src, recolors, lift=None, tint=(0, 0, 0), enlarges=(), crop=None, clears=()):
     rgb = np.asarray(Image.open(src).convert("RGB"), dtype=np.float32)
+    if enlarges:
+        # Pad with green so an enlarged head near the edge isn't cut off, and shift every box to match.
+        rgb = np.pad(rgb, ((PAD, PAD), (PAD, PAD), (0, 0)))
+        rgb[:PAD] = rgb[-PAD:] = rgb[:, :PAD] = rgb[:, -PAD:] = TRANSPARENT
+        enlarges = [shift_box(s, PAD) for s in enlarges]
+        crop = crop and shift_box(crop, PAD)
+        clears = [shift_box(s, PAD) for s in clears]
     for spec in enlarges:
         rgb = enlarge(rgb, spec)
     solid = ~green_mask(rgb)
+    if crop:
+        # Keep only what's inside the box: frames a wide creature (wings, a long tail) so the
+        # important part fills the sprite instead of shrinking everything.
+        x0, y0, x1, y1 = map(int, crop.split(","))
+        keep = np.zeros_like(solid)
+        keep[y0:y1, x0:x1] = True
+        solid &= keep
+    for spec in clears:
+        solid = clear(rgb, solid, spec)
     # Green spill on edge pixels: pull green down to the other channels.
     spill = solid & (rgb[..., 1] > np.maximum(rgb[..., 0], rgb[..., 2]) + 20)
     rgb[spill, 1] = np.maximum(rgb[spill, 0], rgb[spill, 2])
@@ -339,6 +381,9 @@ def main():
     ap.add_argument("--no-icon", dest="icon", action="store_false")
     ap.add_argument("--enlarge", action="append", default=[], metavar="X0,Y0,X1,Y1:SCALE",
                     help="enlarge an oval region of the source (e.g. the head) before converting")
+    ap.add_argument("--crop", metavar="X0,Y0,X1,Y1", help="keep only this box of the source")
+    ap.add_argument("--clear", action="append", default=[], metavar="X0,Y0,X1,Y1[:H0-H1]",
+                    help="erase a box of the source, optionally only one hue range (e.g. a grass patch)")
     ap.add_argument("--lift-darks", type=float, metavar="GAMMA",
                     help="brighten dark fills (e.g. 0.7) so black-clothed designs keep shading")
     ap.add_argument("--dark-tint", default="0,0,0", metavar="R,G,B",
@@ -351,7 +396,8 @@ def main():
     a = ap.parse_args()
     LINE_SHARE, CONTRAST = a.line_share, a.contrast
     os.makedirs(a.out_dir, exist_ok=True)
-    rgb, solid = load(a.source, a.recolor, a.lift_darks, tuple(map(int, a.dark_tint.split(","))), a.enlarge)
+    rgb, solid = load(a.source, a.recolor, a.lift_darks, tuple(map(int, a.dark_tint.split(","))), a.enlarge,
+                      a.crop, a.clear)
     if a.mirror:
         rgb, solid = rgb[:, ::-1].copy(), solid[:, ::-1].copy()
     make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method, a.zoom)

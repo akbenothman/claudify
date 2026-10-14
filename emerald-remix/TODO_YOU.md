@@ -71,6 +71,11 @@ below that Claude needs answered to build it.
 - [ ] **Y12. At least 10 new Pokémon lines.** For each: a name, a concept (like your starter notes:
       animal, personality, quirks, type) and how many stages. Claude turns them into full designs and Gemini
       prompts, same as the starters. Mark which ones are gym leader aces.
+- [ ] **Y22. The three legendary cats** (art received; sprites converted in `graphics/legends/`).
+      Haleeb is the cloud cat. Which one is **Snickers**: the white serpent cat or the lion? And what's the
+      other one's name? Then: their types, and where you meet them.
+      *Default: Snickers = serpent cat (Dark/Electric), lion = Grass/Ground, Haleeb = Fairy/Flying. They
+      take the place of the Regi trio: three sealed, optional post-story encounters, no plot changes.*
 - [ ] **Y20. Digimon.** Which ones, and should they appear as wild Pokémon, gym aces, or special
       encounters? Claude makes them Gen 3-style creatures from your Gemini art, like the new lines.
       *Note: Digimon belong to Bandai, so they're in the same gray area as the hack itself. That's fine
