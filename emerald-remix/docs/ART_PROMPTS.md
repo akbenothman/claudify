@@ -159,6 +159,25 @@ so the palette stays intact.
 
 ---
 
+## Getting real pixel art (best quality)
+
+Converting a painting down to 64×64 has a ceiling. Every detail gets decided by a script, and the result
+looks smudgy next to Gen 3's hand-drawn sprites. For real quality, the sprite has to be **drawn as pixel
+art at its real size**. Options:
+
+- **A pixel-art AI tool** made for game sprites, e.g. PixelLab (pixellab.ai) or Retro Diffusion. Unlike
+  Gemini, they draw on an actual pixel grid at the size you ask for. Ask for 64×64, give it your concept
+  image as a reference, and say "Pokémon Gen 3 battle sprite, facing left, black outline, max 15 colors".
+- **A pixel artist.** Commissions for a single sprite are usually inexpensive. Your Gemini concepts are
+  the reference they need.
+
+Then import it with `--pixel-art`: the converter finds the pixel grid (any upscale, PNG or JPG, transparent
+or green background) and keeps every pixel exactly as drawn.
+
+```sh
+python3 tools/convert_sprite.py my_sprite.png graphics/legends/ceaser --stage 3 --pixel-art
+```
+
 ## Legendary sprite prompts (Snickers, Haleeb, Ceaser)
 
 The first concept art for the legendaries came out mushy as sprites. That wasn't the converter: the

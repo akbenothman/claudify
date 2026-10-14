@@ -128,7 +128,12 @@ def clear(rgb, solid, spec):
 
 
 def load(src, recolors, lift=None, tint=(0, 0, 0), enlarges=(), crop=None, clears=()):
-    rgb = np.asarray(Image.open(src).convert("RGB"), dtype=np.float32)
+    im = Image.open(src)
+    rgb = np.asarray(im.convert("RGB"), dtype=np.float32)
+    if "A" in im.convert("RGBA").getbands() and im.mode in ("RGBA", "LA", "P"):
+        # Transparent PNG (most pixel-art tools): see-through pixels are background.
+        alpha = np.asarray(im.convert("RGBA"))[..., 3]
+        rgb[alpha < 128] = TRANSPARENT
     if enlarges:
         # Pad with green so an enlarged head near the edge isn't cut off, and shift every box to match.
         rgb = np.pad(rgb, ((PAD, PAD), (PAD, PAD), (0, 0)))
@@ -177,6 +182,76 @@ def recolor(rgb, solid, spec):
         res.append((r, g, b))
     out[solid] = np.asarray(res) * 255
     return out
+
+
+def detect_grid(rgb, solid, max_scale=16):
+    """Find the pixel size of upscaled pixel art: color changes all fall on a regular grid.
+
+    Returns (scale, x offset, y offset). The largest scale whose grid lines catch most of the color
+    changes wins (its divisors match too, its multiples don't)."""
+    best = (1, 0, 0)
+    found = {}
+    for axis in (0, 1):
+        d = np.abs(np.diff(rgb, axis=1 - axis)).sum(-1) > 60
+        both = solid[:, 1:] & solid[:, :-1] if axis == 0 else solid[1:] & solid[:-1]
+        pos = np.nonzero(d & both)[1 - axis] + 1
+        found[axis] = pos
+    for s in range(max_scale, 1, -1):
+        offs, ok = [], True
+        for axis in (0, 1):
+            pos = found[axis]
+            if len(pos) < 20:
+                ok = False
+                break
+            counts = np.bincount(pos % s, minlength=s)
+            if counts.max() < 0.7 * len(pos):
+                ok = False
+                break
+            offs.append(int(counts.argmax()))
+        if ok:
+            return s, offs[0], offs[1]
+    return best
+
+
+def unscale_pixel_art(rgb, solid):
+    """Turn upscaled pixel art back into its real pixels: each grid cell's most common color."""
+    s, ox, oy = detect_grid(rgb, solid)
+    h, w = solid.shape
+    xs = list(range(ox - s if ox else 0, w, s))
+    ys = list(range(oy - s if oy else 0, h, s))
+    out = np.zeros((len(ys), len(xs), 3), np.float32)
+    on = np.zeros((len(ys), len(xs)), bool)
+    for j, y in enumerate(ys):
+        for i, x in enumerate(xs):
+            cell_s = solid[max(y, 0):y + s, max(x, 0):x + s]
+            if cell_s.mean() < 0.5:
+                continue
+            # The middle of the cell: compression smears colors at cell edges.
+            m = s // 4
+            core = rgb[max(y, 0) + m:y + s - m, max(x, 0) + m:x + s - m].reshape(-1, 3)
+            out[j, i] = np.median(core, axis=0)
+            on[j, i] = True
+    ys_on, xs_on = np.nonzero(on)
+    y0, y1, x0, x1 = ys_on.min(), ys_on.max() + 1, xs_on.min(), xs_on.max() + 1
+    return out[y0:y1, x0:x1], on[y0:y1, x0:x1], s
+
+
+def pixel_art_palette(pixels, tol=28):
+    """The colors a pixel artist used. JPEG noise makes near-copies of each color, so colors within
+    `tol` of a more common one count as that one."""
+    vals, counts = np.unique(pixels.astype(int) // 4 * 4, axis=0, return_counts=True)
+    centers, weight = [], []
+    for i in np.argsort(-counts):
+        c = vals[i]
+        d = [np.abs(c - k).sum() for k in centers]
+        if d and min(d) <= tol:
+            weight[int(np.argmin(d))] += counts[i]
+        else:
+            centers.append(c)
+            weight.append(counts[i])
+    # A color used only once or twice is noise unless nothing else is near it.
+    keep = [c for c, w in zip(centers, weight) if w >= 3] or centers
+    return sorted({to_gba(c) for c in keep})
 
 
 def kmeans_palette(pixels, k, iters=25, seed=1):
@@ -305,12 +380,15 @@ def place(lab, box):
     return canvas
 
 
-def build(rgb, solid, fit, box, ncolors, method="hybrid", pal=None):
+def build(rgb, solid, fit, box, ncolors, method="hybrid", pal=None, pixel_art=False):
     if pal is None:
-        pal = kmeans_palette(rgb[solid], ncolors)
+        exact = pixel_art_palette(rgb[solid]) if pixel_art else []
+        pal = exact if 0 < len(exact) <= ncolors else kmeans_palette(rgb[solid], ncolors)
     labels = np.full(solid.shape, -1, int)
     labels[solid] = nearest(rgb[solid], pal)
     line = min(range(len(pal)), key=lambda i: sum(pal[i]))
+    if pixel_art and max(solid.shape) <= box:
+        return place(labels, box), pal, line  # already real pixels: keep every one as drawn
     small = shrink(labels, rgb, fit, line, pal, method)
     if method == "majority":
         small = despeckle(small, line)
@@ -326,14 +404,14 @@ def save_indexed(path, lab, pal):
     im.save(path)
 
 
-def make_sprite(rgb, solid, out_dir, stage, back, method="hybrid", zoom=1.0, colors=15):
+def make_sprite(rgb, solid, out_dir, stage, back, method="hybrid", zoom=1.0, colors=15, pixel_art=False):
     if back:
         # Front and back sprites share one palette in the game, so the back is drawn with the
         # finished front's colors (convert the front, and do its touch-ups, first).
         pal = read_jasc(os.path.join(out_dir, "normal.pal"))[1:16]
-        lab, pal, _ = build(rgb, solid, round(BACK_FIT[stage] * zoom), 64, 15, method, pal)
+        lab, pal, _ = build(rgb, solid, round(BACK_FIT[stage] * zoom), 64, 15, method, pal, pixel_art)
     else:
-        lab, pal, _ = build(rgb, solid, round(STAGE_FIT[stage] * zoom), 64, colors, method)
+        lab, pal, _ = build(rgb, solid, round(STAGE_FIT[stage] * zoom), 64, colors, method, None, pixel_art)
     save_indexed(os.path.join(out_dir, "back.png" if back else "front.png"), lab, pal)
     if not back:
         write_jasc(os.path.join(out_dir, "normal.pal"), [TRANSPARENT] + pal)
@@ -381,6 +459,9 @@ def main():
     ap.add_argument("--no-icon", dest="icon", action="store_false")
     ap.add_argument("--enlarge", action="append", default=[], metavar="X0,Y0,X1,Y1:SCALE",
                     help="enlarge an oval region of the source (e.g. the head) before converting")
+    ap.add_argument("--pixel-art", action="store_true",
+                    help="the source is real pixel art (any upscale, e.g. a 512x512 export of a 64x64 "
+                         "sprite): find its pixel grid and keep every pixel exactly as drawn")
     ap.add_argument("--colors", type=int, default=15,
                     help="colors to pick (max 15); fewer gives cleaner, flatter shading and leaves free "
                          "slots for hand-painted details (tools/paint.py)")
@@ -403,7 +484,10 @@ def main():
                       a.crop, a.clear)
     if a.mirror:
         rgb, solid = rgb[:, ::-1].copy(), solid[:, ::-1].copy()
-    make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method, a.zoom, a.colors)
+    if a.pixel_art:
+        rgb, solid, scale = unscale_pixel_art(rgb, solid)
+        print("pixel art: %dx upscale, %dx%d real pixels" % (scale, solid.shape[1], solid.shape[0]))
+    make_sprite(rgb, solid, a.out_dir, a.stage, a.back, a.method, a.zoom, a.colors, a.pixel_art)
     msg = a.out_dir
     if a.icon and not a.back:
         msg += "  (icon palette %d)" % make_icon(rgb, solid, a.out_dir)
