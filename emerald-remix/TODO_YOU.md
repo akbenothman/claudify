@@ -71,11 +71,11 @@ below that Claude needs answered to build it.
 - [ ] **Y12. At least 10 new Pokémon lines.** For each: a name, a concept (like your starter notes:
       animal, personality, quirks, type) and how many stages. Claude turns them into full designs and Gemini
       prompts, same as the starters. Mark which ones are gym leader aces.
-- [ ] **Y22. The three legendary cats** (art received; sprites converted in `graphics/legends/`).
-      Haleeb is the cloud cat. Which one is **Snickers**: the white serpent cat or the lion? And what's the
-      other one's name? Then: their types, and where you meet them.
-      *Default: Snickers = serpent cat (Dark/Electric), lion = Grass/Ground, Haleeb = Fairy/Flying. They
-      take the place of the Regi trio: three sealed, optional post-story encounters, no plot changes.*
+- [x] **Y22. The three legendary cats.** Snickers (claws) replaces Rayquaza, Haleeb (clouds) replaces
+      Kyogre, Ceaser (the lion) replaces Groudon. Claude picked their types, keeping the weather
+      abilities: see [docs/LEGENDS.md](docs/LEGENDS.md). Change anything you like.
+- [ ] **Y23. Back sprites for Snickers, Haleeb and Ceaser** (they use their mirrored fronts for now).
+      Ask Gemini for a compact pose seen from behind that fills a square.
 - [ ] **Y20. Digimon.** Which ones, and should they appear as wild Pokémon, gym aces, or special
       encounters? Claude makes them Gen 3-style creatures from your Gemini art, like the new lines.
       *Note: Digimon belong to Bandai, so they're in the same gray area as the hack itself. That's fine
@@ -84,7 +84,7 @@ below that Claude needs answered to build it.
 ## Title screen and intro
 
 - [ ] **Y13. The hack's name** (shown on the title screen and in the patch). *Default: "Emerald Remix".*
-- [ ] **Y14. Title screen.** Keep Rayquaza, or put one of the starters (e.g. Omarauder) on it? A new logo
+- [ ] **Y14. Title screen.** Keep Rayquaza (now Snickers), or put one of the starters (e.g. Omarauder) on it? A new logo
       means one Gemini image from you. *Default: new name on the logo, Rayquaza stays.*
 - [x] **Y15. The professor's intro.** Professor Mo shows off his Omar (and explains why his Ahmed is in
       time-out).

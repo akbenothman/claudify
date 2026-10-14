@@ -37,10 +37,11 @@ later builds take seconds to a minute. The apply script is safe to re-run after 
 | Rival teams | — | Starter species swapped in every May/Brendan battle |
 | Wally's third starter | `game/src/remix_rival.c`, `game/src/remix.h` | Heesh-line placeholder in Wally's teams; one hooked line in `CreateNPCTrainerPartyFromTrainer` swaps it at battle time |
 | Petalburg type-advice NPC | `game/petalburg_type_text.inc` | three text blocks replaced |
+| Legendary cats | `game/legends.py`, `graphics/legends/*` | Kyogre, Groudon and Rayquaza's species data, moves, sprites and names in text, replaced in place |
 | Tests | `game/tests/*.c` | copied into `test/`; run `make check TESTS="Remix"` |
-| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = May's Route 103 battle, Script 4 = Lv 70 Mewtwo + Wally's Mauville battle, Script 5 = the three final forms at Lv 50 + a wild battle |
+| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = May's Route 103 battle, Script 4 = Lv 70 Mewtwo + Wally's Mauville battle, Script 5 = the three final forms at Lv 50 + a wild battle, Script 6 = the three legendary cats at Lv 70 + a wild Haleeb |
 
-Sprites are regenerated from the Gemini art with `tools/build_starters.sh` (see `docs/ART_PROMPTS.md`).
+Sprites are regenerated from the Gemini art with `tools/build_starters.sh` and `tools/build_legends.sh` (see `docs/ART_PROMPTS.md`).
 
 ## Testing without a screen
 

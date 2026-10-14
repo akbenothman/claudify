@@ -7,7 +7,8 @@ Usage: apply_to_expansion.py PATH/TO/pokeemerald-expansion [--debug-scripts]
 overworld): Script 1 opens the starter choice, Script 2 starts a wild battle with Omarauder,
 Script 3 starts May's Route 103 battle for the starter you picked, Script 4 gives you a level-70
 Mewtwo and starts Wally's Mauville battle (to check his third starter), Script 5 gives the three
-final forms at level 50 and starts a wild battle (to check back sprites).
+final forms at level 50 and starts a wild battle (to check back sprites), Script 6 gives the three
+legendary cats at level 70 and starts a wild battle with Haleeb.
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -16,6 +17,8 @@ one-line hooks (an #include, an enum entry, a starter swap) so upstream updates 
 import os
 import shutil
 import sys
+
+import legends
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REMIX = os.path.dirname(HERE)
@@ -81,13 +84,15 @@ def apply_text_overrides(path):
 
 
 def rename_in_strings(old, new, files):
-    """Rename text only inside .string lines (data) or string literals (src), never in labels or code."""
+    """Rename text only inside "quoted" text, never in labels or code."""
     for path in files:
         def fix(t):
             out = []
             for line in t.split("\n"):
-                if old in line and (".string" in line or '"' in line):
-                    line = line.replace(old, new)
+                if old in line and '"' in line:
+                    parts = line.split('"')
+                    parts[1::2] = [p.replace(old, new) for p in parts[1::2]]
+                    line = '"'.join(parts)
                 out.append(line)
             return "\n".join(out)
         edit(path, fix)
@@ -253,6 +258,27 @@ def main():
     # Professor Mo shows off his Omar in the intro instead of Lotad.
     edit("src/main_menu.c", lambda t: t.replace("SPECIES_LOTAD", "SPECIES_OMAR"))
 
+    # 9b. The legendary cats take over Kyogre, Groudon and Rayquaza (game/legends.py).
+    legends.copy_graphics(REMIX, ROOT, shutil.copy)
+    edit("src/data/pokemon/species_info/gen_3_families.h", legends.edit_species)
+    edit("src/data/pokemon/all_learnables.json", legends.edit_learnables)
+    # The expansion's own battle tests expect the old names in battle messages.
+    test_files = [os.path.relpath(os.path.join(d, f), ROOT)
+                  for d, _, fs in os.walk(os.path.join(ROOT, "test")) for f in fs if f.endswith(".c")]
+    for old, new in legends.RENAMES:
+        rename_in_strings(old, new, text_files + test_files + ["src/data/battle_environment.h"])
+    # One test sends Kyogre out onto Toxic Spikes and Sticky Web. Haleeb is Flying, so it floats over both.
+    def primal_test(t):
+        start = t.index('"Primal Reversion and other switch-in effects trigger for all battlers if multiple fainted')
+        end = t.index("\n}\n", start)
+        body = t[start:end].replace(
+            "        EXPECT_EQ(opponentLeft->status1, STATUS1_POISON);\n",
+            "        EXPECT_EQ(opponentLeft->status1, 0); // Emerald Remix: Haleeb (Kyogre) is Flying, so it floats over hazards\n").replace(
+            "        EXPECT_EQ(opponentLeft->statStages[STAT_SPEED], DEFAULT_STAT_STAGE - 1);\n",
+            "        EXPECT_EQ(opponentLeft->statStages[STAT_SPEED], DEFAULT_STAT_STAGE); // Emerald Remix: same\n")
+        return t[:start] + body + t[end:]
+    edit("test/battle/form_change/primal_reversion.c", primal_test)
+
     # 10. The debug menu's "give starters" shortcut hands out ours.
     edit("data/scripts/debug.inc", lambda t: t.replace("givemon SPECIES_TREECKO,", "givemon SPECIES_SQUEESH,")
          .replace("givemon SPECIES_TORCHIC,", "givemon SPECIES_BEANITO,")
@@ -273,6 +299,10 @@ def main():
                           "Debug_EventScript_Script_5::\n\tgivemon SPECIES_HEESHEF, 50\n"
                           "\tgivemon SPECIES_OMARAUDER, 50\n\tgivemon SPECIES_AHMEXEC, 50\n"
                           "\tsetwildbattle SPECIES_ZIGZAGOON, 2\n\tdowildbattle\n\trelease\n\tend\n")
+            t = t.replace("Debug_EventScript_Script_6::\n\trelease\n\tend\n",
+                          "Debug_EventScript_Script_6::\n\tgivemon SPECIES_RAYQUAZA, 70\n"
+                          "\tgivemon SPECIES_GROUDON, 70\n\tgivemon SPECIES_KYOGRE, 70\n"
+                          "\tsetwildbattle SPECIES_KYOGRE, 70\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_4::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_4::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
                           "\ttrainerbattle_no_intro TRAINER_WALLY_MAUVILLE, Debug_Text_RivalDefeated\n"

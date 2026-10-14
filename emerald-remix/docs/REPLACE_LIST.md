@@ -61,10 +61,10 @@ one, or replace them with your own.
 
 | Now | Role | Your version |
 |---|---|---|
-| Team Aqua | Wants to flood the world with Kyogre | |
+| Team Aqua | Wants to flood the world with Kyogre (now Haleeb) | |
 | Archie | Aqua leader (ace: Sharpedo) | |
 | Matt, Shelly | Aqua admins | |
-| Team Magma | Wants to expand the land with Groudon | |
+| Team Magma | Wants to expand the land with Groudon (now Ceaser) | |
 | Maxie | Magma leader (ace: Camerupt) | |
 | Tabitha, Courtney | Magma admins | |
 | Aqua/Magma grunts | Generic members (dozens of battles) | |
@@ -129,7 +129,7 @@ Renaming a town updates its sign, map name, Fly menu and every line that mention
 |---|---|
 | ✅ Treecko, Torchic, Mudkip lines | Heesh, Omar and Ahmed lines |
 | The 8 gym aces + 5 Elite Four/Champion aces | New lines or Digimon (see sections 2–3) |
-| Legendaries: Groudon, Kyogre, Rayquaza | Keep, or new legendaries for your villains' story? |
+| Legendaries: Groudon, Kyogre, Rayquaza | ✅ Ceaser, Haleeb, Snickers ([LEGENDS.md](LEGENDS.md)) |
 | Wild Pokémon on routes | Real Pokémon from any generation, plus your new lines (TODO_YOU Y11) |
 | Professor Mo's intro Pokémon | ✅ His Omar |
 

@@ -76,8 +76,9 @@ Uses art that already exists, so it moves fast once the decisions are in.
 
 - [ ] **At least 10 new Pokémon lines** through the same pipeline as the starters: design doc, Gemini
       prompts, conversion, data, Pokédex, placement in the world *(waits on Y12, plus art)*
-- [ ] **Legendary cat trio** (Snickers, Haleeb, and the lion): front sprites converted; species data, back
-      sprites and placement next *(waits on Y22, plus back art)*
+- [x] **Legendary cats** replace the weather trio: Haleeb (Kyogre), Ceaser (Groudon), Snickers (Rayquaza).
+      Data, moves, sprites and dialogue done, checked in battle ([docs/LEGENDS.md](docs/LEGENDS.md))
+- [ ] Their back sprites *(waits on Y23)* and story cutscene sprites (needs art)
 - [ ] **Digimon**, built the same way *(waits on Y20, plus art)*
 - [ ] **New aces for the gym leaders**, taken from the new lines and Digimon *(waits on Y10)*
 - [ ] More custom moves, with a test for each
