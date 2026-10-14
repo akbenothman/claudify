@@ -383,6 +383,9 @@ def place(lab, box):
 def build(rgb, solid, fit, box, ncolors, method="hybrid", pal=None, pixel_art=False):
     if pal is None:
         exact = pixel_art_palette(rgb[solid]) if pixel_art else []
+        uniq = np.unique(rgb[solid].astype(int), axis=0)
+        if len(uniq) <= ncolors:  # already few enough colors (e.g. a hand-drawn sprite)
+            exact = sorted({to_gba(c) for c in uniq})
         pal = exact if 0 < len(exact) <= ncolors else kmeans_palette(rgb[solid], ncolors)
     labels = np.full(solid.shape, -1, int)
     labels[solid] = nearest(rgb[solid], pal)

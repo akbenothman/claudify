@@ -39,19 +39,24 @@ in rain, and Ceaser's Solar Blade needs no charging turn in sun.
 The Primal Kyogre/Groudon and Mega Rayquaza forms still exist in the data, but this game gives you no
 way to reach them.
 
-## Converting the art
+## How the sprites are made
 
-`tools/build_legends.sh` rebuilds all three (it needs `pip install opencv-python-headless`). Your concept
-art is wide and painterly, which shrinks to mush at 64×64, so each one goes through four steps:
+They're **hand-built pixel art**, drawn in code: `graphics/legends/<name>/draw.py`, using your Gemini
+art (`source_front.jpg`) as the concept. Converting the paintings down to 64×64 always came out smudgy,
+so each sprite is built from shapes with Gen 3-style shading (light from the top left, 3–4 shades per
+color, black outline, darker inner lines where parts overlap). Faces, claws, markings and other
+details are placed pixel by pixel. The toolkit is `tools/pixelsprite.py`; `tools/build_legends.sh`
+redraws all three and makes the icons.
 
-1. `tools/recompose.py` **rearranges the pose** to fit a square: Ceaser's tail tucked behind his back,
-   Haleeb's wings pulled in, Snickers' tail squeezed closer. It also **flattens the fur texture** into
-   clean areas of color and drops loose sparks and grass.
-2. `tools/convert_sprite.py` shrinks it with an **enlarged head**, like Gen 3's big Pokémon, and fewer
-   colors (`--colors`) for cleaner shading.
-3. `tools/paint.py` **hand-draws the details** that never survive shrinking, from each
-   `graphics/legends/<name>/paint_front.txt`: faces and eyes, Ceaser's laurel crown and tail flowers,
-   Haleeb's halo. The edits name their colors, so they keep working when the conversion changes.
-4. A placeholder back sprite (the front, mirrored).
+Design changes from the concept art, so they read at 64×64:
 
-![Before and after](legends_before_after.png)
+- **Ceaser:** his mane is a deeper orange-brown than his body (same gold in the concept, which blurs
+  together). He lies sphinx-style with his head up, has bold stripes instead of many thin ones, a short
+  crown of big laurel leaves, and two flowers on his tail.
+- **Haleeb:** she sits upright on her cloud with her wings raised in a V instead of lounging wide. Her
+  wings are a bluer grey than her white body so they don't merge. Her halo is a solid glowing ring.
+- **Snickers:** his body coils into a J that fills the frame. His white fur is shaded lavender (a hint
+  of Dark type, and it keeps him from vanishing on light backgrounds). He has an open snarl with fangs,
+  big red claws, and red zigzag markings for Electric.
+
+Back sprites are still placeholders (the front, mirrored).
