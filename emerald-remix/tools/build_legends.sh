@@ -8,7 +8,8 @@ set -e
 cd "$(dirname "$0")/.."
 G=graphics/legends
 for name in snickers ceaser haleeb; do
-    python3 $G/$name/draw.py
+    # Each one is either converted from cleaned-up AI art (make.sh) or hand-built in code (draw.py)
+    if [ -x $G/$name/make.sh ]; then $G/$name/make.sh; else python3 $G/$name/draw.py; fi
     python3 - $G/$name <<'PY'
 import os, sys
 import numpy as np

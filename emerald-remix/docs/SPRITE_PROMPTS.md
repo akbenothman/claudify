@@ -62,6 +62,19 @@ or init image = your concept**, style image = the style sheet if the tool has a 
 
 ---
 
+## What actually works with chat image tools
+
+Chat image tools (Gemini, ChatGPT, Designer) **can't make real 64×64 pixel art**. They always paint a big
+picture and fake the pixel look. But that's fine: what converts well is art that is **bold and flat**:
+thick black outlines, a few flat colors, simple shading, plain white background, and a compact pose.
+Ceaser's second Gemini image (`graphics/legends/ceaser/source_front_v2.jpg`) is exactly that, and it
+became the sprite in the game. So with these tools, ask for clean cartoon art, not pixel art:
+
+> Redraw this exact character as clean cel-shaded cartoon art for a game sprite: thick black outlines,
+> flat colors with one shade and one highlight each, no texture, no fur strokes, no gradients. Big head,
+> big readable eyes. Compact pose that fits in a square. Facing left. Plain white background, nothing
+> else in the image.
+
 ## Prompts for chat image tools (Gemini, ChatGPT, Designer, Higgsfield)
 
 These draw big, smooth pictures unless told very precisely. Paste the style block, then the

@@ -33,6 +33,7 @@ STAGE_FIT = {1: 50, 2: 58, 3: 64}
 # Back sprites are the player's own Pokémon, seen up close; the battle textbox covers their lower edge.
 BACK_FIT = {1: 56, 2: 62, 3: 64}
 TRANSPARENT = (0, 255, 0)
+EXTRA_COLORS = []  # colors always given a palette slot (--add-color), for small details like leaves
 LINE_SHARE = 0.25 # a block becomes outline color if at least this much of it is line work
 CONTRAST = 1.5    # how strongly small high-contrast details (eyes, glints) beat the block's main color
 
@@ -130,10 +131,15 @@ def clear(rgb, solid, spec):
 def load(src, recolors, lift=None, tint=(0, 0, 0), enlarges=(), crop=None, clears=()):
     im = Image.open(src)
     rgb = np.asarray(im.convert("RGB"), dtype=np.float32)
-    if "A" in im.convert("RGBA").getbands() and im.mode in ("RGBA", "LA", "P"):
-        # Transparent PNG (most pixel-art tools): see-through pixels are background.
-        alpha = np.asarray(im.convert("RGBA"))[..., 3]
-        rgb[alpha < 128] = TRANSPARENT
+    alpha = None
+    if im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info):
+        # Transparent PNG (most pixel-art tools): see-through pixels are background, and green
+        # in the creature (leaves!) stays green instead of being keyed out.
+        alpha = np.asarray(im.convert("RGBA"))[..., 3] >= 128
+        if alpha.all():
+            alpha = None
+        else:
+            rgb[~alpha] = TRANSPARENT
     if enlarges:
         # Pad with green so an enlarged head near the edge isn't cut off, and shift every box to match.
         rgb = np.pad(rgb, ((PAD, PAD), (PAD, PAD), (0, 0)))
@@ -143,7 +149,12 @@ def load(src, recolors, lift=None, tint=(0, 0, 0), enlarges=(), crop=None, clear
         clears = [shift_box(s, PAD) for s in clears]
     for spec in enlarges:
         rgb = enlarge(rgb, spec)
-    solid = ~green_mask(rgb)
+    solid = ~green_mask(rgb) if alpha is None else np.zeros(rgb.shape[:2], bool)
+    if alpha is not None:
+        if enlarges:  # the image was padded and enlarged: transparent = exactly the key color
+            solid = (np.abs(rgb - np.asarray(TRANSPARENT)).sum(-1) > 0)
+        else:
+            solid = alpha
     if crop:
         # Keep only what's inside the box: frames a wide creature (wings, a long tail) so the
         # important part fills the sprite instead of shrinking everything.
@@ -154,7 +165,7 @@ def load(src, recolors, lift=None, tint=(0, 0, 0), enlarges=(), crop=None, clear
     for spec in clears:
         solid = clear(rgb, solid, spec)
     # Green spill on edge pixels: pull green down to the other channels.
-    spill = solid & (rgb[..., 1] > np.maximum(rgb[..., 0], rgb[..., 2]) + 20)
+    spill = solid & (rgb[..., 1] > np.maximum(rgb[..., 0], rgb[..., 2]) + 20) & (alpha is None)
     rgb[spill, 1] = np.maximum(rgb[spill, 0], rgb[spill, 2])
     ys, xs = np.where(solid)
     y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
@@ -386,7 +397,10 @@ def build(rgb, solid, fit, box, ncolors, method="hybrid", pal=None, pixel_art=Fa
         uniq = np.unique(rgb[solid].astype(int), axis=0)
         if len(uniq) <= ncolors:  # already few enough colors (e.g. a hand-drawn sprite)
             exact = sorted({to_gba(c) for c in uniq})
-        pal = exact if 0 < len(exact) <= ncolors else kmeans_palette(rgb[solid], ncolors)
+        if 0 < len(exact) <= ncolors:
+            pal = exact
+        else:
+            pal = kmeans_palette(rgb[solid], ncolors - len(EXTRA_COLORS)) + [to_gba(c) for c in EXTRA_COLORS]
     labels = np.full(solid.shape, -1, int)
     labels[solid] = nearest(rgb[solid], pal)
     line = min(range(len(pal)), key=lambda i: sum(pal[i]))
@@ -468,6 +482,8 @@ def main():
     ap.add_argument("--colors", type=int, default=15,
                     help="colors to pick (max 15); fewer gives cleaner, flatter shading and leaves free "
                          "slots for hand-painted details (tools/paint.py)")
+    ap.add_argument("--add-color", action="append", default=[], metavar="R,G,B",
+                    help="always keep this color (small details the palette picker would drop, e.g. leaves)")
     ap.add_argument("--crop", metavar="X0,Y0,X1,Y1", help="keep only this box of the source")
     ap.add_argument("--clear", action="append", default=[], metavar="X0,Y0,X1,Y1[:H0-H1]",
                     help="erase a box of the source, optionally only one hue range (e.g. a grass patch)")
@@ -482,6 +498,7 @@ def main():
     ap.add_argument("--contrast", type=float, default=CONTRAST)
     a = ap.parse_args()
     LINE_SHARE, CONTRAST = a.line_share, a.contrast
+    EXTRA_COLORS.extend(tuple(map(int, c.split(","))) for c in a.add_color)
     os.makedirs(a.out_dir, exist_ok=True)
     rgb, solid = load(a.source, a.recolor, a.lift_darks, tuple(map(int, a.dark_tint.split(","))), a.enlarge,
                       a.crop, a.clear)

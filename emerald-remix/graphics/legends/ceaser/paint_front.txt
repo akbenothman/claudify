@@ -1,0 +1,9 @@
+# Ceaser (from source_front_v2.jpg): sharpen the eyes, which shrink to a smudge
+color K 16 0 0
+color A 216 120 16
+color W 240 200 96
+grid 7 28
+_ K K K _ _ _ _ _ _ K K K K
+K A A W _ _ _ _ _ K W A A K
+_ K K _ _ _ _ _ _ _ K K K _
+end
