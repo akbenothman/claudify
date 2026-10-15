@@ -15,6 +15,7 @@ files under emerald-remix/game/ that get copied in; edits to existing expansion 
 one-line hooks (an #include, an enum entry, a starter swap) so upstream updates stay easy to merge.
 """
 import os
+import re
 import shutil
 import sys
 
@@ -168,27 +169,36 @@ def main():
         return a + "const u16 gPokedexOrder_Weight[]" + w + "const u16 gPokedexOrder_Height[]" + h
     edit("src/data/pokemon/pokedex_orders.h", orders)
 
-    # 5. Signature moves, in the slot the expansion reserves for custom moves.
+    # 5. Signature moves, in the slot the expansion reserves for custom moves. Every [MOVE_X] in
+    # game/custom_moves.h gets an ID, in file order.
+    moves = open(os.path.join(HERE, "custom_moves.h")).read()
+    names = re.findall(r"^    \[(MOVE_[A-Z0-9_]+)\] =", moves, re.M)
+    block = "    %s = MOVES_COUNT_GEN9,\n" % names[0] + "".join("    %s,\n" % n for n in names[1:]) \
+        + "    MOVES_COUNT_REMIX,\n"
+
     def move_ids(t):
-        t = insert_once(t, "    // Add any custom moves here, not further down!\n",
-                        "    MOVE_TOXIC_FONDUE = MOVES_COUNT_GEN9,\n    MOVE_STICKY_FINGERS,\n"
-                        "    MOVE_LOCKDOWN,\n    MOVES_COUNT_REMIX,\n")
+        anchor = "    // Add any custom moves here, not further down!\n"
+        if "    MOVES_COUNT_REMIX,\n" in t:  # replace what an earlier run added
+            start = t.index(anchor) + len(anchor)
+            t = t[:start] + t[t.index("    MOVES_COUNT_REMIX,\n", start) + len("    MOVES_COUNT_REMIX,\n"):]
+        t = insert_once(t, anchor, block)
         return t.replace("    MOVES_COUNT = MOVES_COUNT_GEN9,", "    MOVES_COUNT = MOVES_COUNT_REMIX,")
     edit("include/constants/moves.h", move_ids)
-    moves = open(os.path.join(HERE, "custom_moves.h")).read()
 
     def move_info(t):
-        if "[MOVE_TOXIC_FONDUE]" in t:
-            return t
+        begin = "    // Emerald Remix signature moves (see"
+        if begin in t:  # replace what an earlier run appended
+            t = t[:t.index(begin)].rstrip("\n") + t[t.rindex("\n};"):]
         end = t.rindex("\n};")
         return t[:end] + "\n" + moves.rstrip("\n") + t[end:]
     edit("src/data/moves_info.h", move_info)
 
-    # The Sheer Force test hard-codes every move Sheer Force should boost; ours have secondary effects
-    # (a burn chance, can't-escape) so they belong on it, like Lava Plume and Anchor Shot.
-    edit("test/battle/ability/sheer_force.c", lambda t: insert_once(
-        t, "static inline bool32 IsMoveSheerForceBoosted(enum Move move)\n{\n    switch (move) {\n",
-        "        case MOVE_TOXIC_FONDUE: // Emerald Remix\n        case MOVE_LOCKDOWN: // Emerald Remix\n"))
+    # The Sheer Force test hard-codes every move Sheer Force should boost; ours with secondary effects
+    # (a burn chance, can't-escape, a Defense drop, paralysis) belong on it, like Lava Plume.
+    for name in ("MOVE_TOXIC_FONDUE", "MOVE_LOCKDOWN", "MOVE_ROYAL_POUNCE", "MOVE_STORM_CLAW"):
+        edit("test/battle/ability/sheer_force.c", lambda t, name=name: insert_once(
+            t, "static inline bool32 IsMoveSheerForceBoosted(enum Move move)\n{\n    switch (move) {\n",
+            "        case %s: // Emerald Remix\n" % name))
 
     # 6. The starters Birch offers.
     def starters(t):

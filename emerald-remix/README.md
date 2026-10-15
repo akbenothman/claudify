@@ -26,6 +26,7 @@ you patch it in the browser, save the `.gba` to Files, and import it into Delta.
 | [docs/DELTA_IOS.md](docs/DELTA_IOS.md) | Getting the hack onto an iPhone and testing it in Delta |
 | [docs/STARTERS.md](docs/STARTERS.md) | The three starter lines: Heesh, Omar, Ahmed |
 | [docs/LEGENDS.md](docs/LEGENDS.md) | The legendary cats: Snickers, Haleeb, Ceaser |
+| [docs/PLOT.md](docs/PLOT.md) | The story (draft): the cats, Team Drizzle and Team Heatwave |
 | [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) | Gemini prompts and workflow for the sprite art |
 | [docs/SPRITE_PROMPTS.md](docs/SPRITE_PROMPTS.md) | AI prompts and tools for real pixel-art sprites (legendaries) |
 | [docs/BUILDING.md](docs/BUILDING.md) | Building the game from pokeemerald-expansion, testing it headless |

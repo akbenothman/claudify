@@ -78,6 +78,7 @@ Uses art that already exists, so it moves fast once the decisions are in.
       prompts, conversion, data, Pokédex, placement in the world *(waits on Y12, plus art)*
 - [x] **Legendary cats** replace the weather trio: Haleeb (Kyogre), Ceaser (Groudon), Snickers (Rayquaza).
       Data, moves, sprites and dialogue done, checked in battle ([docs/LEGENDS.md](docs/LEGENDS.md))
+- [x] Signature moves for the cats (Milk Shower, Royal Pounce, Storm Claw), learned at Lv 70, with tests
 - [ ] Their back sprites *(waits on Y23)* and story cutscene sprites (needs art)
 - [ ] **Digimon**, built the same way *(waits on Y20, plus art)*
 - [ ] **New aces for the gym leaders**, taken from the new lines and Digimon *(waits on Y10)*
@@ -92,6 +93,7 @@ Uses art that already exists, so it moves fast once the decisions are in.
       rescue, the lab scenes, and the Champion ending
 - [ ] **The whole cast swapped**: every named NPC, the gym leaders, Elite Four, Champion and the villain
       team's leaders get new names, lines and (where you supply art) new looks *(waits on Y3, Y6, Y8, Y10)*
+- [x] Plot draft: Emerald's beats recast with the cats and two new villain teams ([docs/PLOT.md](docs/PLOT.md))
 - [ ] New events and scenes in Poryscript *(waits on Y6–Y9)*
 - [ ] 1–3 new areas built from existing tilesets
 - [ ] New trainer sprites for new characters (Gemini, same conversion pipeline as the Pokémon)

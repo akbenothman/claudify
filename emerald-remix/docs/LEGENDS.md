@@ -13,7 +13,8 @@ now has these three, in the dialogue too. The data lives in `game/legends.py` an
 | Ability | Drizzle (its clouds bring rain) | Drought (it brings the summer sun) | Air Lock (calms the other two's weather) |
 | Category | Cloud Cat | Sun King | Storm Claw |
 | HP / Atk / Def / SpA / SpD / Spe | 110 / 70 / 100 / 150 / 150 / 90 | 100 / 150 / 130 / 90 / 110 / 90 | 105 / 150 / 90 / 130 / 90 / 115 |
-| Moves at Lv 70 (story level) | Hurricane, Rest, Moonblast, Roost | Earthquake, Rest, Solar Blade, Synthesis | Wild Charge, Rest, Crunch, Plasma Fists |
+| Signature move (Lv 70) | **Milk Shower**: Fairy, special, 80 power; heals her by half the damage dealt ("haleeb" means milk) | **Royal Pounce**: Grass, physical, 90 power; 20% chance to lower Defense | **Storm Claw**: Dark, physical, 85 power; high critical-hit ratio, 20% chance to paralyze |
+| Moves at Lv 70 (story level) | Rest, Moonblast, Roost, Milk Shower | Rest, Solar Blade, Synthesis, Royal Pounce | Rest, Crunch, Plasma Fists, Storm Claw |
 
 Base stat totals match the originals (670, 670, 680). The weather abilities are kept on purpose. The
 Sootopolis story is about Kyogre's rain and Groudon's sun until Rayquaza stops them, and the scripts,

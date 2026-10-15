@@ -79,3 +79,59 @@ SINGLE_BATTLE_TEST("Remix: the starter triangle runs Omarauder > Heeshef > Ahmex
             MESSAGE("It's super effective!");
     }
 }
+
+// The legendary cats' signature moves
+SINGLE_BATTLE_TEST("Remix: Milk Shower restores half the damage dealt")
+{
+    s16 damage, healed;
+    GIVEN {
+        ASSUME(GetMoveType(MOVE_MILK_SHOWER) == TYPE_FAIRY);
+        ASSUME(GetMoveCategory(MOVE_MILK_SHOWER) == DAMAGE_CATEGORY_SPECIAL);
+        PLAYER(SPECIES_KYOGRE) { HP(1); }
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN { MOVE(player, MOVE_MILK_SHOWER); }
+    } SCENE {
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_MILK_SHOWER, player);
+        HP_BAR(opponent, captureDamage: &damage);
+        HP_BAR(player, captureDamage: &healed);
+    } THEN {
+        EXPECT_MUL_EQ(damage, Q_4_12(-0.5), healed);
+    }
+}
+
+SINGLE_BATTLE_TEST("Remix: Royal Pounce can lower the target's Defense")
+{
+    GIVEN {
+        ASSUME(MoveHasAdditionalEffectWithChance(MOVE_ROYAL_POUNCE, MOVE_EFFECT_STAT_MINUS, 20) == TRUE);
+        ASSUME(GetMoveType(MOVE_ROYAL_POUNCE) == TYPE_GRASS);
+        PLAYER(SPECIES_GROUDON);
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN { MOVE(player, MOVE_ROYAL_POUNCE, WITH_RNG(RNG_SECONDARY_EFFECT, TRUE)); }
+    } SCENE {
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_ROYAL_POUNCE, player);
+        HP_BAR(opponent);
+        ANIMATION(ANIM_TYPE_GENERAL, B_ANIM_STATS_CHANGE, opponent);
+    } THEN {
+        EXPECT_EQ(opponent->statStages[STAT_DEF], DEFAULT_STAT_STAGE - 1);
+    }
+}
+
+SINGLE_BATTLE_TEST("Remix: Storm Claw can paralyze and lands critical hits more often")
+{
+    GIVEN {
+        ASSUME(MoveHasAdditionalEffectWithChance(MOVE_STORM_CLAW, MOVE_EFFECT_PARALYSIS, 20) == TRUE);
+        ASSUME(GetMoveCriticalHitStage(MOVE_STORM_CLAW) == 1);
+        ASSUME(GetMoveType(MOVE_STORM_CLAW) == TYPE_DARK);
+        PLAYER(SPECIES_RAYQUAZA);
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN { MOVE(player, MOVE_STORM_CLAW, WITH_RNG(RNG_SECONDARY_EFFECT, TRUE)); }
+    } SCENE {
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_STORM_CLAW, player);
+        HP_BAR(opponent);
+        ANIMATION(ANIM_TYPE_STATUS, B_ANIM_STATUS_PRZ, opponent);
+        STATUS_ICON(opponent, paralysis: TRUE);
+    }
+}

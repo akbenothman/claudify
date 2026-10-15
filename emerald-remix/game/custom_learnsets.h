@@ -57,7 +57,8 @@ static const struct LevelUpMove sAhmedLineLevelUpLearnset[] = {
 };
 
 // The legendary cats, in Kyogre's, Groudon's and Rayquaza's slots (see game/legends.py).
-// In the story you meet them at level 70, so the last four moves by then are what they battle with.
+// In the story you meet them at level 70, so the last four moves by then are what they battle with,
+// including their signature move at 70.
 static const struct LevelUpMove sHaleebLevelUpLearnset[] = {
     LEVEL_UP_MOVE( 1, MOVE_FAIRY_WIND),
     LEVEL_UP_MOVE( 1, MOVE_YAWN),
@@ -70,6 +71,7 @@ static const struct LevelUpMove sHaleebLevelUpLearnset[] = {
     LEVEL_UP_MOVE(50, MOVE_REST),
     LEVEL_UP_MOVE(60, MOVE_MOONBLAST),
     LEVEL_UP_MOVE(65, MOVE_ROOST),
+    LEVEL_UP_MOVE(70, MOVE_MILK_SHOWER),
     LEVEL_UP_MOVE(75, MOVE_SPRINGTIDE_STORM),
     LEVEL_UP_END
 };
@@ -86,6 +88,7 @@ static const struct LevelUpMove sCeaserLevelUpLearnset[] = {
     LEVEL_UP_MOVE(50, MOVE_REST),
     LEVEL_UP_MOVE(60, MOVE_SOLAR_BLADE),
     LEVEL_UP_MOVE(65, MOVE_SYNTHESIS),
+    LEVEL_UP_MOVE(70, MOVE_ROYAL_POUNCE),
     LEVEL_UP_MOVE(75, MOVE_HEADLONG_RUSH),
     LEVEL_UP_END
 };
@@ -102,6 +105,7 @@ static const struct LevelUpMove sSnickersLevelUpLearnset[] = {
     LEVEL_UP_MOVE(50, MOVE_REST),
     LEVEL_UP_MOVE(60, MOVE_CRUNCH),
     LEVEL_UP_MOVE(65, MOVE_PLASMA_FISTS),
+    LEVEL_UP_MOVE(70, MOVE_STORM_CLAW),
     LEVEL_UP_MOVE(75, MOVE_BOLT_STRIKE),
     LEVEL_UP_END
 };
