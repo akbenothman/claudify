@@ -135,3 +135,38 @@ SINGLE_BATTLE_TEST("Remix: Storm Claw can paralyze and lands critical hits more 
         STATUS_ICON(opponent, paralysis: TRUE);
     }
 }
+
+// G-Moves: holding the line's G-Crystal turns its signature move into its G-Move
+SINGLE_BATTLE_TEST("Remix: G-Crystals turn each signature move into its G-Move")
+{
+    u32 species, item, move, gMove;
+    PARAMETRIZE { species = SPECIES_HEESHEF;   item = ITEM_HEESHIUM_G;    move = MOVE_TOXIC_FONDUE;   gMove = MOVE_FONDUE_TSUNAMI; }
+    PARAMETRIZE { species = SPECIES_OMARAUDER; item = ITEM_OMARIUM_G;     move = MOVE_STICKY_FINGERS; gMove = MOVE_BIG_BEANIE_HEIST; }
+    PARAMETRIZE { species = SPECIES_AHMEXEC;   item = ITEM_AHMEDIUM_G;    move = MOVE_LOCKDOWN;       gMove = MOVE_HOSTILE_TAKEOVER; }
+    PARAMETRIZE { species = SPECIES_KYOGRE;    item = ITEM_HALEEBIUM_G;   move = MOVE_MILK_SHOWER;    gMove = MOVE_MILKY_WAY_DELUGE; }
+    PARAMETRIZE { species = SPECIES_GROUDON;   item = ITEM_CEASERIUM_G;   move = MOVE_ROYAL_POUNCE;   gMove = MOVE_VENI_VIDI_VICI; }
+    PARAMETRIZE { species = SPECIES_RAYQUAZA;  item = ITEM_SNICKERSIUM_G; move = MOVE_STORM_CLAW;     gMove = MOVE_SATISFYING_SWIPE; }
+    GIVEN {
+        PLAYER(species) { Item(item); Moves(move); }
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN { MOVE(player, move, gimmick: GIMMICK_Z_MOVE); }
+    } SCENE {
+        ANIMATION(ANIM_TYPE_GENERAL, B_ANIM_ZMOVE_ACTIVATE, player);
+        ANIMATION(ANIM_TYPE_MOVE, gMove, player);
+        HP_BAR(opponent);
+    }
+}
+
+SINGLE_BATTLE_TEST("Remix: G-Moves are announced as G-Power")
+{
+    GIVEN {
+        PLAYER(SPECIES_HEESHEF) { Item(ITEM_HEESHIUM_G); Moves(MOVE_TOXIC_FONDUE); }
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN { MOVE(player, MOVE_TOXIC_FONDUE, gimmick: GIMMICK_Z_MOVE); }
+    } SCENE {
+        MESSAGE("Heeshef surrounded itself with its G-Power!");
+        ANIMATION(ANIM_TYPE_MOVE, MOVE_FONDUE_TSUNAMI, player);
+    }
+}

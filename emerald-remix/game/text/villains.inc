@@ -281,7 +281,8 @@ SeafloorCavern_Room9_Text_ArchieWithThisRedOrb:
 	.string "I'll admit it.\p"
 	.string "But!\n"
 	.string "I have this!\p"
-	.string "With this RED ORB, I can make HALEEB…$"
+	.string "With this STRAWBERRY,\n"
+	.string "I can wake HALEEB…$"
 
 SeafloorCavern_Room9_Text_ArchieBeholdKyogre:
 	.string "OMAR: Behold!\p"

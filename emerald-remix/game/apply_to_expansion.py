@@ -20,7 +20,9 @@ import re
 import shutil
 import sys
 
+import g_moves
 import legends
+import story
 import villains
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -192,8 +194,15 @@ def main():
         if begin in t:  # replace what an earlier run appended
             t = t[:t.index(begin)].rstrip("\n") + t[t.rindex("\n};"):]
         end = t.rindex("\n};")
-        return t[:end] + "\n" + moves.rstrip("\n") + t[end:]
+        g = open(os.path.join(HERE, "g_moves.h")).read()
+        return t[:end] + "\n" + moves.rstrip("\n") + "\n\n" + g.rstrip("\n") + t[end:]
     edit("src/data/moves_info.h", move_info)
+
+    # 5b. G-Moves: the Z-Moves renamed, with a signature one per new line (game/g_moves.py).
+    edit("include/constants/moves.h", g_moves.edit_move_ids)
+    edit("src/battle_z_move.c", g_moves.edit_signature_table)
+    edit("include/constants/items.h", g_moves.edit_item_ids)
+    edit("src/data/items.h", g_moves.edit_items)
 
     # The Sheer Force test hard-codes every move Sheer Force should boost; ours with secondary effects
     # (a burn chance, can't-escape, a Defense drop, paralysis) belong on it, like Lava Plume.
@@ -296,6 +305,16 @@ def main():
     edit("src/battle_main.c", villains.edit_class_names)
     for old, new in villains.RENAMES + villains.LINE_FIXES:
         rename_in_strings(old, new, text_files)
+
+    # G-Moves in battle text and in the tests that check it
+    for old, new in g_moves.RENAMES:
+        rename_in_strings(old, new, ["src/battle_message.c"] + test_files)
+
+    # 9d. The orbs become a STRAWBERRY and a CHEESE (game/story.py).
+    edit("src/data/items.h", story.edit_items)
+    for pattern, new in story.ORB_RENAMES:
+        for path in text_files:
+            edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
 
     # 10. The debug menu's "give starters" shortcut hands out ours.
     edit("data/scripts/debug.inc", lambda t: t.replace("givemon SPECIES_TREECKO,", "givemon SPECIES_SQUEESH,")
