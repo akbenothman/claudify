@@ -29,8 +29,8 @@ below that Claude needs answered to build it.
       The project moves there from its current folder.
 - [ ] **Y2. Upload your clean Pokémon Emerald (USA) ROM**, dumped from your own cartridge. Claude uses it
       only to make the `.bps` patch you'll apply on your phone; it never goes in the repo.
-- [x] **Y3. Your rival.** **Hamza** replaces May/Brendan and has the starter that beats yours; Wally is
-      written out for now. Hamza still wears May's or Brendan's sprite (May's when you play as the boy).
+- [x] **Y3. Your rival.** **Hamza** replaces May/Brendan and has the starter that beats yours. **Yaseen**
+      takes Wally's place, without a starter (he catches a Heeshupeeshu). Hamza still wears May's or Brendan's sprite (May's when you play as the boy).
 - [x] **Y4. Back sprites for all 9 starters** in Gemini, using the back-sprite prompt in
       [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md). Upload them here like the fronts.
 - [ ] **Y5. Shiny colors.** One line per evolution line.
@@ -48,10 +48,9 @@ below that Claude needs answered to build it.
 - [x] **Y8. The villains.** Ahmed's Safety Zone vs Omar's Team Beanie, feuding over money (in the game; see [docs/PLOT.md](docs/PLOT.md)). Still open: three admin names.
 - [ ] **Y9. Main plot.** *Draft ready in [docs/PLOT.md](docs/PLOT.md); edit it or answer its questions.* Same story beats as Emerald with your characters and jokes, or a different goal
       or ending? *Default: same beats, new characters and dialogue.*
-- [ ] **Y10. Gym leaders, Elite Four and Champion.** For each of the 8 gyms: leader name, type (keep or
-      change), personality, and their **ace** (a new Pokémon from Y12 or a Digimon from Y20). Same for the
-      4 Elite Four members and the Champion.
-      *Default: Claude drafts a full cast list for you to edit, using the original types.*
+- [x] **Y10. Gym leaders, Elite Four and Champion: names.** Kareem, Jelal, Sammi B, Nabil, Hisham,
+      Adam Jaber, Omar Hafiz & Mo Abdu, Hany; the four Maliks; Hisham as Champion. Still open: their
+      types, aces and teams (they use the originals' for now).
 - [ ] **Y19. Town and city names.** You want them all renamed. Is there a theme (New York neighborhoods,
       places from your lives, food)? Give some names, and Claude fills in the rest.
       *Default: NYC-inspired names drafted by Claude for you to approve.*

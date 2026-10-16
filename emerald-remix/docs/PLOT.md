@@ -55,7 +55,7 @@ that beats yours.
 - Loves **Hamza** like a son, even though **Layth** is his real son ("…And LAYTH. Where is LAYTH?").
 - Hangs out with **Professor Mo** and his friend **Izzo**, and they **play pool**. His gym battle is
   "played like a game of pool"; he loses by scratching on the eight ball.
-- **Izzo** lives in Wally's old house in Petalburg and gives you HM Surf after you beat Hisham.
+- **Izzo** lives in the house that was Wally's in Petalburg and gives you HM Surf after you beat Hisham.
 
 ## The heart of the story: keeping the peace
 
@@ -73,11 +73,11 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 | 2 | Pick a starter from Birch's bag | Squeesh, Beanito or Guardpup. Mo's Ahmed and Omar are fighting in the background; your first job is breaking them up |
 | 3 | Rival battle on Route 103 | **Hamza**, with the starter that beats yours. He wins nothing and runs off in his sneakers |
 | 4 | Dad (Norman) is the Petalburg gym leader | **Hisham**, between Sequoia calls and pool nights |
-| 5 | Wally catches his first Pokémon | **Cut.** Hisham gives you his advice and sends you to Rustboro |
+| 5 | Wally catches his first Pokémon | **Yaseen** (no starter) catches a **Heeshupeeshu** on Route 102 while you watch |
 | 6 | Team Aqua steals Devon Goods in Rustboro | A **Team Beanie** grunt steals the package. "Omar said finders keepers" |
 | 7 | Steven in Dewford's Granite Cave | Same beat; Steven's replacement *(you pick)* |
 | 8 | Slateport museum: Aqua shows up | Team Beanie tries to steal a submarine to reach Haleeb's sleeping place |
-| 9 | Mauville: Wally battle | **Cut** (Wally is written out). *Idea:* the **Safety Zone** office, where Ahmed's guards train |
+| 9 | Mauville: Wally battle | **Yaseen** and his Heeshupeeshu. *Idea:* the **Safety Zone** office, where Ahmed's guards train |
 | 10 | Mt. Chimney: Magma steals the Meteorite | **Ahmed** takes the Meteorite "for safekeeping". You try to ask what happened between him and Omar; he battles you instead (Lv 25 Ahmed, his own namesake) |
 | 11 | Weather Institute raid | Team Beanie raids it to find where Haleeb sleeps |
 | 12 | Mt. Pyre: the orbs are stolen | **Peace talks #1**: Mo sets up a meeting at the summit, with food. Ahmed and Omar argue about the password, each grabs a treat (the Strawberry or the Cheese) and leaves |
@@ -86,8 +86,8 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 | 15 | Seafloor Cavern: Kyogre awakens | Omar battle with Omarauder. **Haleeb wakes** from her nap, annoyed. Endless rain starts |
 | 16 | Sootopolis: Kyogre vs Groudon, extreme weather | **Haleeb and Ceaser argue over the weather** again: rain vs drought over the city. Mo, panicking: "Now the *legendaries* are fighting too?!" |
 | 17 | Sky Pillar: Rayquaza calms them | **Snickers** comes down from the storm clouds with red lightning and ends the fight with one swipe. **Peace talks #2**: with nowhere left to storm off to, Ahmed and Omar finally sit down with you and Mo |
-| 18 | Wallace becomes the 8th gym leader's reveal | Same beat, new names *(you pick)* |
-| 19 | Elite Four and Champion | New cast and teams *(Y10)* |
+| 18 | Wallace becomes the 8th gym leader's reveal | **Hisham** turns up in the Cave of Origin: he's also the Champion ("Don't tell SEQUOIA"). **Hany** runs the Sootopolis gym for him |
+| 19 | Elite Four and Champion | The four **Maliks** (Shalluf, El Barasi, Shagan, Al Bakri), then **Hisham** again. New teams still to come |
 | 20 | Post-game: catch Haleeb in the Marine Cave, Ceaser in the Terra Cave | Same places. Snickers waits at the top of Sky Pillar |
 
 ## Solo venting
@@ -120,7 +120,8 @@ Yelp** ("Great security. Boss is kind of strict."), and Hamza's review goes back
 - Their signature moves (Milk Shower, Royal Pounce, Storm Claw), which they use when you meet them at
   level 70.
 - Professor Mo, **Hamza** as the rival (every rival scene rewritten, both the May and Brendan versions),
-  **Hisham** as Dad (gym and Izzo's house rewritten), and Wally written out.
+  **Hisham** as Dad (gym and Izzo's house rewritten), **Yaseen** in Wally's place, the gym leaders,
+  the four Maliks of the Elite Four, and Hisham again as Champion.
 - **G-Moves** (the Z-Moves, renamed) with one signature G-Move per new line; see
   [G_MOVES.md](G_MOVES.md). The Red and Blue Orbs are the **Strawberry** and the **Cheese**.
 - **Ahmed and Omar as the bosses**: names in every line of dialogue, the team names (SAFETY ZONE,
@@ -130,6 +131,7 @@ Yelp** ("Great security. Boss is kind of strict."), and Hamza's review goes back
 ## What this needs from you
 
 1. Who fills the four open admin slots? (Real friends work best.)
-2. Who replaces **Steven** (the mysterious strong trainer) and **Wallace** (the Champion)?
+2. Who replaces **Steven** (the mysterious strong trainer)? And what are Hisham's Champion team and
+   Heeshupeeshu's design (it's Ralts for now, and still evolves into Kirlia)?
 3. Should **Hamza** get his own sprite? (He still wears May's or Brendan's.) Hisham and Izzo too.
 

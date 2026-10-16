@@ -19,14 +19,14 @@ Order is roughly the order players meet things, so it's a good order to fill it 
 | | Mom | Your mom; heals you at home, gives you running shoes | |
 | ✅ | Norman (Dad) | Your dad, and also the 5th gym leader (Petalburg) | **Hisham**: talks about his company Sequoia, loves Hamza like a son (Layth is his real son), plays pool with Mo and Izzo. 🎨 still Norman's look |
 | ✅ | May / Brendan | Rival 1: has the starter that beats yours | **Hamza**: Mo's assistant next door, loves gimmicks, beefs with Hisham, runs off as Sneakers O'Toole. Gives you the G-Power Ring. 🎨 still wears May's or Brendan's look |
-| ✅ | Wally | Rival 2: has the third starter, fights you in Mauville and Victory Road | **Written out** for now: no catching tutorial, no Mauville or Victory Road battles |
+| ✅ | Wally | Rival 2: fights you in Mauville and Victory Road | **Yaseen**: no starter; you watch him catch a **Heeshupeeshu** (placeholder: Ralts renamed) |
 | | Steven Stone | Mysterious strong trainer, helps you through the story, post-game boss | |
 | | Mr. Stone | Steven's dad, president of Devon Corp | |
 | | Mr. Briney + Peeko | Old sailor and his Wingull; ferries you to Dewford and Slateport | |
 | | Captain Stern | Ship captain at Slateport, the villains steal his submarine | |
 | | Professor Cozmo | Meteorite scientist in Fallarbor | |
 | | Scott | Talent scout who keeps showing up, runs the Battle Frontier | |
-| ✅ | Wally's uncle and parents | Verdanturf family | His Petalburg house is **Izzo's** (Dad's friend; still gives you HM Surf). The Verdanturf family stays hidden |
+| ✅ | Wally's uncle and parents | Verdanturf family | Yaseen's relatives in Verdanturf. The Petalburg house is **Izzo's** (Dad's friend; gives you HM Surf) |
 
 ## 2. Gym leaders (8)
 
@@ -35,24 +35,24 @@ Each has a type and an **ace**: their last, strongest Pokémon. You wanted every
 
 | Gym | Now | Type | Ace now | Your leader | Your ace |
 |---|---|---|---|---|---|
-| 1 Rustboro | Roxanne | Rock | Nosepass | | |
-| 2 Dewford | Brawly | Fighting | Makuhita | | |
-| 3 Mauville | Wattson | Electric | Manectric | | |
-| 4 Lavaridge | Flannery | Fire | Torkoal | | |
-| 5 Petalburg | Norman (your dad) | Normal | Slaking | | |
-| 6 Fortree | Winona | Flying | Altaria | | |
-| 7 Mossdeep | Tate & Liza (twins) | Psychic | Lunatone + Solrock | | |
-| 8 Sootopolis | Juan | Water | Kingdra | | |
+| 1 Rustboro | Roxanne | Rock | Nosepass | ✅ **Kareem** | |
+| 2 Dewford | Brawly | Fighting | Makuhita | ✅ **Jelal** | |
+| 3 Mauville | Wattson | Electric | Manectric | ✅ **Sammi B** | |
+| 4 Lavaridge | Flannery | Fire | Torkoal | ✅ **Nabil** | |
+| 5 Petalburg | Norman (your dad) | Normal | Slaking | ✅ **Hisham** (Dad) | |
+| 6 Fortree | Winona | Flying | Altaria | ✅ **Adam Jaber** | |
+| 7 Mossdeep | Tate & Liza (twins) | Psychic | Lunatone + Solrock | ✅ **Omar Hafiz & Mo Abdu** (a duo, not twins; "HAFIZ" and "ABDU" in dialogue) | |
+| 8 Sootopolis | Juan | Water | Kingdra | ✅ **Hany** | |
 
 ## 3. Elite Four and Champion
 
 | Now | Type | Ace now | Your version | Your ace |
 |---|---|---|---|---|
-| Sidney | Dark | Absol | | |
-| Phoebe | Ghost | Dusclops | | |
-| Glacia | Ice | Walrein | | |
-| Drake | Dragon | Salamence | | |
-| **Champion** Wallace | Water | Milotic | | |
+| Sidney | Dark | Absol | ✅ **Malik Shalluf** | |
+| Phoebe | Ghost | Dusclops | ✅ **Malik El Barasi** | |
+| Glacia | Ice | Walrein | ✅ **Malik Shagan** | |
+| Drake | Dragon | Salamence | ✅ **Malik Al Bakri** | |
+| **Champion** Wallace | Water | Milotic | ✅ **Hisham** again (also in Sootopolis and the Cave of Origin) | |
 
 ## 4. Villains
 
@@ -158,3 +158,7 @@ Renaming a town updates its sign, map name, Fly menu and every line that mention
 **How to give answers:** reply in chat, e.g. *"Mom is called Auntie Z, she's always on the phone"*, or fill
 in this file. Claude writes the dialogue in the character's voice, checks every line fits the textbox,
 and shows you screenshots from the game.
+
+**Names in battle:** trainer names have a 10-letter limit, so the Mossdeep pair battle as
+"HAFIZ&ABDU" and the Elite Four's class is **MALIK** with their last names as the trainer name
+("MALIK SHALLUF would like to battle!"). Their sprites, teams and types are still the originals.

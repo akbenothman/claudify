@@ -114,49 +114,84 @@ def edit_dad_party(t):
     return t.replace("Name: NORMAN\n", "Name: HISHAM\n")
 
 
-# Wally is written out: no catching tutorial, no Mauville or Victory Road battles. His house in
-# Petalburg is IZZO's (Dad's friend), who still gives you HM SURF after you beat Dad.
-GYM_TUTORIAL_OLD = """	msgbox PetalburgCity_Gym_Text_DadYoureHereWithYourPokemon, MSGBOX_DEFAULT
-	closemessage
-	switch VAR_FACING
-	case DIR_SOUTH, PetalburgCity_Gym_EventScript_BeginWallyTutorialSouth
-	case DIR_NORTH, PetalburgCity_Gym_EventScript_BeginWallyTutorialNorth
-	case DIR_WEST, PetalburgCity_Gym_EventScript_BeginWallyTutorialWest
-	case DIR_EAST, PetalburgCity_Gym_EventScript_BeginWallyTutorialEast
-	end
-"""
-# Straight to Dad's advice, leaving the same state the tutorial did.
-GYM_TUTORIAL_NEW = """	msgbox PetalburgCity_Gym_Text_DadYoureHereWithYourPokemon, MSGBOX_DEFAULT
-	msgbox PetalburgCity_Gym_Text_DadGoCollectBadges, MSGBOX_DEFAULT
-	setflag FLAG_HIDE_PETALBURG_CITY_WALLYS_MOM
-	setvar VAR_PETALBURG_GYM_STATE, 2
-	setvar VAR_PETALBURG_CITY_STATE, 3
-	setflag FLAG_HIDE_LITTLEROOT_TOWN_BIRCHS_LAB_RIVAL
-	special InitBirchState
-	release
-	end
-"""
+# The gym leaders, the Elite Four (all four are MALIKs) and the Champion (Dad again). Whole words,
+# uppercase, in quoted text. Battle names have a 10-letter limit, so the Elite Four's trainer class
+# is "MALIK" and their battle names are their last names: "MALIK SHALLUF would like to battle!"
+CAST_RENAMES = [
+    ("TATE:", "HAFIZ:"),              # the Mossdeep pair speak by last name, to fit the textbox
+    ("LIZA:", "ABDU:"),
+    ("ROXANNE", "KAREEM"),            # gym 1, Rustboro
+    ("BRAWLY", "JELAL"),              # gym 2, Dewford
+    ("WATTSON", "SAMMI B"),           # gym 3, Mauville
+    ("FLANNERY", "NABIL"),            # gym 4, Lavaridge
+    ("WINONA", "ADAM JABER"),         # gym 6, Fortree
+    ("TATE", "OMAR HAFIZ"),           # gym 7, Mossdeep (the double battle)
+    ("LIZA", "MO ABDU"),
+    ("JUAN", "HANY"),                 # gym 8, Sootopolis
+    ("SIDNEY", "MALIK SHALLUF"),      # Elite Four
+    ("PHOEBE", "MALIK EL BARASI"),
+    ("GLACIA", "MALIK SHAGAN"),
+    ("DRAKE", "MALIK AL BAKRI"),
+    ("WALLACE", "HISHAM"),            # the Champion is Dad, again
+    ("WALLY", "YASEEN"),              # Wally's role, without a starter
+    ("RALTS", "HEESHUPEESHU"),        # the Pokémon Yaseen catches (placeholder: Ralts renamed)
+]
+CAST_RENAMES = [(r"\b%s" % re.escape(old) + (r"\b" if old[-1].isalnum() else ""), new)
+                for old, new in CAST_RENAMES]
+
+# Lines the longer names push past the textbox edge, reworded to fit.
+CAST_LINE_FIXES = [
+    ("Registered GYM LEADERS OMAR HAFIZ & MO ABDU", "Registered HAFIZ & ABDU"),
+    ("MO ABDU AND OMAR HAFIZ'S CERTIFIED TRAINERS:", "HAFIZ AND ABDU'S CERTIFIED TRAINERS:"),
+    ("ELITE FOUR, MALIK AL BAKRI the DRAGON master!", "MALIK AL BAKRI, the DRAGON master!"),
+    ("Together with my HEESHUPEESHU, I'm going", "With my HEESHUPEESHU, I'm going"),
+    ("OMAR HAFIZ: ", "HAFIZ: "),
+    ("MO ABDU: ", "ABDU: "),
+    ("MALIK AL BAKRI: That voice…", "AL BAKRI: That voice…"),
+    ("That HEESHUPEESHU we caught together?", "The HEESHUPEESHU we caught together?"),
+]
+
+# Trainer names in battle (10 letters at most).
+CAST_PARTY_NAMES = {
+    "ROXANNE": "KAREEM", "BRAWLY": "JELAL", "WATTSON": "SAMMI B", "FLANNERY": "NABIL",
+    "WINONA": "ADAM JABER", "TATE&LIZA": "HAFIZ&ABDU", "JUAN": "HANY",
+    "SIDNEY": "SHALLUF", "PHOEBE": "EL BARASI", "GLACIA": "SHAGAN", "DRAKE": "AL BAKRI",
+    "WALLACE": "HISHAM", "WALLY": "YASEEN",
+}
+NOW_MALE = ("ROXANNE", "FLANNERY", "WINONA", "TATE&LIZA", "PHOEBE", "GLACIA")
 
 
-def edit_petalburg_gym(t):
-    return t.replace(GYM_TUTORIAL_OLD, GYM_TUTORIAL_NEW)
+def edit_cast_parties(t):
+    blocks = t.split("\n=== ")
+    for i, b in enumerate(blocks):
+        for old, new in CAST_PARTY_NAMES.items():
+            if "\nName: %s\n" % old in b:
+                b = b.replace("\nName: %s\n" % old, "\nName: %s\n" % new)
+                if old in NOW_MALE:
+                    b = b.replace("Gender: Female\n", "Gender: Male\n")
+        blocks[i] = b
+    return "\n=== ".join(blocks)
 
 
-NEW_GAME_ANCHOR = "\tsetflag FLAG_HIDE_VICTORY_ROAD_EXIT_WALLY\n"
-NEW_GAME_WALLY = """	setflag FLAG_HIDE_PETALBURG_CITY_WALLYS_MOM
-	setflag FLAG_HIDE_MAUVILLE_CITY_WALLY
-	setflag FLAG_HIDE_MAUVILLE_CITY_WALLYS_UNCLE
-	setflag FLAG_DEFEATED_WALLY_MAUVILLE
-	setvar VAR_VICTORY_ROAD_1F_STATE, 3
-"""
+def edit_class_names(t):
+    return t.replace('[TRAINER_CLASS_ELITE_FOUR] = { _("ELITE FOUR")', '[TRAINER_CLASS_ELITE_FOUR] = { _("MALIK")')
 
 
-def edit_new_game(t):
-    if NEW_GAME_WALLY in t:
-        return t
-    return t.replace(NEW_GAME_ANCHOR, NEW_GAME_ANCHOR + NEW_GAME_WALLY, 1)
+# Heeshupeeshu, the Pokémon Yaseen catches on Route 102. A placeholder for now: Ralts, renamed in
+# place, so the catching tutorial, Route 102's wild Pokémon and Yaseen's teams all use it.
+# It still evolves into Kirlia and Gardevoir until it gets its own design.
+HEESHUPEESHU_NAMES = [("Ralts", "Heeshupeeshu"), ("RALTS", "HEESHUPEESHU")]
 
 
-def edit_hall_of_fame(t):
-    # Wally doesn't come back to Victory Road after the credits either.
-    return t.replace("\tclearflag FLAG_HIDE_VICTORY_ROAD_EXIT_WALLY\n", "")
+def edit_heeshupeeshu(t, species_block, set_field):
+    start, end = species_block(t, "RALTS")
+    b = set_field(t[start:end], "speciesName", '_("Heeshupeeshu")')
+    b = set_field(b, "categoryName", '_("Mystery")')
+    ds = b.index("        .description = COMPOUND_STRING(\n")
+    de = b.index("),\n", ds) + 3
+    b = b[:ds] + ('        .description = COMPOUND_STRING(\n'
+                  '            "YASEEN\'s partner, the first POKéMON\\n"\n'
+                  '            "he ever caught. Nobody knows what it\\n"\n'
+                  '            "really looks like yet, not even\\n"\n'
+                  '            "HEESHUPEESHU."),\n') + b[de:]
+    return t[:start] + b + t[end:]

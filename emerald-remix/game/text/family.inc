@@ -43,7 +43,7 @@ PetalburgCity_Gym_Text_NormanGoToRustboro:
 PetalburgCity_Gym_Text_NormanGoToDewford:
 	.string "DAD: So, you beat ROXANNE!\n"
 	.string "That's my kid!\p"
-	.string "HAMZA beat her first, but still!\p"
+	.string "HAMZA beat him first, but still!\p"
 	.string "Across the sea in DEWFORD TOWN is\n"
 	.string "a GYM LEADER named BRAWLY.\p"
 	.string "You should go challenge him.$"
@@ -151,29 +151,27 @@ PetalburgCity_WallysHouse_Text_WallyLeftWithoutTelling:
 	.string "HISHAM lets him win at pool\n"
 	.string "sometimes. Out of kindness.$"
 
-@ Wanda's family in Verdanturf, without Wally.
+@ Wally's role is YASEEN's. His relatives still live in Verdanturf, without the frail-and-sickly bits.
 @@ file: data/maps/VerdanturfTown_WandasHouse/scripts.inc
+VerdanturfTown_WandasHouse_Text_WallysNextDoor:
+	.string "UNCLE: Oh! {PLAYER}!\n"
+	.string "YASEEN's next door.\p"
+	.string "Ever since he caught HEESHUPEESHU,\n"
+	.string "that boy hasn't stopped training.\p"
+	.string "I think POKéMON are giving him\n"
+	.string "a real dream.$"
+
 VerdanturfTown_WandasHouse_Text_MeetWanda:
 	.string "WANDA: You are?\n"
 	.string "Oh, right, I get it!\p"
-	.string "You're HISHAM's kid, {PLAYER}!\n"
-	.string "He told my mom all about you.\p"
-	.string "Well, mostly about HAMZA.\n"
-	.string "But a little about you!$"
+	.string "You're the {PLAYER} who YASEEN was\n"
+	.string "telling me about.\p"
+	.string "I'm YASEEN's cousin.\n"
+	.string "Glad to meet you!\p"
+	.string "He talks about you and his\n"
+	.string "HEESHUPEESHU all day long.$"
 
-VerdanturfTown_WandasHouse_Text_DontWorryAboutWally:
-	.string "WANDA: My boyfriend dug that whole\n"
-	.string "tunnel by hand. Can you believe it?\p"
-	.string "HISHAM says he should invest in\n"
-	.string "a drill. Through SEQUOIA, of course.$"
-
-VerdanturfTown_WandasHouse_Text_IfAnythingHappenedToWally:
-	.string "HISHAM called to ask if his kid made\n"
-	.string "it here safely.\p"
-	.string "Then he asked about HAMZA for\n"
-	.string "twenty minutes.$"
-
-VerdanturfTown_WandasHouse_Text_WallyWasInEverGrande:
-	.string "You made it to EVER GRANDE?\p"
-	.string "Your dad in PETALBURG must be\n"
-	.string "so proud!$"
+@ The Petalburg house that was Wally's is IZZO's (Dad's friend, who gives you HM SURF).
+@@ file: data/maps/PetalburgCity/scripts.inc
+PetalburgCity_Text_WallyHouseSign:
+	.string "IZZO'S HOUSE$"

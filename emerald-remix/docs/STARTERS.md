@@ -163,7 +163,8 @@ final stage: the steel briefcase and the corporate armor.
   | Beanito | Guardpup → Ahmed |
   | Guardpup | Squeesh → Heesh |
 
-- **Rival:** Hamza (replacing May/Brendan). Wally, the second rival, is written out for now.
+- **Rival:** Hamza (replacing May/Brendan). **Yaseen** (Wally's role) has no starter: he catches
+  a Heeshupeeshu (Ralts, renamed, for now).
   From Route 119 on, Hamza's partner holds its G-Crystal and uses its G-Move.
 - **Pokédex:** Hoenn #001–009 (taking Treecko–Swampert's numbers), and at the end of the National Dex.
 - **Signature moves** are learned at level 26. Each line's first attacking move of its own type comes at

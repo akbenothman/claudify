@@ -35,7 +35,7 @@ later builds take seconds to a minute. The apply script is safe to re-run after 
 | Pokédex | — | National numbers, Hoenn #001–009 (replacing Treecko–Swampert), sort orders |
 | Starters | — | Treecko/Torchic/Mudkip → Squeesh/Beanito/Guardpup in `starter_choose.c` |
 | Rival teams | — | Starter species swapped in every May/Brendan battle |
-| Story: rival, Dad, orbs, Wally | `game/story.py`, `game/text/rival.inc`, `game/text/family.inc` | MAY/BRENDAN → HAMZA and NORMAN → HISHAM in text and trainer names; Hamza's G-Crystal ace; Route 110 gift; Petalburg tutorial skipped and Wally's events hidden at new game |
+| Story: the cast and the orbs | `game/story.py`, `game/text/rival.inc`, `family.inc`, `cast.inc`, `champion.inc` | Names in text and trainer names (rival, Dad, gym leaders, Elite Four, Champion, Yaseen); Ralts renamed Heeshupeeshu; Hamza's G-Crystal ace; Route 110 gift |
 | G-Moves | `game/g_moves.h`, `game/g_moves.py` | Z-Moves renamed; six signature G-Moves at the end of the Z-Move range, six G-Crystals (items 874–879) |
 | Petalburg type-advice NPC | `game/petalburg_type_text.inc` | three text blocks replaced |
 | Legendary cats | `game/legends.py`, `graphics/legends/*` | Kyogre, Groudon and Rayquaza's species data, moves, sprites and names in text, replaced in place |

@@ -3,13 +3,11 @@
 
 Usage: apply_to_expansion.py PATH/TO/pokeemerald-expansion [--debug-scripts]
 
---debug-scripts fills the debug menu's Scripts 1 and 2 (debug builds only, R+START in the
-overworld): Script 1 opens the starter choice, Script 2 starts a wild battle with Omarauder,
-Script 3 starts May's Route 103 battle for the starter you picked, Script 4 gives you a level-70
-Mewtwo and starts Wally's Mauville battle (to check his third starter), Script 5 gives the three
-final forms at level 50 and starts a wild battle (to check back sprites), Script 6 gives the three
-legendary cats at level 70 and starts a wild battle with Haleeb, Script 7 gives a level-70 Mewtwo and
-starts Ahmed's Mt. Chimney battle, Script 8 shows Ahmed's venting speech and the make-up scene.
+--debug-scripts fills the debug menu's Scripts 1-8 (debug builds only, R+START in the overworld):
+1 the starter choice; 2 a wild Omarauder; 3 Hamza's Route 103 battle for your starter; 4 a level-70
+Mewtwo and Malik El Barasi's Elite Four battle; 5 the three final forms at level 50 and a wild
+battle; 6 the three legendary cats at level 70 and a wild Haleeb; 7 a level-70 Mewtwo and Ahmed's
+Mt. Chimney battle; 8 Yaseen's first lines, Hisham in the Cave of Origin and as Champion.
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -302,14 +300,25 @@ def main():
         for path in text_files:
             edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
 
-    # 9e. Dad is HISHAM, and Wally is written out (game/story.py, game/text/family.inc).
+    # 9e. Dad is HISHAM (game/story.py, game/text/family.inc).
     edit("src/data/trainers.party", story.edit_dad_party)
-    edit("data/maps/PetalburgCity_Gym/scripts.inc", story.edit_petalburg_gym)
-    edit("data/scripts/new_game.inc", story.edit_new_game)
-    edit("data/scripts/hall_of_fame.inc", story.edit_hall_of_fame)
     for pattern, new in story.DAD_RENAMES:
         for path in text_files:
             edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
+
+    # 9g. The gym leaders, the Elite Four MALIKs, Hisham as Champion and Yaseen in Wally's place,
+    # with Heeshupeeshu (game/story.py, game/text/champion.inc).
+    edit("src/data/trainers.party", story.edit_cast_parties)
+    edit("src/battle_main.c", story.edit_class_names)
+    edit("src/data/pokemon/species_info/gen_3_families.h",
+         lambda t: story.edit_heeshupeeshu(t, legends.species_block, legends.set_field))
+    for pattern, new in story.CAST_RENAMES:
+        for path in text_files:
+            edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
+    for old, new in story.HEESHUPEESHU_NAMES:
+        rename_in_strings(old, new, text_files + test_files)
+    for old, new in story.CAST_LINE_FIXES:
+        rename_in_strings(old, new, text_files)
 
     # 9f. The orbs become a STRAWBERRY and a CHEESE (game/story.py).
     edit("src/data/items.h", story.edit_items)
@@ -340,9 +349,9 @@ def main():
                           "\tgivemon SPECIES_OMARAUDER, 50\n\tgivemon SPECIES_AHMEXEC, 50\n"
                           "\tsetwildbattle SPECIES_ZIGZAGOON, 2\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_8::\n\trelease\n\tend\n",
-                          "Debug_EventScript_Script_8::\n\tmsgbox RivalsHouse_2F_Text_MayWhoAreYou, MSGBOX_DEFAULT\n"
-                          "\tmsgbox PetalburgCity_Gym_Text_DadYoureHereWithYourPokemon, MSGBOX_DEFAULT\n"
-                          "\tmsgbox Route110_Text_MayExplainItemfinder, MSGBOX_DEFAULT\n\trelease\n\tend\n")
+                          "Debug_EventScript_Script_8::\n\tmsgbox PetalburgCity_Gym_Text_WallyIveNeverCaughtAPokemon, MSGBOX_DEFAULT\n"
+                          "\tmsgbox CaveOfOrigin_B1F_Text_WallaceStory, MSGBOX_DEFAULT\n"
+                          "\tmsgbox EverGrandeCity_ChampionsRoom_Text_IntroSpeech, MSGBOX_DEFAULT\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_7::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_7::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
                           "\ttrainerbattle_no_intro TRAINER_MAXIE_MT_CHIMNEY, Debug_Text_RivalDefeated\n"
@@ -353,7 +362,7 @@ def main():
                           "\tsetwildbattle SPECIES_KYOGRE, 70\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_4::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_4::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
-                          "\ttrainerbattle_no_intro TRAINER_MAY_ROUTE_119_TREECKO, Debug_Text_RivalDefeated\n"
+                          "\ttrainerbattle_no_intro TRAINER_PHOEBE, Debug_Text_RivalDefeated\n"
                           "\trelease\n\tend\n")
             return t.replace("Debug_EventScript_Script_3::\n\trelease\n\tend\n",
                              "Debug_EventScript_Script_3::\n\tswitch VAR_STARTER_MON\n"
