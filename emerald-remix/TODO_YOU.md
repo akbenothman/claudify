@@ -29,10 +29,8 @@ below that Claude needs answered to build it.
       The project moves there from its current folder.
 - [ ] **Y2. Upload your clean Pokémon Emerald (USA) ROM**, dumped from your own cartridge. Claude uses it
       only to make the `.bps` patch you'll apply on your phone; it never goes in the repo.
-- [ ] **Y3. Your two rivals.** May/Brendan has the starter that beats yours. **Wally** is now the second
-      rival with the third starter (two story fights: Mauville and Victory Road). Keep them as they are,
-      or turn either into one of your characters (new name, look and lines)?
-      *Default: keep both for now; they get renamed when the character swap (Y6) happens.*
+- [x] **Y3. Your rival.** **Hamza** replaces May/Brendan and has the starter that beats yours; Wally is
+      written out for now. Hamza still wears May's or Brendan's sprite (May's when you play as the boy).
 - [x] **Y4. Back sprites for all 9 starters** in Gemini, using the back-sprite prompt in
       [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md). Upload them here like the fronts.
 - [ ] **Y5. Shiny colors.** One line per evolution line.
@@ -42,7 +40,7 @@ below that Claude needs answered to build it.
 
 - [ ] **Y6. The new cast.** Started: **Professor Mo** is in the game. The full checklist of who and what
       can be replaced is [docs/REPLACE_LIST.md](docs/REPLACE_LIST.md). You want to swap out every character. Start with the ones players meet most:
-      Mom, Professor Birch, Dad (Norman), the rival(s), Steven, Mr. Briney, and the named NPCs in each town.
+      Mom, Steven, Mr. Briney, and the named NPCs in each town.
       For each: a name, one line about who they are, and whether they look different. *Different looks
       need a Gemini sprite each; a new name and new lines with the old look cost nothing.*
 - [ ] **Y7. Safety Zone.** Should Ahmexec's company exist in the world (a building, guards, a boss

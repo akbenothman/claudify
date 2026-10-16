@@ -113,7 +113,7 @@ LittlerootTown_ProfessorBirchsLab_Text_MightBeGoodIdeaToGoSeeRival:
 	.string "PROF. MO: If you work at POKéMON\n"
 	.string "and gain experience, I think you'll\l"
 	.string "make an extremely good TRAINER.\p"
-	.string "My kid, {RIVAL}, is also studying\n"
+	.string "My assistant, HAMZA, is studying\n"
 	.string "POKéMON while helping me out.\p"
 	.string "And if you see a CRAZY FRIES stand\n"
 	.string "on the way, you know where I'll be.\p"

@@ -29,10 +29,33 @@ They used to run Safety Zone together. Now they don't speak.
 | Ace | **Ahmexec** | **Omarauder** |
 | Team | Security dogs and cameras: Growlithe/Arcanine, Magnemite/Magneton, his own line | Thieves: Honchkrow, Weavile |
 | Wants | Wake **Ceaser**: endless sunshine means endless outdoor events, and every event needs security. Money | Wake **Haleeb**: endless rain empties the streets (easy pickings) and floods Safety Zone HQ. Revenge |
-| Admin | **HAMZA** (replaces Tabitha), still upset about his review | *open slot* (replaces Shelly) |
+| Admin | *open slot* (replaces Tabitha) | *open slot* (replaces Shelly) |
 | Admins | *open slot* (replaces Courtney) | *open slot* (replaces Matt) |
 | Grunts | Security guards in black suits | Guys in black beanies |
 | Running jokes | Guards ask for your ID before battling. Ahmed keeps telling grunts to "do some actual work" | Grunts try to log into Safety Zone's wifi. Omar still doesn't know the new password |
+
+Hamza's deleted help review is still the spark: he's your rival (below), not one of Ahmed's admins.
+
+## Your rival: Hamza
+
+**HAMZA** replaces May and Brendan. He lives next door and helps Professor Mo, and he has the starter
+that beats yours.
+
+- He **loves gimmicks**: Mega Evolution, Z-Moves, Dynamax, Terastal, and above all **G-Moves**. On
+  Route 110 he gives you the **G-Power Ring** and your starter's **G-Crystal**, and from Route 119 on
+  his own partner holds its crystal and uses its G-Move against you.
+- He **beefs with Hisham**, your dad, who says gimmicks are cheating. Hisham adores him anyway.
+- He **ends every conversation running off**: "I'm not taking my sneakers off! I am SNEAKERS O'TOOLE!"
+
+## Your dad: Hisham
+
+**HISHAM** replaces Norman as Dad and the Petalburg gym leader.
+
+- Always on about his company, **Sequoia** ("Think of it as an investment").
+- Loves **Hamza** like a son, even though **Layth** is his real son ("…And LAYTH. Where is LAYTH?").
+- Hangs out with **Professor Mo** and his friend **Izzo**, and they **play pool**. His gym battle is
+  "played like a game of pool"; he loses by scratching on the eight ball.
+- **Izzo** lives in Wally's old house in Petalburg and gives you HM Surf after you beat Hisham.
 
 ## The heart of the story: keeping the peace
 
@@ -48,16 +71,16 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 |---|---|---|
 | 1 | Moving to Littleroot; Birch chased by a Zigzagoon | Same; **Mo** is chased while carrying his drink of the day, and spills it |
 | 2 | Pick a starter from Birch's bag | Squeesh, Beanito or Guardpup. Mo's Ahmed and Omar are fighting in the background; your first job is breaking them up |
-| 3 | Rival battle on Route 103 | Same, rival has the starter that beats yours |
-| 4 | Dad (Norman) is the Petalburg gym leader | Same beat, new name for Dad *(you pick)* |
-| 5 | Wally catches his first Pokémon | Same; later he battles with the third starter |
+| 3 | Rival battle on Route 103 | **Hamza**, with the starter that beats yours. He wins nothing and runs off in his sneakers |
+| 4 | Dad (Norman) is the Petalburg gym leader | **Hisham**, between Sequoia calls and pool nights |
+| 5 | Wally catches his first Pokémon | **Cut.** Hisham gives you his advice and sends you to Rustboro |
 | 6 | Team Aqua steals Devon Goods in Rustboro | A **Team Beanie** grunt steals the package. "Omar said finders keepers" |
 | 7 | Steven in Dewford's Granite Cave | Same beat; Steven's replacement *(you pick)* |
 | 8 | Slateport museum: Aqua shows up | Team Beanie tries to steal a submarine to reach Haleeb's sleeping place |
-| 9 | Mauville: Wally battle | Same; plus the **Safety Zone** office, where Ahmed's guards train (one battle) |
+| 9 | Mauville: Wally battle | **Cut** (Wally is written out). *Idea:* the **Safety Zone** office, where Ahmed's guards train |
 | 10 | Mt. Chimney: Magma steals the Meteorite | **Ahmed** takes the Meteorite "for safekeeping". You try to ask what happened between him and Omar; he battles you instead (Lv 25 Ahmed, his own namesake) |
 | 11 | Weather Institute raid | Team Beanie raids it to find where Haleeb sleeps |
-| 12 | Mt. Pyre: the orbs are stolen | **Peace talks #1**: Mo sets up a meeting at the summit, with food. Ahmed and Omar argue about the password, each grabs an orb and leaves |
+| 12 | Mt. Pyre: the orbs are stolen | **Peace talks #1**: Mo sets up a meeting at the summit, with food. Ahmed and Omar argue about the password, each grabs a treat (the Strawberry or the Cheese) and leaves |
 | 13 | Magma Hideout: Groudon awakens | **Ceaser wakes up** in Safety Zone's hideout... and goes straight back to sleep. Ahmed battle with Ahmexec |
 | 14 | Lilycove: Aqua Hideout | Team Beanie's hideout is a warehouse full of stolen Safety Zone equipment |
 | 15 | Seafloor Cavern: Kyogre awakens | Omar battle with Omarauder. **Haleeb wakes** from her nap, annoyed. Endless rain starts |
@@ -81,12 +104,12 @@ written and in the game (`game/text/villains.inc`):
 | Slateport harbor | Omar | "Bring Ahmed if you want. Actually, don't. He'll ask for ID at the door." |
 | Mt. Pyre (orbs taken) | Omar | Mo's first peace talks, with crazy fries: Ahmed said one word about the password and left |
 | Safety Zone hideout | Ahmed | Omar again, Hamza's review again; Ceaser saw the paperwork and went back to sleep, "just like Omar" |
-| Mossdeep Space Center | Ahmed and Hamza | Hamza: "Has anyone seen my review?" Ahmed admits Omar might not be totally wrong ("don't tell him") |
+| Mossdeep Space Center | Ahmed (and Tabitha) | Tabitha: "HAMZA's help review is STILL missing." Ahmed admits Omar might not be totally wrong ("don't tell him") |
 | Seafloor Cavern | Omar | "Mo sent you. Ahmed sent you. Everyone sent you." Flooding Safety Zone HQ: "let's see Ahmed change THAT password" |
 
 ## The ending
 
-After Snickers ends the storm, Ahmed and Omar return the orbs to Mt. Pyre together, and talk it out with
+After Snickers ends the storm, Ahmed and Omar return the Strawberry and the Cheese to Mt. Pyre together, and talk it out with
 you and Mo, for hours. **Ahmed changes the password back. Omar gives Safety Zone a five-star review on
 Yelp** ("Great security. Boss is kind of strict."), and Hamza's review goes back up.
 
@@ -96,15 +119,17 @@ Yelp** ("Great security. Boss is kind of strict."), and Hamza's review goes back
   so beats 13–17 already play out with them; only the dialogue is still Emerald's beyond the names.
 - Their signature moves (Milk Shower, Royal Pounce, Storm Claw), which they use when you meet them at
   level 70.
-- Professor Mo and the starter rivals.
+- Professor Mo, **Hamza** as the rival (every rival scene rewritten, both the May and Brendan versions),
+  **Hisham** as Dad (gym and Izzo's house rewritten), and Wally written out.
+- **G-Moves** (the Z-Moves, renamed) with one signature G-Move per new line; see
+  [G_MOVES.md](G_MOVES.md). The Red and Blue Orbs are the **Strawberry** and the **Cheese**.
 - **Ahmed and Omar as the bosses**: names in every line of dialogue, the team names (SAFETY ZONE,
-  TEAM BEANIE), the trainer classes (SAFETY BOSS, BEANIE BOSS) and their new teams. Hamza is Ahmed's
-  admin. They still wear Maxie's and Archie's sprites, and the dialogue still talks about the land and
+  TEAM BEANIE), the trainer classes (SAFETY BOSS, BEANIE BOSS) and their new teams. They still wear Maxie's and Archie's sprites, and the dialogue still talks about the land and
   the sea until the scenes are rewritten.
 
 ## What this needs from you
 
-1. Who fills the three open admin slots? (Real friends work best.)
+1. Who fills the four open admin slots? (Real friends work best.)
 2. Who replaces **Steven** (the mysterious strong trainer) and **Wallace** (the Champion)?
-3. Who's **Dad** (the Petalburg gym leader)?
+3. Should **Hamza** get his own sprite? (He still wears May's or Brendan's.) Hisham and Izzo too.
 

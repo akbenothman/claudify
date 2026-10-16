@@ -35,11 +35,12 @@ later builds take seconds to a minute. The apply script is safe to re-run after 
 | Pokédex | — | National numbers, Hoenn #001–009 (replacing Treecko–Swampert), sort orders |
 | Starters | — | Treecko/Torchic/Mudkip → Squeesh/Beanito/Guardpup in `starter_choose.c` |
 | Rival teams | — | Starter species swapped in every May/Brendan battle |
-| Wally's third starter | `game/src/remix_rival.c`, `game/src/remix.h` | Heesh-line placeholder in Wally's teams; one hooked line in `CreateNPCTrainerPartyFromTrainer` swaps it at battle time |
+| Story: rival, Dad, orbs, Wally | `game/story.py`, `game/text/rival.inc`, `game/text/family.inc` | MAY/BRENDAN → HAMZA and NORMAN → HISHAM in text and trainer names; Hamza's G-Crystal ace; Route 110 gift; Petalburg tutorial skipped and Wally's events hidden at new game |
+| G-Moves | `game/g_moves.h`, `game/g_moves.py` | Z-Moves renamed; six signature G-Moves at the end of the Z-Move range, six G-Crystals (items 874–879) |
 | Petalburg type-advice NPC | `game/petalburg_type_text.inc` | three text blocks replaced |
 | Legendary cats | `game/legends.py`, `graphics/legends/*` | Kyogre, Groudon and Rayquaza's species data, moves, sprites and names in text, replaced in place |
 | Tests | `game/tests/*.c` | copied into `test/`; run `make check TESTS="Remix"` |
-| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = May's Route 103 battle, Script 4 = Lv 70 Mewtwo + Wally's Mauville battle, Script 5 = the three final forms at Lv 50 + a wild battle, Script 6 = the three legendary cats at Lv 70 + a wild Haleeb |
+| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = Hamza's Route 103 battle, Script 4 = Lv 70 Mewtwo + Hamza's Route 119 battle (G-Move), Script 5 = the three final forms at Lv 50 + a wild battle, Script 6 = the three legendary cats at Lv 70 + a wild Haleeb, Script 7 = Lv 70 Mewtwo + Ahmed's Mt. Chimney battle, Script 8 = Hamza's and Hisham's first lines |
 
 Sprites are regenerated from the Gemini art with `tools/build_starters.sh` and `tools/build_legends.sh` (see `docs/ART_PROMPTS.md`).
 

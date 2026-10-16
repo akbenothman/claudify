@@ -20,10 +20,8 @@ Make the three starter lines feel like they were always part of Emerald.
 - [x] Starters are **Hoenn Pokédex #001–009** (the old starters can't be caught, so leaving them in the
       Hoenn dex would have made the Pokédex diploma impossible)
 - [x] Petalburg Pokémon Center NPC explains your starter's real types
-- [x] **Second rival: Wally battles with the third starter**, the one neither you nor May has, in his
-      Mauville fight (Lv 15 next to his Ralts) and at Victory Road and its rematches (final form, in place of
-      Delcatty). A small hook (`game/src/remix_rival.c`) picks the line at battle time, so it costs no extra
-      trainer slots. Those are scarce: only 9 are left before the save file runs out of trainer flags
+- [x] ~~Second rival: Wally with the third starter~~: Wally is written out of the story for now;
+      Hamza is the only rival
 - [x] Automated tests: signature moves, the type triangle, evolution levels, Pokédex numbers. The
       expansion's full suite (5,868 tests) also passes with our changes
 - [x] Played each starter through the first rival battle in the emulator: all three win by just using

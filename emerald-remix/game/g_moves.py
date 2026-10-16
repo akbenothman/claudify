@@ -21,7 +21,7 @@ LINES = [
      "MOVE_MILK_SHOWER", "MOVE_MILKY_WAY_DELUGE", ["KYOGRE"]),
     ("ITEM_CEASERIUM_G", "Ceaserium G", "GrassiumZ", "Ceaser's", "Royal Pounce",
      "MOVE_ROYAL_POUNCE", "MOVE_VENI_VIDI_VICI", ["GROUDON"]),
-    ("ITEM_SNICKERSIUM_G", "Snickersium G", "ElectriumZ", "Snickers's", "Storm Claw",
+    ("ITEM_SNICKERSIUM_G", "Snickersium G", "ElectriumZ", "Snickers'", "Storm Claw",
      "MOVE_STORM_CLAW", "MOVE_SATISFYING_SWIPE", ["RAYQUAZA"]),
 ]
 

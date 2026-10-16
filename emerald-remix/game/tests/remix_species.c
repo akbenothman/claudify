@@ -3,10 +3,8 @@
 #include "global.h"
 #include "data.h"
 #include "event_data.h"
-#include "remix.h"
 #include "test/test.h"
 #include "constants/opponents.h"
-#include "constants/vars.h"
 
 TEST("Remix: starters evolve at levels 16 and 36")
 {
@@ -30,21 +28,5 @@ TEST("Remix: starters are Hoenn Pokedex #001-009")
     EXPECT_EQ(SpeciesToHoennPokedexNum(SPECIES_OMARAUDER), 6);
     EXPECT_EQ(SpeciesToHoennPokedexNum(SPECIES_AHMEXEC), 9);
     EXPECT_EQ(SpeciesToHoennPokedexNum(SPECIES_TREECKO), 0);
-}
-
-TEST("Remix: Wally battles with the third starter")
-{
-    u32 playerPick;
-    enum Species expected;
-    // You pick line p, May gets p + 1 (the line that beats yours), Wally gets the one left over.
-    PARAMETRIZE { playerPick = 0; expected = SPECIES_AHMEXEC; }   // you Squeesh, May Beanito
-    PARAMETRIZE { playerPick = 1; expected = SPECIES_HEESHEF; }   // you Beanito, May Guardpup
-    PARAMETRIZE { playerPick = 2; expected = SPECIES_OMARAUDER; } // you Guardpup, May Squeesh
-    struct TrainerMon placeholder = { .species = SPECIES_HEESHEF };
-    struct TrainerMon scratch;
-    VarSet(VAR_STARTER_MON, playerPick);
-    EXPECT_EQ(Remix_TrainerMon(GetTrainerStructFromId(TRAINER_WALLY_VR_1), &placeholder, &scratch)->species, expected);
-    // Anyone else's Heesh-line Pokémon is left alone.
-    EXPECT_EQ(Remix_TrainerMon(GetTrainerStructFromId(TRAINER_MAY_ROUTE_103_MUDKIP), &placeholder, &scratch)->species, SPECIES_HEESHEF);
 }
 

@@ -63,10 +63,12 @@ def insert_once(text, anchor, addition, after=True):
 
 
 def apply_text_overrides(path):
-    """Replace labelled text blocks in game files with the ones in a game/text/*.inc file."""
+    """Replace labelled text blocks in game files with the ones in a game/text/*.inc file.
+
+    Several labels in a row share the text that follows them (the May and Brendan versions of a scene).
+    """
     target = None
     blocks = {}
-    label = None
     for line in open(path, encoding="utf-8"):
         if line.startswith("@@ file:"):
             target = line.split(":", 1)[1].strip()
@@ -74,16 +76,20 @@ def apply_text_overrides(path):
         if line.startswith("@") or not line.strip():
             continue
         if not line.startswith(("\t", " ")):
-            label = line.strip()
-            blocks.setdefault(target, []).append([label, line])
+            items = blocks.setdefault(target, [])
+            if items and not items[-1][1]:  # another label for the same text
+                items[-1][0].append(line.strip())
+            else:
+                items.append([[line.strip()], ""])
         else:
             blocks[target][-1][1] += line
     for target, items in blocks.items():
         def replace(t, items=items):
-            for label, block in items:
-                start = 0 if t.startswith(label + "\n") else t.index("\n" + label + "\n") + 1
-                end = t.index('$"\n', start) + 3
-                t = t[:start] + block + t[end:]
+            for labels, body in items:
+                for label in labels:
+                    start = 0 if t.startswith(label + "\n") else t.index("\n" + label + "\n") + 1
+                    end = t.index('$"\n', start) + 3
+                    t = t[:start] + label + "\n" + body + t[end:]
             return t
         edit(target, replace)
 
@@ -115,8 +121,6 @@ def main():
                    ("custom_learnsets.h", "src/data/pokemon/custom_learnsets.h"),
                    ("pokemon_custom_gfx.h", "src/data/graphics/pokemon_custom.h")):
         shutil.copy(os.path.join(HERE, f), os.path.join(ROOT, dst))
-    shutil.copy(os.path.join(HERE, "src", "remix_rival.c"), os.path.join(ROOT, "src", "remix_rival.c"))
-    shutil.copy(os.path.join(HERE, "src", "remix.h"), os.path.join(ROOT, "include", "remix.h"))
     for f in os.listdir(os.path.join(HERE, "tests")):  # run with: make check TESTS="Remix"
         shutil.copy(os.path.join(HERE, "tests", f), os.path.join(ROOT, "test", f))
 
@@ -233,27 +237,6 @@ def main():
         return "\n=== ".join(blocks)
     edit("src/data/trainers.party", rival)
 
-    # 7b. Wally is the second rival and battles with the third starter. His teams get a Heesh-line
-    # placeholder that src/remix_rival.c swaps for the leftover line when the battle starts.
-    def wally(t):
-        blocks = t.split("\n=== ")
-        for i, b in enumerate(blocks):
-            if b.startswith("TRAINER_WALLY_MAUVILLE ===") and "\nSqueesh\n" not in b:
-                blocks[i] = b.rstrip("\n") + "\n\nSqueesh\nLevel: 15\nIVs: 3 HP / 3 Atk / 3 Def / 3 SpA / 3 SpD / 3 Spe\n"
-            elif b.startswith("TRAINER_WALLY_VR_") and "\nDelcatty\n" in b:
-                start = b.index("\nDelcatty\n") + 1
-                end = b.index("\n\n", start) + 2
-                level = int(b[start:end].split("Level: ")[1].split("\n")[0]) + 1
-                ivs = b[start:end].split("IVs: ")[1].split("\n")[0]
-                blocks[i] = b[:start] + "Heeshef\nLevel: %d\nIVs: %s\n\n" % (level, ivs) + b[end:]
-        return "\n=== ".join(blocks)
-    edit("src/data/trainers.party", wally)
-    edit("src/battle_setup.c", lambda t: insert_once(
-        t, '#include "data.h"\n', '#include "remix.h" // Emerald Remix\n').replace(
-        "        GenerateMonFromTrainerMon(&party[i], &trainer->party[monIndex], trainerGen);\n",
-        "        struct TrainerMon remixMon; // Emerald Remix: Wally's third starter\n"
-        "        GenerateMonFromTrainerMon(&party[i], Remix_TrainerMon(trainer, &trainer->party[monIndex], &remixMon), trainerGen);\n"))
-
     # 8. The Petalburg Pokémon Center NPC who explains your starter's type.
     texts = open(os.path.join(HERE, "petalburg_type_text.inc")).read()
 
@@ -307,11 +290,31 @@ def main():
         rename_in_strings(old, new, text_files)
 
     # G-Moves in battle text and in the tests that check it
+    test_headers = [os.path.relpath(os.path.join(d, f), ROOT)  # e.g. the test trainers' slide text
+                    for d, _, fs in os.walk(os.path.join(ROOT, "test")) for f in fs if f.endswith(".h")]
     for old, new in g_moves.RENAMES:
-        rename_in_strings(old, new, ["src/battle_message.c"] + test_files)
+        rename_in_strings(old, new, ["src/battle_message.c"] + test_files + test_headers)
 
-    # 9d. The orbs become a STRAWBERRY and a CHEESE (game/story.py).
+    # 9d. HAMZA is the rival (game/story.py, game/text/rival.inc).
+    edit("src/data/trainers.party", story.edit_rival_parties)
+    edit("data/maps/Route110/scripts.inc", story.edit_route110)
+    for pattern, new in story.RIVAL_RENAMES:
+        for path in text_files:
+            edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
+
+    # 9e. Dad is HISHAM, and Wally is written out (game/story.py, game/text/family.inc).
+    edit("src/data/trainers.party", story.edit_dad_party)
+    edit("data/maps/PetalburgCity_Gym/scripts.inc", story.edit_petalburg_gym)
+    edit("data/scripts/new_game.inc", story.edit_new_game)
+    edit("data/scripts/hall_of_fame.inc", story.edit_hall_of_fame)
+    for pattern, new in story.DAD_RENAMES:
+        for path in text_files:
+            edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
+
+    # 9f. The orbs become a STRAWBERRY and a CHEESE (game/story.py).
     edit("src/data/items.h", story.edit_items)
+    for old, new in story.ORB_ITEM_NAMES:  # battle messages the tests check
+        rename_in_strings(old, new, test_files)
     for pattern, new in story.ORB_RENAMES:
         for path in text_files:
             edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
@@ -337,8 +340,9 @@ def main():
                           "\tgivemon SPECIES_OMARAUDER, 50\n\tgivemon SPECIES_AHMEXEC, 50\n"
                           "\tsetwildbattle SPECIES_ZIGZAGOON, 2\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_8::\n\trelease\n\tend\n",
-                          "Debug_EventScript_Script_8::\n\tmsgbox MtChimney_Text_MaxieIntro, MSGBOX_DEFAULT\n"
-                          "\tmsgbox MtPyre_Summit_Text_MaxieSilence, MSGBOX_DEFAULT\n\trelease\n\tend\n")
+                          "Debug_EventScript_Script_8::\n\tmsgbox RivalsHouse_2F_Text_MayWhoAreYou, MSGBOX_DEFAULT\n"
+                          "\tmsgbox PetalburgCity_Gym_Text_DadYoureHereWithYourPokemon, MSGBOX_DEFAULT\n"
+                          "\tmsgbox Route110_Text_MayExplainItemfinder, MSGBOX_DEFAULT\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_7::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_7::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
                           "\ttrainerbattle_no_intro TRAINER_MAXIE_MT_CHIMNEY, Debug_Text_RivalDefeated\n"
@@ -349,7 +353,7 @@ def main():
                           "\tsetwildbattle SPECIES_KYOGRE, 70\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_4::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_4::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
-                          "\ttrainerbattle_no_intro TRAINER_WALLY_MAUVILLE, Debug_Text_RivalDefeated\n"
+                          "\ttrainerbattle_no_intro TRAINER_MAY_ROUTE_119_TREECKO, Debug_Text_RivalDefeated\n"
                           "\trelease\n\tend\n")
             return t.replace("Debug_EventScript_Script_3::\n\trelease\n\tend\n",
                              "Debug_EventScript_Script_3::\n\tswitch VAR_STARTER_MON\n"

@@ -4,7 +4,7 @@ They replace Team Magma and Team Aqua in place: the same events, maps and battle
 new team names and new teams for the bosses. Ahmed wants Ceaser's endless sun (outdoor events, more
 security contracts); Omar wants Haleeb's endless rain (empty streets, and a flooded Safety Zone HQ).
 
-Still the old look: trainer sprites (Maxie, Archie, Tabitha, grunts) and most of the dialogue,
+Still the old look: trainer sprites (Maxie, Archie, the admins, grunts) and most of the dialogue,
 which mentions the land and the sea, until the scenes are rewritten.
 """
 
@@ -18,8 +18,6 @@ RENAMES = [
     ("Maxie", "Ahmed"),
     ("ARCHIE", "OMAR"),
     ("Archie", "Omar"),
-    ("TABITHA", "HAMZA"),
-    ("Tabitha", "Hamza"),
 ]
 
 # Lines the longer names push past the textbox edge, reworded to fit.
@@ -64,8 +62,7 @@ def edit_parties(t):
             # keep the header lines (up to the first blank line), replace the Pokémon
             top = b[:b.index("\n\n") + 2]
             blocks[i] = top + "\n".join(TEAMS[head])
-        for old, new in (("Name: MAXIE", "Name: AHMED"), ("Name: ARCHIE", "Name: OMAR"),
-                         ("Name: TABITHA", "Name: HAMZA")):
+        for old, new in (("Name: MAXIE", "Name: AHMED"), ("Name: ARCHIE", "Name: OMAR")):
             blocks[i] = blocks[i].replace(old + "\n", new + "\n")
     return "\n=== ".join(blocks)
 

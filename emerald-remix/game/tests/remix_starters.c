@@ -170,3 +170,15 @@ SINGLE_BATTLE_TEST("Remix: G-Moves are announced as G-Power")
         ANIMATION(ANIM_TYPE_MOVE, MOVE_FONDUE_TSUNAMI, player);
     }
 }
+
+// Hamza's ace holds its G-Crystal from Route 119 on (game/story.py), and the AI fires the G-Move.
+AI_SINGLE_BATTLE_TEST("Remix: trainers holding a G-Crystal use their G-Move")
+{
+    GIVEN {
+        AI_FLAGS(AI_FLAG_CHECK_BAD_MOVE | AI_FLAG_CHECK_VIABILITY | AI_FLAG_TRY_TO_FAINT | AI_FLAG_OMNISCIENT);
+        PLAYER(SPECIES_WOBBUFFET);
+        OPPONENT(SPECIES_OMAR) { Item(ITEM_OMARIUM_G); Moves(MOVE_STICKY_FINGERS); }
+    } WHEN {
+        TURN { EXPECT_MOVE(opponent, MOVE_STICKY_FINGERS, gimmick: GIMMICK_Z_MOVE); }
+    }
+}

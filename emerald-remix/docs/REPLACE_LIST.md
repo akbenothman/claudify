@@ -17,16 +17,16 @@ Order is roughly the order players meet things, so it's a good order to fill it 
 |---|---|---|---|
 | ✅ | Professor Birch | Gives you your starter and the Pokédex | **Professor Mo**: drink of the day, starving for crazy fries with fluffy sauce, can't get his Omar and Ahmed to stop fighting. Shows his Omar in the intro. 🎨 his look is still Birch's |
 | | Mom | Your mom; heals you at home, gives you running shoes | |
-| | Norman (Dad) | Your dad, and also the 5th gym leader (Petalburg) | |
-| | May / Brendan | Rival 1: has the starter that beats yours | |
-| | Wally | Rival 2: has the third starter, fights you in Mauville and Victory Road | |
+| ✅ | Norman (Dad) | Your dad, and also the 5th gym leader (Petalburg) | **Hisham**: talks about his company Sequoia, loves Hamza like a son (Layth is his real son), plays pool with Mo and Izzo. 🎨 still Norman's look |
+| ✅ | May / Brendan | Rival 1: has the starter that beats yours | **Hamza**: Mo's assistant next door, loves gimmicks, beefs with Hisham, runs off as Sneakers O'Toole. Gives you the G-Power Ring. 🎨 still wears May's or Brendan's look |
+| ✅ | Wally | Rival 2: has the third starter, fights you in Mauville and Victory Road | **Written out** for now: no catching tutorial, no Mauville or Victory Road battles |
 | | Steven Stone | Mysterious strong trainer, helps you through the story, post-game boss | |
 | | Mr. Stone | Steven's dad, president of Devon Corp | |
 | | Mr. Briney + Peeko | Old sailor and his Wingull; ferries you to Dewford and Slateport | |
 | | Captain Stern | Ship captain at Slateport, the villains steal his submarine | |
 | | Professor Cozmo | Meteorite scientist in Fallarbor | |
 | | Scott | Talent scout who keeps showing up, runs the Battle Frontier | |
-| | Wally's uncle and parents | Verdanturf family | |
+| ✅ | Wally's uncle and parents | Verdanturf family | His Petalburg house is **Izzo's** (Dad's friend; still gives you HM Surf). The Verdanturf family stays hidden |
 
 ## 2. Gym leaders (8)
 
@@ -66,7 +66,7 @@ one, or replace them with your own.
 | Matt, Shelly | Aqua admins | |
 | Team Magma | Wants to expand the land with Groudon (now Ceaser) | ✅ **Safety Zone** (Ahmed's company) |
 | Maxie | Magma leader (ace: Camerupt) | ✅ **Ahmed** (ace: Ahmexec) |
-| Tabitha, Courtney | Magma admins | ✅ Tabitha → **Hamza**; Courtney open |
+| Tabitha, Courtney | Magma admins | |
 | Aqua/Magma grunts | Generic members (dozens of battles) | |
 
 ## 5. Towns and cities (16) 🟢
