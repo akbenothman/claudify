@@ -21,7 +21,7 @@ Order is roughly the order players meet things, so it's a good order to fill it 
 | ✅ | May / Brendan | Rival 1: has the starter that beats yours | **Hamza**: Mo's assistant next door, loves gimmicks, beefs with Hisham, runs off as Sneakers O'Toole. Gives you the G-Power Ring. 🎨 still wears May's or Brendan's look |
 | ✅ | Wally | Rival 2: fights you in Mauville and Victory Road | **Yaseen**: no starter; you watch him catch a **Heeshupeeshu** (single stage, in Ralts's slot with Gardevoir's stats) |
 | ✅ | Steven Stone | Mysterious strong trainer, helps you through the story, post-game boss | **Taha**: A Song of Ice and Fire (books > show), waiting for Pirate Souls, obsessed with **MUAH**. 🎨 still Steven's look |
-| | Mr. Stone | Steven's dad, president of Devon Corp | |
+| ✅ | Mr. Stone | Steven's dad, president of Devon Corp | **Zaaby**: selling Villa 74 and keeping all the money he promised Taha. 🎨 still Mr. Stone's look |
 | | Mr. Briney + Peeko | Old sailor and his Wingull; ferries you to Dewford and Slateport | |
 | | Captain Stern | Ship captain at Slateport, the villains steal his submarine | |
 | | Professor Cozmo | Meteorite scientist in Fallarbor | |
@@ -67,7 +67,7 @@ one, or replace them with your own.
 | Team Magma | Wants to expand the land with Groudon (now Ceaser) | ✅ **Safety Zone** (Ahmed's company) |
 | Maxie | Magma leader (ace: Camerupt) | ✅ **Ahmed** (ace: Ahmexec) |
 | Tabitha, Courtney | Magma admins | ✅ **Hamada** (Tabitha at Mt. Chimney and Mossdeep) and **Khali Ibrahim** (Tabitha's Magma Hideout battle; Courtney never battles in Emerald) |
-| Aqua/Magma grunts | Generic members (dozens of battles) | |
+| Aqua/Magma grunts | Generic members (dozens of battles) | Two are now named: **Idris**, Omar's real number one (last grunt in Seafloor Cavern), and **Mostafa**, Ahmed's (last grunt in the Magma Hideout) |
 
 ## 5. Towns and cities (16) 🟢
 

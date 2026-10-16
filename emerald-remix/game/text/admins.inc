@@ -4,6 +4,10 @@
 @ love) and YAHYA (replaces Shelly: HALEEB is a G; when he loses, he missed his Q). With AHMED, on
 @ CEASER's side: HAMADA (replaces Tabitha: HURRRRRR, NAIRRRRRRR) and KHALI IBRAHIM (takes Tabitha's
 @ Magma Hideout battle: CEASER was stolen from him, and he wants him back).
+@ Each boss also has his real number one, in a grunt's battle near the end of each team's base:
+@ IDRIS for OMAR (Seafloor Cavern) and MOSTAFA for AHMED (Magma Hideout).
+@ ZAABY (replaces Mr. Stone, DEVON's PRESIDENT) is selling VILLA 74 and isn't giving TAHA any of
+@ the money he promised him.
 
 @@ file: data/maps/GraniteCave_StevensRoom/scripts.inc
 GraniteCave_StevensRoom_Text_ImStevenLetterForMe:
@@ -16,8 +20,11 @@ GraniteCave_StevensRoom_Text_ImStevenLetterForMe:
 
 GraniteCave_StevensRoom_Text_ThankYouTakeThis:
 	.string "TAHA: Okay, thank you.\p"
-	.string "You came all this way to deliver\n"
-	.string "that. I need to thank you.\p"
+	.string "… … … … … …\p"
+	.string "ZAABY sold VILLA 74, and I get\n"
+	.string "NOTHING? He promised me!\p"
+	.string "Sorry. You came all this way to\n"
+	.string "deliver that. I need to thank you.\p"
 	.string "Let me see…\n"
 	.string "I'll give you this TM.\p"
 	.string "It contains my favorite move,\n"
@@ -113,7 +120,7 @@ MossdeepCity_SpaceCenter_2F_Text_StevenThankYouComeSeeMeAtHome:
 	.string "I live right here on this island.$"
 
 MossdeepCity_SpaceCenter_Text_TabithaDefeat:
-	.string "NAIRRRRRRR!$"
+	.string "… hurrrr$"
 
 @@ file: data/maps/MossdeepCity_StevensHouse/scripts.inc
 MossdeepCity_StevensHouse_Text_YouveEarnedHMDive:
@@ -268,7 +275,7 @@ MtChimney_Text_TabithaIntro:
 	.string "HAMADA: HURRRRRR!$"
 
 MtChimney_Text_TabithaDefeat:
-	.string "NAIRRRRRRR!$"
+	.string "… hurrrr$"
 
 MtChimney_Text_TabithaPostBattle:
 	.string "HAMADA: HURRRRRR…\p"
@@ -293,3 +300,93 @@ MagmaHideout_4F_Text_TabithaPostBattle:
 	.string "AHMED went to CEASER…\p"
 	.string "But CEASER will remember me.\n"
 	.string "He has to. We had a bond!$"
+
+@@ file: data/maps/SeafloorCavern_Room3/scripts.inc
+SeafloorCavern_Room3_Text_Grunt5Intro:
+	.string "IDRIS: KROOMA and YAHYA think\n"
+	.string "they're OMAR's number one.\p"
+	.string "They're not. I am.\n"
+	.string "OMAR texts me first.\p"
+	.string "You want OMAR? You go through\n"
+	.string "his real number one!$"
+
+SeafloorCavern_Room3_Text_Grunt5Defeat:
+	.string "OMAR's going to hear about this…\n"
+	.string "From me. First.$"
+
+SeafloorCavern_Room3_Text_Grunt5PostBattle:
+	.string "KROOMA and YAHYA? Interns.\p"
+	.string "I'm the one who knows where OMAR\n"
+	.string "keeps his beanies.$"
+
+@@ file: data/maps/MagmaHideout_4F/scripts.inc
+MagmaHideout_4F_Text_Grunt13Intro:
+	.string "MOSTAFA: HAMADA? KHALI IBRAHIM?\n"
+	.string "Please.\p"
+	.string "I'm AHMED's number one. I'm the\n"
+	.string "only one with the new password.\p"
+	.string "You're not getting by me!$"
+
+MagmaHideout_4F_Text_Grunt13Defeat:
+	.string "AHMED's going to change the\n"
+	.string "password again…$"
+
+MagmaHideout_4F_Text_Grunt13PostBattle:
+	.string "Don't tell HAMADA I lost.\n"
+	.string "He'll just say HURRRRRR.$"
+
+@@ file: data/maps/RustboroCity_DevonCorp_3F/scripts.inc
+RustboroCity_DevonCorp_3F_Text_MrStoneIHaveFavor:
+	.string "I'm ZAABY, the PRESIDENT of\n"
+	.string "the DEVON CORPORATION.\p"
+	.string "I'd just got word about you!\p"
+	.string "You saved our staff not just once,\n"
+	.string "but twice!\p"
+	.string "I'm a busy man. I'm selling\n"
+	.string "VILLA 74. Big sale. Huge.\p"
+	.string "Anyway, I have a favor to ask.\p"
+	.string "You're delivering a package to\n"
+	.string "SLATEPORT's SHIPYARD, right?\p"
+	.string "On the way, could you stop off in\n"
+	.string "DEWFORD TOWN?\p"
+	.string "I need you to deliver this LETTER\n"
+	.string "to TAHA in DEWFORD.\p"
+	.string "It's about the VILLA 74 money I\n"
+	.string "promised him. Don't read it.$"
+
+RustboroCity_DevonCorp_3F_Text_MrStoneWantYouToHaveThis:
+	.string "ZAABY: Now, you should know that\n"
+	.string "I am a generous PRESIDENT.\p"
+	.string "I'd never ask a favor for nothing\n"
+	.string "in return.\p"
+	.string "So I want you to have this! It's\n"
+	.string "worth more than TAHA's getting.$"
+
+RustboroCity_DevonCorp_3F_Text_MrStoneExplainPokenavRestUp:
+	.string "ZAABY: That device…\p"
+	.string "It's a POKéMON NAVIGATOR, or POKéNAV\n"
+	.string "for short.\p"
+	.string "It's an indispensable tool for any\n"
+	.string "TRAINER on an adventure.\p"
+	.string "It has a map of the HOENN region.\p"
+	.string "You can check the locations of\n"
+	.string "DEWFORD and SLATEPORT easily!\p"
+	.string "By the way, SAFETY ZONE and TEAM\n"
+	.string "BEANIE have been making trouble.\p"
+	.string "Rest up before you go. I have to\n"
+	.string "get back to selling VILLA 74.$"
+
+RustboroCity_DevonCorp_3F_Text_ThankYouForDeliveringLetter:
+	.string "ZAABY: You delivered my LETTER?\n"
+	.string "How did TAHA take it?\p"
+	.string "… … … … … …\p"
+	.string "That well, huh.\p"
+	.string "Well, VILLA 74 is sold, and the\n"
+	.string "money is all MINE.\p"
+	.string "Here, this is my way of thanking\n"
+	.string "you. It should help a TRAINER.$"
+
+RustboroCity_DevonCorp_3F_Text_NotFamiliarWithTrends:
+	.string "ZAABY: VILLA 74 sold for a fortune.\p"
+	.string "TAHA keeps calling about his share.\n"
+	.string "I keep not picking up.$"

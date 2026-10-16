@@ -240,13 +240,18 @@ def edit_champion_party(t):
 # PIRATE SOULS game, and MUAH. The villain admins: KROOMA and YAHYA wake HALEEB with Omar (Matt and
 # Shelly); HAMADA (Tabitha) and KHALI IBRAHIM (Tabitha's Magma Hideout battle) work for Ahmed.
 # Their scenes are in game/text/admins.inc.
-ADMIN_RENAMES = [(r"\bSTEVEN STONE\b", "TAHA"), (r"\bSTEVEN\b", "TAHA"), (r"\bMATT\b", "KROOMA"),
+ADMIN_RENAMES = [(r"\bMR\. STONE\b", "ZAABY"), (r"\bSTEVEN STONE\b", "TAHA"), (r"\bSTEVEN\b", "TAHA"), (r"\bMATT\b", "KROOMA"),
                  (r"\bSHELLY\b", "YAHYA"), (r"\bTABITHA\b", "HAMADA")]
 
 
 def edit_admin_parties(t):
     blocks = t.split("\n=== ")
     for i, b in enumerate(blocks):
+        # Each boss's real number one, in place of the last grunt in each team's base.
+        if b.startswith("TRAINER_GRUNT_SEAFLOOR_CAVERN_5 ==="):
+            b = b.replace("\nName: GRUNT\n", "\nName: IDRIS\n").replace("Class: Team Aqua\n", "Class: Aqua Admin\n")
+        if b.startswith("TRAINER_GRUNT_MAGMA_HIDEOUT_13 ==="):
+            b = b.replace("\nName: GRUNT\n", "\nName: MOSTAFA\n").replace("Class: Team Magma\n", "Class: Magma Admin\n")
         if b.startswith("TRAINER_TABITHA_MAGMA_HIDEOUT ==="):
             b = b.replace("\nName: TABITHA\n", "\nName: K. IBRAHIM\n")
         for old, new in (("STEVEN", "TAHA"), ("MATT", "KROOMA"), ("SHELLY", "YAHYA"), ("TABITHA", "HAMADA")):
