@@ -78,7 +78,7 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 | 6 | Team Aqua steals Devon Goods in Rustboro | A **Team Beanie** grunt steals the package. "Omar said finders keepers" |
 | 7 | Steven in Dewford's Granite Cave | **Zaaby** (Devon's president, replacing Mr. Stone) sends you with a letter: he's sold **Villa 74** and Taha isn't getting the money he was promised. **Taha**: the books are better than the show, he's waiting for a Pirate Souls game, and he's obsessed with a mythical force called **MUAH** |
 | 8 | Slateport museum: Aqua shows up | Team Beanie tries to steal a submarine to reach Haleeb's sleeping place |
-| 9 | Mauville: Wally battle | **Yaseen** and his Heeshupeeshu. *Idea:* the **Safety Zone** office, where Ahmed's guards train |
+| 9 | Mauville: Wally battle | **Yaseen** and his Heeshupeeshu. Plus the **Safety Zone office**: a guard checks your ID, the office manager gives you Rock Smash "for security drills", and you learn Ahmed has gone to Mt. Chimney for a Meteorite. Omar's empty desk is "evidence". Their lines change after Mt. Chimney and after the ending |
 | 10 | Mt. Chimney: Magma steals the Meteorite | **Ahmed** takes the Meteorite "for safekeeping". You try to ask what happened between him and Omar; he battles you instead (Lv 25 Ahmed, his own namesake) |
 | 11 | Weather Institute raid | Team Beanie raids it to find where Haleeb sleeps |
 | 12 | Mt. Pyre: the orbs are stolen | **Peace talks #1**: Mo sets up a meeting at the summit, with food. Ahmed and Omar argue about the password, each grabs a treat (the Strawberry or the Cheese) and leaves |
@@ -110,9 +110,27 @@ written and in the game (`game/text/villains.inc`):
 
 ## The ending
 
-After Snickers ends the storm, Ahmed and Omar return the Strawberry and the Cheese to Mt. Pyre together, and talk it out with
-you and Mo, for hours. **Ahmed changes the password back. Omar gives Safety Zone a five-star review on
-Yelp** ("Great security. Boss is kind of strict."), and Hamza's review goes back up.
+In the game (`game/text/ending.inc`):
+
+1. **Sootopolis, peace talks #2.** Snickers fixes the sky with one swipe. Ahmed: "And OMAR and I can't
+   even fix a password. … OMAR. We need to talk." Omar agrees: Mt. Pyre, bring the treats back, and
+   "Somebody call MO. Tell him to bring the fries." Taha watches Mo run after them with the fries.
+2. **Mt. Pyre.** They return the Strawberry and the Cheese together, then talk with Mo for hours over a
+   mountain of crazy fries. Omar learns the password changed because he deleted Hamza's review; Ahmed
+   admits he never let Omar do anything, and says sorry. **Ahmed changes the password back** (Omar logs
+   in first try), **Omar gives Safety Zone five stars on Yelp** ("Great security. Boss is kind of
+   strict."), and **Hamza's help review goes back up**. Mo cries a little. Ahmed wants Omar at the office
+   Monday for real work; Omar says thinking work counts; Ahmed: "…Fine. For now."
+3. **After.** The old lady says they argued about a password for three hours and "perhaps they are
+   friends after all". In the Mauville office, Omar is back at his desk doing "thinking work".
+
+## Mom
+
+Mom stays Mom, and she's done with Hisham: he **left her on the side of the road** (on a highway) and
+would rather hang out with the **MOVERSE** (Prof. Mo, Mo Abdu, Mostafa: every Mo in Hoenn) than with
+his family. When you set out she gives you the plan: **defeat the Moverse, beat every gym, then confront
+your father.** He never visits, she bought your clock, and when you beat him at Petalburg: "Good."
+At the Champion fight, Hisham asks if she sent you, and whether this is about the side of the road.
 
 ## What's already in the game
 

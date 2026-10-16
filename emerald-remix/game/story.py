@@ -275,6 +275,8 @@ SOUSA_TEST_RENAMES = [(r"\bSuper Potion\b", "Strawberry Sousa"), (r"\bHyper Poti
 
 def edit_sousa_items(t):
     for old, new, flavour in SOUSA:
+        if 'ITEM_NAME("%s")' % new in t:  # already done
+            continue
         start = t.index('        .name = ITEM_NAME("%s"),' % old)
         end = t.index("\n    },", start)
         b = t[start:end].replace('ITEM_NAME("%s")' % old, 'ITEM_NAME("%s")' % new)
@@ -290,3 +292,75 @@ SOUSA_LINE_FIXES = [
     ("I should have brought a CHOCOLATE SOUSA…", "I should have brought some SOUSA…"),
     ("one CHOCOLATE SOUSA. How much money remains?", "one CHOCOLATE SOUSA.\\lHow much money remains?"),
 ]
+
+
+# Mauville's first house is the SAFETY ZONE office: the ROCK SMASH guy is the office manager (he still
+# gives you ROCK SMASH, for "security drills"), and a guard by the door checks your ID. What they say
+# moves with the story: AHMED's off to MT. CHIMNEY for a METEORITE; after it, he's not back; after
+# the ending, OMAR is back at his desk.
+OFFICE_GUARD = {
+    "graphics_id": "OBJ_EVENT_GFX_MAGMA_MEMBER_M", "x": 2, "y": 6, "elevation": 3,
+    "movement_type": "MOVEMENT_TYPE_FACE_RIGHT", "movement_range_x": 0, "movement_range_y": 0,
+    "trainer_type": "TRAINER_TYPE_NONE", "trainer_sight_or_berry_tree_id": "0",
+    "script": "MauvilleCity_House1_EventScript_SafetyGuard", "flag": "0",
+}
+
+OFFICE_GUARD_SCRIPT = """
+MauvilleCity_House1_EventScript_SafetyGuard::
+	lock
+	faceplayer
+	goto_if_ge VAR_MT_PYRE_STATE, 3, MauvilleCity_House1_EventScript_SafetyGuardEnding
+	goto_if_set FLAG_DEFEATED_EVIL_TEAM_MT_CHIMNEY, MauvilleCity_House1_EventScript_SafetyGuardAfterChimney
+	msgbox MauvilleCity_House1_Text_SafetyGuardID, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_House1_EventScript_SafetyGuardAfterChimney::
+	msgbox MauvilleCity_House1_Text_SafetyGuardAfterChimney, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_House1_EventScript_SafetyGuardEnding::
+	msgbox MauvilleCity_House1_Text_SafetyGuardEnding, MSGBOX_DEFAULT
+	release
+	end
+
+MauvilleCity_House1_Text_SafetyGuardID:
+	.string "Welcome to SAFETY ZONE.\\n"
+	.string "Can I see some ID?\\p"
+	.string "… … … … … …\\p"
+	.string "That's a POKéDEX. Fine, you're in.\\p"
+	.string "The BOSS isn't here. AHMED took a\\n"
+	.string "team to MT. CHIMNEY.\\p"
+	.string "Something about a METEORITE and\\n"
+	.string "making our own sunshine.\\p"
+	.string "That empty desk? OMAR's.\\n"
+	.string "Don't touch it. It's evidence.$"
+
+MauvilleCity_House1_Text_SafetyGuardAfterChimney:
+	.string "Can I see some ID?\\n"
+	.string "…Oh. It's you.\\p"
+	.string "You beat the BOSS at MT. CHIMNEY?\\p"
+	.string "He came back, changed the WI-FI\\n"
+	.string "password too, and left again.\\p"
+	.string "Now none of us can log in.$"
+
+MauvilleCity_House1_Text_SafetyGuardEnding:
+	.string "Can I see some ID?\\n"
+	.string "Just kidding. You're a legend here.\\p"
+	.string "OMAR's back at his desk!\\p"
+	.string "He's doing “thinking work.”\\n"
+	.string "AHMED says it counts. For now.$"
+"""
+
+
+def edit_office_map(t):
+    import json
+    m = json.loads(t)
+    if not any(o["script"] == OFFICE_GUARD["script"] for o in m["object_events"]):
+        m["object_events"].append(OFFICE_GUARD)
+    return json.dumps(m, indent=2) + "\n"
+
+
+def edit_office_script(t):
+    return t if "SafetyGuard::" in t else t.rstrip("\n") + "\n" + OFFICE_GUARD_SCRIPT

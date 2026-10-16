@@ -160,20 +160,6 @@ MtPyre_Summit_Text_ArchieWeGotTheOrbLetsGo:
 	.string "We're pulling out!\p"
 	.string "…Save me some fries, MO.$"
 
-MtPyre_Summit_Text_MaxieSilence:
-	.string "AHMED: {PLAYER}…\p"
-	.string "OMAR and I brought the ORBS back.\n"
-	.string "Then we talked. With MO. For hours.\p"
-	.string "I changed the password back.\p"
-	.string "OMAR: And I gave SAFETY ZONE\n"
-	.string "a five-star review on YELP.\p"
-	.string "Five stars. Great security.\n"
-	.string "Boss is kind of strict.\p"
-	.string "AHMED: …And HAMZA's review is back\n"
-	.string "up, too.\p"
-	.string "Thank you, {PLAYER}.\n"
-	.string "You and MO kept the peace.$"
-
 @@ file: data/maps/MagmaHideout_4F/scripts.inc
 
 MagmaHideout_4F_Text_MaxieAwakenGroudon:
