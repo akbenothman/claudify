@@ -330,6 +330,14 @@ def main():
     edit("data/maps/MauvilleCity_House1/map.json", story.edit_office_map)
     edit("data/maps/MauvilleCity_House1/scripts.inc", story.edit_office_script)
 
+    # 9k. POKéMON INTO THE MOVERSE: title banner, running shoes from the start, MOM's EXP. SHARE.
+    shutil.copy(os.path.join(REMIX, "graphics", "title", "moverse_version.png"),
+                os.path.join(ROOT, "graphics", "title_screen", "emerald_version.png"))
+    edit("data/scripts/new_game.inc", story.edit_new_game_shoes)
+    edit("data/maps/LittlerootTown/scripts.inc", story.edit_mom_gift)
+    edit("data/maps/RustboroCity_DevonCorp_3F/scripts.inc", story.edit_zaaby_gift)
+    edit("include/config/item.h", story.edit_exp_share_config)
+
     # 9i. The Potions are IDRIS's SOUSA (game/story.py).
     edit("src/data/items.h", story.edit_sousa_items)
     for pattern, new in story.SOUSA_TEXT_RENAMES:

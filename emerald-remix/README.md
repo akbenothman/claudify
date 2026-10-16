@@ -1,6 +1,6 @@
-# Emerald Remix
+# Pokémon Into the MoVerse
 
-A Pokémon Emerald ROM hack with new Pokémon, moves, sprites and dialogue, playable on an iPhone through the **Delta** emulator.
+(Working name: Emerald Remix.) A Pokémon Emerald ROM hack with new Pokémon, moves, sprites and dialogue, playable on an iPhone through the **Delta** emulator.
 
 > This folder holds the plan. It is meant to become its own repository. See
 > [Moving this into its own repo](#moving-this-into-its-own-repo).

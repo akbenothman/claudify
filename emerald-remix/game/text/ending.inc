@@ -127,8 +127,18 @@ LittlerootTown_Text_WearTheseRunningShoes:
 	.string "So here's the plan. Defeat the\n"
 	.string "MOVERSE. Beat every GYM.\p"
 	.string "Then go confront your father.\p"
-	.string "Here, wear these RUNNING SHOES.\n"
-	.string "They'll put a zip in your step!$"
+	.string "You've had RUNNING SHOES on since\n"
+	.string "the truck. Good. Keep running.\p"
+	.string "And take this. Your father never\n"
+	.string "gave you anything. I will.$"
+
+LittlerootTown_Text_ExplainRunningShoes:
+	.string "MOM: That's an EXP. SHARE.\p"
+	.string "Turn it on in your BAG, and your\n"
+	.string "whole team gets EXP from battles.\p"
+	.string "Even the ones that didn't fight.\n"
+	.string "Nobody gets left on the side\l"
+	.string "of the road in THIS family.$"
 
 @@ file: data/maps/LittlerootTown_BrendansHouse_1F/scripts.inc
 PlayersHouse_1F_Text_MoversPokemonGoSetClock:
@@ -178,3 +188,11 @@ PlayersHouse_1F_Text_DadShouldStayLonger:
 	.string "to the MOVERSE.\p"
 	.string "He left me on the side of the road,\n"
 	.string "you know. I haven't forgotten.$"
+
+@@ file: data/maps/RustboroCity_DevonCorp_3F/scripts.inc
+RustboroCity_DevonCorp_3F_Text_ExplainExpShare:
+	.string "ZAABY: That's a LUCKY EGG.\p"
+	.string "A POKéMON holding it earns more\n"
+	.string "EXP. Points from battles.\p"
+	.string "I bought it with VILLA 74 money.\n"
+	.string "Don't tell TAHA.$"

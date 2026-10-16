@@ -55,7 +55,8 @@ each route has a Pokémon that covers the hard gym.
 - [ ] `.bps` patch against your clean ROM *(waits on Y2)*
 - [ ] On Delta: start a game, save, quit, reload; check the clock (berries, tides)
 - [x] `make release` build (turns off the debug menu): builds and boots
-- [ ] Config pass: battle mechanics generation, EXP share, running shoes, followers *(waits on Y16)*
+- [ ] Config pass: battle mechanics generation, followers *(waits on Y16)*. Done: running shoes from the
+      start, the modern EXP Share (a key item for the whole party) from Mom with your starter
 
 ## M3: Remix: "Emerald, but ours" (v0.1)
 

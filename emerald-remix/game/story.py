@@ -364,3 +364,43 @@ def edit_office_map(t):
 
 def edit_office_script(t):
     return t if "SafetyGuard::" in t else t.rstrip("\n") + "\n" + OFFICE_GUARD_SCRIPT
+
+
+# The game is POKéMON INTO THE MOVERSE: the banner under the title-screen logo (drawn by
+# tools/make_title.py) and PROF. MO's welcome. RUNNING SHOES from the start, and MOM gives you the
+# EXP. SHARE (modern style: a key item that shares EXP with the whole party) when you get your
+# starter. ZAABY gives a LUCKY EGG instead of the EXP. SHARE.
+NEW_GAME_SHOES = "\tsetflag FLAG_SYS_B_DASH\n\tsetflag FLAG_RECEIVED_RUNNING_SHOES\n"
+
+
+def edit_new_game_shoes(t):
+    if NEW_GAME_SHOES in t:
+        return t
+    anchor = "\tsetflag FLAG_HIDE_VICTORY_ROAD_EXIT_WALLY\n"
+    return t.replace(anchor, anchor + NEW_GAME_SHOES, 1)
+
+
+MOM_GIFT_OLD = """	msgbox LittlerootTown_Text_WearTheseRunningShoes, MSGBOX_DEFAULT
+	playfanfare MUS_OBTAIN_ITEM
+	message LittlerootTown_Text_SwitchShoesWithRunningShoes
+	waitfanfare
+	setflag FLAG_RECEIVED_RUNNING_SHOES
+"""
+MOM_GIFT_NEW = """	msgbox LittlerootTown_Text_WearTheseRunningShoes, MSGBOX_DEFAULT
+	giveitem ITEM_EXP_SHARE
+	setflag FLAG_RECEIVED_RUNNING_SHOES
+"""
+
+
+def edit_mom_gift(t):
+    return t.replace(MOM_GIFT_OLD, MOM_GIFT_NEW)
+
+
+def edit_zaaby_gift(t):
+    return t.replace("\tgiveitem ITEM_EXP_SHARE\n", "\tgiveitem ITEM_LUCKY_EGG\n")
+
+
+def edit_exp_share_config(t):
+    # The modern EXP. SHARE remembers whether it's on in a save flag; 0x20 is unused in Emerald.
+    t = t.replace("#define I_EXP_SHARE_FLAG        0 ", "#define I_EXP_SHARE_FLAG        FLAG_UNUSED_0x020 ")
+    return t.replace("#define I_EXP_SHARE_ITEM        GEN_5", "#define I_EXP_SHARE_ITEM        GEN_6")

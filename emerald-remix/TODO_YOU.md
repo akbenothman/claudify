@@ -77,7 +77,8 @@ below that Claude needs answered to build it.
 
 ## Title screen and intro
 
-- [ ] **Y13. The hack's name** (shown on the title screen and in the patch). *Default: "Emerald Remix".*
+- [x] **Y13. The hack's name:** **Pokémon Into the MoVerse** (on the title screen, under the Pokémon logo).
+      The project folder keeps its working name, Emerald Remix.
 - [ ] **Y14. Title screen.** Keep Rayquaza (now Snickers), or put one of the starters (e.g. Omarauder) on it? A new logo
       means one Gemini image from you. *Default: new name on the logo, Rayquaza stays.*
 - [x] **Y15. The professor's intro.** Professor Mo shows off his Omar (and explains why his Ahmed is in
@@ -90,7 +91,8 @@ below that Claude needs answered to build it.
         *Default: modern. The starters' designs already assume Fairy exists.*
       - Difficulty: normal, harder trainers, or level caps?
       - Pokémon following you on the overworld? (Needs a small overworld sprite per Pokémon.)
-      - Quality of life: running shoes from the start, faster text, EXP Share, no HM moves?
+      - Quality of life: ✅ running shoes from the start, ✅ EXP Share early (Mom gives it with your
+        starter); still open: faster text, no HM moves?
         *Default: all on.*
 
 ## Testing
