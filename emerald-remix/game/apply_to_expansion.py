@@ -9,7 +9,7 @@ Script 3 starts May's Route 103 battle for the starter you picked, Script 4 give
 Mewtwo and starts Wally's Mauville battle (to check his third starter), Script 5 gives the three
 final forms at level 50 and starts a wild battle (to check back sprites), Script 6 gives the three
 legendary cats at level 70 and starts a wild battle with Haleeb, Script 7 gives a level-70 Mewtwo and
-starts Ahmed's Mt. Chimney battle.
+starts Ahmed's Mt. Chimney battle, Script 8 shows Ahmed's venting speech and the make-up scene.
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -317,6 +317,9 @@ def main():
                           "Debug_EventScript_Script_5::\n\tgivemon SPECIES_HEESHEF, 50\n"
                           "\tgivemon SPECIES_OMARAUDER, 50\n\tgivemon SPECIES_AHMEXEC, 50\n"
                           "\tsetwildbattle SPECIES_ZIGZAGOON, 2\n\tdowildbattle\n\trelease\n\tend\n")
+            t = t.replace("Debug_EventScript_Script_8::\n\trelease\n\tend\n",
+                          "Debug_EventScript_Script_8::\n\tmsgbox MtChimney_Text_MaxieIntro, MSGBOX_DEFAULT\n"
+                          "\tmsgbox MtPyre_Summit_Text_MaxieSilence, MSGBOX_DEFAULT\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_7::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_7::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
                           "\ttrainerbattle_no_intro TRAINER_MAXIE_MT_CHIMNEY, Debug_Text_RivalDefeated\n"

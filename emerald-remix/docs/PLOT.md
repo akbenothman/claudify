@@ -67,6 +67,29 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 | 19 | Elite Four and Champion | New cast and teams *(Y10)* |
 | 20 | Post-game: catch Haleeb in the Marine Cave, Ceaser in the Terra Cave | Same places. Snickers waits at the top of Sky Pillar |
 
+## Solo venting
+
+Whenever you meet one of them without the other, he vents to you about the other. These scenes are
+written and in the game (`game/text/villains.inc`):
+
+| Where | Who | What he vents about |
+|---|---|---|
+| Slateport museum | Omar | Built Safety Zone with Ahmed, half is his, got locked out of his own company |
+| Meteor Falls | Omar | The password. "He says I don't do any work. I was doing work! Thinking work!" |
+| Mt. Chimney | Omar | Ahmed's sunshine plan is all about money; Ahmed's guards asked for his ID |
+| Mt. Chimney | Ahmed | Omar never works a shift, deleted Hamza's help review, so yes, he changed the password. Then asks for your ID |
+| Slateport harbor | Omar | "Bring Ahmed if you want. Actually, don't. He'll ask for ID at the door." |
+| Mt. Pyre (orbs taken) | Omar | Mo's first peace talks, with crazy fries: Ahmed said one word about the password and left |
+| Safety Zone hideout | Ahmed | Omar again, Hamza's review again; Ceaser saw the paperwork and went back to sleep, "just like Omar" |
+| Mossdeep Space Center | Ahmed and Hamza | Hamza: "Has anyone seen my review?" Ahmed admits Omar might not be totally wrong ("don't tell him") |
+| Seafloor Cavern | Omar | "Mo sent you. Ahmed sent you. Everyone sent you." Flooding Safety Zone HQ: "let's see Ahmed change THAT password" |
+
+## The ending
+
+After Snickers ends the storm, Ahmed and Omar return the orbs to Mt. Pyre together, and talk it out with
+you and Mo, for hours. **Ahmed changes the password back. Omar gives Safety Zone a five-star review on
+Yelp** ("Great security. Boss is kind of strict."), and Hamza's review goes back up.
+
 ## What's already in the game
 
 - The three cats, with their weather abilities (Haleeb's rain, Ceaser's sun, Snickers calming both),
@@ -84,5 +107,4 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 1. Who fills the three open admin slots? (Real friends work best.)
 2. Who replaces **Steven** (the mysterious strong trainer) and **Wallace** (the Champion)?
 3. Who's **Dad** (the Petalburg gym leader)?
-4. How do the peace talks end? Do Ahmed and Omar make up (Ahmed resets the password, Omar puts Hamza's
-   review back), or agree to disagree and keep beefing?
+
