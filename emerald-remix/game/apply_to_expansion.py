@@ -8,7 +8,8 @@ overworld): Script 1 opens the starter choice, Script 2 starts a wild battle wit
 Script 3 starts May's Route 103 battle for the starter you picked, Script 4 gives you a level-70
 Mewtwo and starts Wally's Mauville battle (to check his third starter), Script 5 gives the three
 final forms at level 50 and starts a wild battle (to check back sprites), Script 6 gives the three
-legendary cats at level 70 and starts a wild battle with Haleeb.
+legendary cats at level 70 and starts a wild battle with Haleeb, Script 7 gives a level-70 Mewtwo and
+starts Ahmed's Mt. Chimney battle.
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -20,6 +21,7 @@ import shutil
 import sys
 
 import legends
+import villains
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REMIX = os.path.dirname(HERE)
@@ -289,6 +291,12 @@ def main():
         return t[:start] + body + t[end:]
     edit("test/battle/form_change/primal_reversion.c", primal_test)
 
+    # 9c. The villains: Ahmed's Safety Zone and Omar's Team Beanie (game/villains.py).
+    edit("src/data/trainers.party", villains.edit_parties)
+    edit("src/battle_main.c", villains.edit_class_names)
+    for old, new in villains.RENAMES + villains.LINE_FIXES:
+        rename_in_strings(old, new, text_files)
+
     # 10. The debug menu's "give starters" shortcut hands out ours.
     edit("data/scripts/debug.inc", lambda t: t.replace("givemon SPECIES_TREECKO,", "givemon SPECIES_SQUEESH,")
          .replace("givemon SPECIES_TORCHIC,", "givemon SPECIES_BEANITO,")
@@ -309,6 +317,10 @@ def main():
                           "Debug_EventScript_Script_5::\n\tgivemon SPECIES_HEESHEF, 50\n"
                           "\tgivemon SPECIES_OMARAUDER, 50\n\tgivemon SPECIES_AHMEXEC, 50\n"
                           "\tsetwildbattle SPECIES_ZIGZAGOON, 2\n\tdowildbattle\n\trelease\n\tend\n")
+            t = t.replace("Debug_EventScript_Script_7::\n\trelease\n\tend\n",
+                          "Debug_EventScript_Script_7::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
+                          "\ttrainerbattle_no_intro TRAINER_MAXIE_MT_CHIMNEY, Debug_Text_RivalDefeated\n"
+                          "\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_6::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_6::\n\tgivemon SPECIES_RAYQUAZA, 70\n"
                           "\tgivemon SPECIES_GROUDON, 70\n\tgivemon SPECIES_KYOGRE, 70\n"

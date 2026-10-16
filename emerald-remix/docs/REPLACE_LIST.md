@@ -61,12 +61,12 @@ one, or replace them with your own.
 
 | Now | Role | Your version |
 |---|---|---|
-| Team Aqua | Wants to flood the world with Kyogre (now Haleeb) | |
-| Archie | Aqua leader (ace: Sharpedo) | |
+| Team Aqua | Wants to flood the world with Kyogre (now Haleeb) | ✅ **Team Beanie** (Omar's crew) |
+| Archie | Aqua leader (ace: Sharpedo) | ✅ **Omar** (ace: Omarauder) |
 | Matt, Shelly | Aqua admins | |
-| Team Magma | Wants to expand the land with Groudon (now Ceaser) | |
-| Maxie | Magma leader (ace: Camerupt) | |
-| Tabitha, Courtney | Magma admins | |
+| Team Magma | Wants to expand the land with Groudon (now Ceaser) | ✅ **Safety Zone** (Ahmed's company) |
+| Maxie | Magma leader (ace: Camerupt) | ✅ **Ahmed** (ace: Ahmexec) |
+| Tabitha, Courtney | Magma admins | ✅ Tabitha → **Hamza**; Courtney open |
 | Aqua/Magma grunts | Generic members (dozens of battles) | |
 
 ## 5. Towns and cities (16) 🟢

@@ -47,7 +47,7 @@ below that Claude needs answered to build it.
       need a Gemini sprite each; a new name and new lines with the old look cost nothing.*
 - [ ] **Y7. Safety Zone.** Should Ahmexec's company exist in the world (a building, guards, a boss
       fight)? *Default: a small Safety Zone office in Mauville with one trainer battle.*
-- [ ] **Y8. The villains.** *Draft ready in [docs/PLOT.md](docs/PLOT.md): Team Drizzle and Team Heatwave.* Emerald's villains are **Team Aqua and Team Magma** (leaders Archie and Maxie);
+- [x] **Y8. The villains.** Ahmed's Safety Zone vs Omar's Team Beanie, feuding over money (in the game; see [docs/PLOT.md](docs/PLOT.md)). Still open: three admin names. Emerald's villains are **Team Aqua and Team Magma** (leaders Archie and Maxie);
       Team Rocket isn't in this game. Replace them with your own team(s)? Give a team name, a leader, two
       admins, what they want, and their look. Or bring in Team Rocket instead?
       *Default: one new team replaces both, with a leader and two admins.*
