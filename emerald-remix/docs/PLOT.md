@@ -29,7 +29,7 @@ They used to run Safety Zone together. Now they don't speak.
 | Ace | **Ahmexec** | **Omarauder** |
 | Team | Security dogs and cameras: Growlithe/Arcanine, Magnemite/Magneton, his own line | Thieves: Honchkrow, Weavile |
 | Wants | Wake **Ceaser**: endless sunshine means endless outdoor events, and every event needs security. Money | Wake **Haleeb**: endless rain empties the streets (easy pickings) and floods Safety Zone HQ. Revenge |
-| Number one | **MOSTAFA**: Ahmed's real number one, the only one with the new password (Magma Hideout) | **IDRIS**: Omar's real number one; Omar texts him first (Seafloor Cavern) |
+| Number one | **MOSTAFA**: Ahmed's real number one, the only one with the new password (Magma Hideout) | **IDRIS**: Omar's real number one; Omar texts him first. Makes **SOUSA**, his electrolyte and protein drink, and wants to deck Ahmed in the face (Seafloor Cavern) |
 | Admins | **HAMADA** (replaces Tabitha): only ever says "HURRRRRR" and "NAIRRRRRRR" (and "… hurrrr" when he loses) | **KROOMA** (replaces Matt): wants to hop on Valheim or an ARAM; Haleeb is his love |
 | | **KHALI IBRAHIM** (takes Tabitha's Magma Hideout battle): Ceaser was stolen from him, they had an unbreakable bond, and he wants him back | **YAHYA** (replaces Shelly): Haleeb is a G; when he loses, he missed his Q |
 | Grunts | Security guards in black suits | Guys in black beanies |
@@ -124,7 +124,8 @@ Yelp** ("Great security. Boss is kind of strict."), and Hamza's review goes back
   **Hisham** as Dad (gym and Izzo's house rewritten), **Yaseen** in Wally's place, the gym leaders,
   the four Maliks of the Elite Four, and Hisham again as Champion.
 - **G-Moves** (the Z-Moves, renamed) with one signature G-Move per new line; see
-  [G_MOVES.md](G_MOVES.md). The Red and Blue Orbs are the **Strawberry** and the **Cheese**.
+  [G_MOVES.md](G_MOVES.md). The Red and Blue Orbs are the **Strawberry** and the **Cheese**. Potion, Super Potion and Hyper
+  Potion are Idris's **Chocolate, Strawberry and Vanilla Sousa**.
 - **Ahmed and Omar as the bosses**: names in every line of dialogue, the team names (SAFETY ZONE,
   TEAM BEANIE), the trainer classes (SAFETY BOSS, BEANIE BOSS) and their new teams. They still wear Maxie's and Archie's sprites, and the dialogue still talks about the land and
   the sea until the scenes are rewritten.

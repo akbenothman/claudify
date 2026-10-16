@@ -325,6 +325,17 @@ def main():
     # 9h. Taha (Steven) and the villain admins (game/story.py, game/text/admins.inc).
     edit("src/data/trainers.party", story.edit_admin_parties)
     edit("src/field_specials.c", lambda t: t.replace('_("STEVEN")', '_("TAHA")'))  # tag-battle partner
+
+    # 9i. The Potions are IDRIS's SOUSA (game/story.py).
+    edit("src/data/items.h", story.edit_sousa_items)
+    for pattern, new in story.SOUSA_TEXT_RENAMES:
+        for path in text_files:
+            edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
+    for old, new in story.SOUSA_LINE_FIXES:
+        rename_in_strings(old, new, text_files)
+    for pattern, new in story.SOUSA_TEST_RENAMES:
+        for path in test_files:
+            edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
     for pattern, new in story.ADMIN_RENAMES:
         for path in text_files:
             edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))

@@ -259,3 +259,34 @@ def edit_admin_parties(t):
                 b = b.replace("\nName: %s\n" % old, "\nName: %s\n" % new).replace("Gender: Female\n", "Gender: Male\n")
         blocks[i] = b
     return "\n=== ".join(blocks)
+
+
+# The Potions are IDRIS's SOUSA, his electrolyte and protein drink: Potion = chocolate,
+# Super Potion = strawberry, Hyper Potion = vanilla. Max Potion and Full Restore stay.
+SOUSA = [("Super Potion", "Strawberry Sousa", "strawberry"),
+         ("Hyper Potion", "Vanilla Sousa", "vanilla"),
+         ("Potion", "Chocolate Sousa", "chocolate")]
+_NOT_AFTER = "(?<!Max )(?<!Full )(?<!Super )(?<!Hyper )(?<!MAX )(?<!FULL )(?<!SUPER )(?<!HYPER )"
+SOUSA_TEXT_RENAMES = [(r"\b%s(S?)\b" % old.upper(), new.upper() + r"\1") for old, new, _ in SOUSA[:2]]
+SOUSA_TEXT_RENAMES.append((_NOT_AFTER + r"\bPOTION(S?)\b", r"CHOCOLATE SOUSA\1"))
+SOUSA_TEST_RENAMES = [(r"\bSuper Potion\b", "Strawberry Sousa"), (r"\bHyper Potion\b", "Vanilla Sousa"),
+                      (_NOT_AFTER + r"\bPotion\b", "Chocolate Sousa")]
+
+
+def edit_sousa_items(t):
+    for old, new, flavour in SOUSA:
+        start = t.index('        .name = ITEM_NAME("%s"),' % old)
+        end = t.index("\n    },", start)
+        b = t[start:end].replace('ITEM_NAME("%s")' % old, 'ITEM_NAME("%s")' % new)
+        b = b.replace('            "Restores the HP of\\n"\n            "a Pokémon by\\n"\n',
+                      '            "IDRIS\'s %s\\n"\n            "SOUSA. Heals HP by\\n"\n' % flavour)
+        t = t[:start] + b + t[end:]
+    return t
+
+# Lines the longer name pushes past the textbox edge.
+SOUSA_LINE_FIXES = [
+    ("A CHOCOLATE SOUSA can be used anytime, so it's", "A SOUSA works anytime, so it's"),
+    ("items like CHOCOLATE SOUSA and ANTIDOTE.", "items like SOUSA and ANTIDOTE."),
+    ("I should have brought a CHOCOLATE SOUSA…", "I should have brought some SOUSA…"),
+    ("one CHOCOLATE SOUSA. How much money remains?", "one CHOCOLATE SOUSA.\\lHow much money remains?"),
+]

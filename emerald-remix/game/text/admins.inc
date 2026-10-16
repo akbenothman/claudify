@@ -5,7 +5,8 @@
 @ CEASER's side: HAMADA (replaces Tabitha: HURRRRRR, NAIRRRRRRR) and KHALI IBRAHIM (takes Tabitha's
 @ Magma Hideout battle: CEASER was stolen from him, and he wants him back).
 @ Each boss also has his real number one, in a grunt's battle near the end of each team's base:
-@ IDRIS for OMAR (Seafloor Cavern) and MOSTAFA for AHMED (Magma Hideout).
+@ IDRIS for OMAR (Seafloor Cavern) and MOSTAFA for AHMED (Magma Hideout). IDRIS makes SOUSA, an
+@ electrolyte and protein drink (the Potions are his flavours), and wants to deck AHMED in the face.
 @ ZAABY (replaces Mr. Stone, DEVON's PRESIDENT) is selling VILLA 74 and isn't giving TAHA any of
 @ the money he promised him.
 
@@ -307,17 +308,19 @@ SeafloorCavern_Room3_Text_Grunt5Intro:
 	.string "they're OMAR's number one.\p"
 	.string "They're not. I am.\n"
 	.string "OMAR texts me first.\p"
-	.string "You want OMAR? You go through\n"
-	.string "his real number one!$"
+	.string "Want a sip of SOUSA? I make it\n"
+	.string "myself. Electrolytes. Protein.\p"
+	.string "No? Fine. You want OMAR? You go\n"
+	.string "through his real number one!$"
 
 SeafloorCavern_Room3_Text_Grunt5Defeat:
-	.string "OMAR's going to hear about this…\n"
-	.string "From me. First.$"
+	.string "I should have had more SOUSA…$"
 
 SeafloorCavern_Room3_Text_Grunt5PostBattle:
 	.string "KROOMA and YAHYA? Interns.\p"
-	.string "I'm the one who knows where OMAR\n"
-	.string "keeps his beanies.$"
+	.string "And AHMED? When I see AHMED,\n"
+	.string "I'm decking him in the face.\p"
+	.string "Right after a chocolate SOUSA.$"
 
 @@ file: data/maps/MagmaHideout_4F/scripts.inc
 MagmaHideout_4F_Text_Grunt13Intro:
