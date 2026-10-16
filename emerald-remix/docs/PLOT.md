@@ -34,14 +34,20 @@ They used to run Safety Zone together. Now they don't speak.
 | Grunts | Security guards in black suits | Guys in black beanies |
 | Running jokes | Guards ask for your ID before battling. Ahmed keeps telling grunts to "do some actual work" | Grunts try to log into Safety Zone's wifi. Omar still doesn't know the new password |
 
-Professor Mo is caught in the middle: his Ahmed and his Omar fight exactly like their trainers.
+## The heart of the story: keeping the peace
+
+**You and Professor Mo are the peacekeepers**, and you're not very good at it. Mo has had the same
+problem at home all along: his Ahmed and his Omar (the Pokémon) fight exactly like their trainers. All
+game, the two of you try to get Ahmed and Omar to talk, and it keeps going wrong: one of them storms
+off, someone brings up the password, someone brings up Hamza's review. Mo's plan is always food:
+"Nobody can stay mad over crazy fries with fluffy sauce." It never works until the very end.
 
 ## Story beats
 
 | # | Emerald | Remix |
 |---|---|---|
 | 1 | Moving to Littleroot; Birch chased by a Zigzagoon | Same; **Mo** is chased while carrying his drink of the day, and spills it |
-| 2 | Pick a starter from Birch's bag | Squeesh, Beanito or Guardpup. Mo's Ahmed and Omar are fighting in the background |
+| 2 | Pick a starter from Birch's bag | Squeesh, Beanito or Guardpup. Mo's Ahmed and Omar are fighting in the background; your first job is breaking them up |
 | 3 | Rival battle on Route 103 | Same, rival has the starter that beats yours |
 | 4 | Dad (Norman) is the Petalburg gym leader | Same beat, new name for Dad *(you pick)* |
 | 5 | Wally catches his first Pokémon | Same; later he battles with the third starter |
@@ -49,14 +55,14 @@ Professor Mo is caught in the middle: his Ahmed and his Omar fight exactly like 
 | 7 | Steven in Dewford's Granite Cave | Same beat; Steven's replacement *(you pick)* |
 | 8 | Slateport museum: Aqua shows up | Team Beanie tries to steal a submarine to reach Haleeb's sleeping place |
 | 9 | Mauville: Wally battle | Same; plus the **Safety Zone** office, where Ahmed's guards train (one battle) |
-| 10 | Mt. Chimney: Magma steals the Meteorite | **Ahmed** takes the Meteorite "for safekeeping". First battle with him (Lv 25 Ahmed, his own namesake) |
+| 10 | Mt. Chimney: Magma steals the Meteorite | **Ahmed** takes the Meteorite "for safekeeping". You try to ask what happened between him and Omar; he battles you instead (Lv 25 Ahmed, his own namesake) |
 | 11 | Weather Institute raid | Team Beanie raids it to find where Haleeb sleeps |
-| 12 | Mt. Pyre: the orbs are stolen | Ahmed and Omar each grab an orb and argue about the password right there |
+| 12 | Mt. Pyre: the orbs are stolen | **Peace talks #1**: Mo sets up a meeting at the summit, with food. Ahmed and Omar argue about the password, each grabs an orb and leaves |
 | 13 | Magma Hideout: Groudon awakens | **Ceaser wakes up** in Safety Zone's hideout... and goes straight back to sleep. Ahmed battle with Ahmexec |
 | 14 | Lilycove: Aqua Hideout | Team Beanie's hideout is a warehouse full of stolen Safety Zone equipment |
 | 15 | Seafloor Cavern: Kyogre awakens | Omar battle with Omarauder. **Haleeb wakes** from her nap, annoyed. Endless rain starts |
-| 16 | Sootopolis: Kyogre vs Groudon, extreme weather | **Haleeb and Ceaser argue over the weather** again: rain vs drought over the city |
-| 17 | Sky Pillar: Rayquaza calms them | **Snickers** comes down from the storm clouds with red lightning and ends the fight with one swipe. Ahmed and Omar finally have to talk |
+| 16 | Sootopolis: Kyogre vs Groudon, extreme weather | **Haleeb and Ceaser argue over the weather** again: rain vs drought over the city. Mo, panicking: "Now the *legendaries* are fighting too?!" |
+| 17 | Sky Pillar: Rayquaza calms them | **Snickers** comes down from the storm clouds with red lightning and ends the fight with one swipe. **Peace talks #2**: with nowhere left to storm off to, Ahmed and Omar finally sit down with you and Mo |
 | 18 | Wallace becomes the 8th gym leader's reveal | Same beat, new names *(you pick)* |
 | 19 | Elite Four and Champion | New cast and teams *(Y10)* |
 | 20 | Post-game: catch Haleeb in the Marine Cave, Ceaser in the Terra Cave | Same places. Snickers waits at the top of Sky Pillar |
@@ -78,4 +84,5 @@ Professor Mo is caught in the middle: his Ahmed and his Omar fight exactly like 
 1. Who fills the three open admin slots? (Real friends work best.)
 2. Who replaces **Steven** (the mysterious strong trainer) and **Wallace** (the Champion)?
 3. Who's **Dad** (the Petalburg gym leader)?
-4. Should Ahmed and Omar make up at the end, or stay beefing?
+4. How do the peace talks end? Do Ahmed and Omar make up (Ahmed resets the password, Omar puts Hamza's
+   review back), or agree to disagree and keep beefing?
