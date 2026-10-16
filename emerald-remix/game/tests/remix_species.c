@@ -30,3 +30,10 @@ TEST("Remix: starters are Hoenn Pokedex #001-009")
     EXPECT_EQ(SpeciesToHoennPokedexNum(SPECIES_TREECKO), 0);
 }
 
+
+TEST("Remix: Heeshupeeshu is a single-stage Pokemon")
+{
+    // Yaseen's partner, in Ralts's slot (game/story.py).
+    EXPECT_EQ(GetSpeciesEvolutions(SPECIES_RALTS), GetSpeciesEvolutions(SPECIES_NONE));
+    EXPECT_EQ(GetSpeciesBaseSpAttack(SPECIES_RALTS), 125);
+}

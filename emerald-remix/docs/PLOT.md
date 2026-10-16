@@ -29,8 +29,8 @@ They used to run Safety Zone together. Now they don't speak.
 | Ace | **Ahmexec** | **Omarauder** |
 | Team | Security dogs and cameras: Growlithe/Arcanine, Magnemite/Magneton, his own line | Thieves: Honchkrow, Weavile |
 | Wants | Wake **Ceaser**: endless sunshine means endless outdoor events, and every event needs security. Money | Wake **Haleeb**: endless rain empties the streets (easy pickings) and floods Safety Zone HQ. Revenge |
-| Admin | *open slot* (replaces Tabitha) | *open slot* (replaces Shelly) |
-| Admins | *open slot* (replaces Courtney) | *open slot* (replaces Matt) |
+| Admins | **HAMADA** (replaces Tabitha): only ever says "HURRRRRR" and "NAIRRRRRRR" | **KROOMA** (replaces Matt): wants to hop on Valheim or an ARAM; Haleeb is his love |
+| | **KHALI IBRAHIM** (takes Tabitha's Magma Hideout battle): Ceaser was stolen from him, they had an unbreakable bond, and he wants him back | **YAHYA** (replaces Shelly): Haleeb is a G; when he loses, he missed his Q |
 | Grunts | Security guards in black suits | Guys in black beanies |
 | Running jokes | Guards ask for your ID before battling. Ahmed keeps telling grunts to "do some actual work" | Grunts try to log into Safety Zone's wifi. Omar still doesn't know the new password |
 
@@ -75,7 +75,7 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 | 4 | Dad (Norman) is the Petalburg gym leader | **Hisham**, between Sequoia calls and pool nights |
 | 5 | Wally catches his first Pokémon | **Yaseen** (no starter) catches a **Heeshupeeshu** on Route 102 while you watch |
 | 6 | Team Aqua steals Devon Goods in Rustboro | A **Team Beanie** grunt steals the package. "Omar said finders keepers" |
-| 7 | Steven in Dewford's Granite Cave | Same beat; Steven's replacement *(you pick)* |
+| 7 | Steven in Dewford's Granite Cave | **Taha**: the books are better than the show, he's waiting for a Pirate Souls game, and he's obsessed with a mythical force called **MUAH** |
 | 8 | Slateport museum: Aqua shows up | Team Beanie tries to steal a submarine to reach Haleeb's sleeping place |
 | 9 | Mauville: Wally battle | **Yaseen** and his Heeshupeeshu. *Idea:* the **Safety Zone** office, where Ahmed's guards train |
 | 10 | Mt. Chimney: Magma steals the Meteorite | **Ahmed** takes the Meteorite "for safekeeping". You try to ask what happened between him and Omar; he battles you instead (Lv 25 Ahmed, his own namesake) |
@@ -104,7 +104,7 @@ written and in the game (`game/text/villains.inc`):
 | Slateport harbor | Omar | "Bring Ahmed if you want. Actually, don't. He'll ask for ID at the door." |
 | Mt. Pyre (orbs taken) | Omar | Mo's first peace talks, with crazy fries: Ahmed said one word about the password and left |
 | Safety Zone hideout | Ahmed | Omar again, Hamza's review again; Ceaser saw the paperwork and went back to sleep, "just like Omar" |
-| Mossdeep Space Center | Ahmed (and Tabitha) | Tabitha: "HAMZA's help review is STILL missing." Ahmed admits Omar might not be totally wrong ("don't tell him") |
+| Mossdeep Space Center | Ahmed (and Hamada) | Hamada: "HURRRRRR!" Ahmed admits Omar might not be totally wrong ("don't tell him") |
 | Seafloor Cavern | Omar | "Mo sent you. Ahmed sent you. Everyone sent you." Flooding Safety Zone HQ: "let's see Ahmed change THAT password" |
 
 ## The ending
@@ -130,8 +130,7 @@ Yelp** ("Great security. Boss is kind of strict."), and Hamza's review goes back
 
 ## What this needs from you
 
-1. Who fills the four open admin slots? (Real friends work best.)
-2. Who replaces **Steven** (the mysterious strong trainer)? And what are Hisham's Champion team and
-   Heeshupeeshu's design (it's Ralts for now, and still evolves into Kirlia)?
+1. Hisham's last two Champion Pokémon (he has Heeshef, Omarauder, Ahmexec and Heeshupeeshu).
+2. Heeshupeeshu's design (it's a single-stage Pokémon in Ralts's slot, wearing Ralts's sprite).
 3. Should **Hamza** get his own sprite? (He still wears May's or Brendan's.) Hisham and Izzo too.
 

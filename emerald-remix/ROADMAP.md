@@ -21,7 +21,7 @@ Make the three starter lines feel like they were always part of Emerald.
       Hoenn dex would have made the Pokédex diploma impossible)
 - [x] Petalburg Pokémon Center NPC explains your starter's real types
 - [x] ~~Second rival: Wally with the third starter~~: **Yaseen** takes Wally's place with no starter;
-      he catches a **Heeshupeeshu** (placeholder: Ralts renamed in place).
+      he catches a **Heeshupeeshu**, a single-stage Pokémon in Ralts's slot (Gardevoir's stats and moves).
 - [x] Automated tests: signature moves, the type triangle, evolution levels, Pokédex numbers. The
       expansion's full suite (5,868 tests) also passes with our changes
 - [x] Played each starter through the first rival battle in the emulator: all three win by just using

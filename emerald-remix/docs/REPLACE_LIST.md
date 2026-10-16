@@ -19,8 +19,8 @@ Order is roughly the order players meet things, so it's a good order to fill it 
 | | Mom | Your mom; heals you at home, gives you running shoes | |
 | ✅ | Norman (Dad) | Your dad, and also the 5th gym leader (Petalburg) | **Hisham**: talks about his company Sequoia, loves Hamza like a son (Layth is his real son), plays pool with Mo and Izzo. 🎨 still Norman's look |
 | ✅ | May / Brendan | Rival 1: has the starter that beats yours | **Hamza**: Mo's assistant next door, loves gimmicks, beefs with Hisham, runs off as Sneakers O'Toole. Gives you the G-Power Ring. 🎨 still wears May's or Brendan's look |
-| ✅ | Wally | Rival 2: fights you in Mauville and Victory Road | **Yaseen**: no starter; you watch him catch a **Heeshupeeshu** (placeholder: Ralts renamed) |
-| | Steven Stone | Mysterious strong trainer, helps you through the story, post-game boss | |
+| ✅ | Wally | Rival 2: fights you in Mauville and Victory Road | **Yaseen**: no starter; you watch him catch a **Heeshupeeshu** (single stage, in Ralts's slot with Gardevoir's stats) |
+| ✅ | Steven Stone | Mysterious strong trainer, helps you through the story, post-game boss | **Taha**: A Song of Ice and Fire (books > show), waiting for Pirate Souls, obsessed with **MUAH**. 🎨 still Steven's look |
 | | Mr. Stone | Steven's dad, president of Devon Corp | |
 | | Mr. Briney + Peeko | Old sailor and his Wingull; ferries you to Dewford and Slateport | |
 | | Captain Stern | Ship captain at Slateport, the villains steal his submarine | |
@@ -52,7 +52,7 @@ Each has a type and an **ace**: their last, strongest Pokémon. You wanted every
 | Phoebe | Ghost | Dusclops | ✅ **Malik El Barasi** | |
 | Glacia | Ice | Walrein | ✅ **Malik Shagan** | |
 | Drake | Dragon | Salamence | ✅ **Malik Al Bakri** | |
-| **Champion** Wallace | Water | Milotic | ✅ **Hisham** again (also in Sootopolis and the Cave of Origin) | |
+| **Champion** Wallace | Water | Milotic | ✅ **Hisham** again (also in Sootopolis and the Cave of Origin) | **Heeshupeeshu** Lv 60, with Heeshef, Omarauder and Ahmexec at 58. Two more to come |
 
 ## 4. Villains
 
@@ -63,10 +63,10 @@ one, or replace them with your own.
 |---|---|---|
 | Team Aqua | Wants to flood the world with Kyogre (now Haleeb) | ✅ **Team Beanie** (Omar's crew) |
 | Archie | Aqua leader (ace: Sharpedo) | ✅ **Omar** (ace: Omarauder) |
-| Matt, Shelly | Aqua admins | |
+| Matt, Shelly | Aqua admins | ✅ **Krooma** (Matt) and **Yahya** (Shelly) |
 | Team Magma | Wants to expand the land with Groudon (now Ceaser) | ✅ **Safety Zone** (Ahmed's company) |
 | Maxie | Magma leader (ace: Camerupt) | ✅ **Ahmed** (ace: Ahmexec) |
-| Tabitha, Courtney | Magma admins | |
+| Tabitha, Courtney | Magma admins | ✅ **Hamada** (Tabitha at Mt. Chimney and Mossdeep) and **Khali Ibrahim** (Tabitha's Magma Hideout battle; Courtney never battles in Emerald) |
 | Aqua/Magma grunts | Generic members (dozens of battles) | |
 
 ## 5. Towns and cities (16) 🟢

@@ -236,10 +236,9 @@ MossdeepCity_SpaceCenter_2F_Text_MaxieUseFuelToEruptVolcano:
 	.string "into MT. CHIMNEY!\p"
 	.string "With CEASER gone, we'll make our\n"
 	.string "own sunshine. The volcano erupts!\p"
-	.string "TABITHA, tell them how serious\n"
+	.string "HAMADA, tell them how serious\n"
 	.string "we are.\p"
-	.string "TABITHA: Very serious. And HAMZA's\n"
-	.string "help review is STILL missing.$"
+	.string "HAMADA: HURRRRRR!$"
 
 MossdeepCity_SpaceCenter_2F_Text_MaxieWeFailedIsAquaAlsoMisguided:
 	.string "AHMED: We failed to make the\n"

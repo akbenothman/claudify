@@ -40,12 +40,12 @@ below that Claude needs answered to build it.
 
 - [ ] **Y6. The new cast.** Started: **Professor Mo** is in the game. The full checklist of who and what
       can be replaced is [docs/REPLACE_LIST.md](docs/REPLACE_LIST.md). You want to swap out every character. Start with the ones players meet most:
-      Mom, Steven, Mr. Briney, and the named NPCs in each town.
+      Mom, Mr. Briney, and the named NPCs in each town.
       For each: a name, one line about who they are, and whether they look different. *Different looks
       need a Gemini sprite each; a new name and new lines with the old look cost nothing.*
 - [ ] **Y7. Safety Zone.** Should Ahmexec's company exist in the world (a building, guards, a boss
       fight)? *Default: a small Safety Zone office in Mauville with one trainer battle.*
-- [x] **Y8. The villains.** Ahmed's Safety Zone vs Omar's Team Beanie, feuding over money (in the game; see [docs/PLOT.md](docs/PLOT.md)). Still open: three admin names.
+- [x] **Y8. The villains.** Ahmed's Safety Zone vs Omar's Team Beanie, feuding over money (in the game; see [docs/PLOT.md](docs/PLOT.md)). Admins: Hamada, Khali Ibrahim, Krooma, Yahya.
 - [ ] **Y9. Main plot.** *Draft ready in [docs/PLOT.md](docs/PLOT.md); edit it or answer its questions.* Same story beats as Emerald with your characters and jokes, or a different goal
       or ending? *Default: same beats, new characters and dialogue.*
 - [x] **Y10. Gym leaders, Elite Four and Champion: names.** Kareem, Jelal, Sammi B, Nabil, Hisham,

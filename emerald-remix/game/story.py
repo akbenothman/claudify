@@ -179,7 +179,8 @@ def edit_class_names(t):
 
 # Heeshupeeshu, the Pokémon Yaseen catches on Route 102. A placeholder for now: Ralts, renamed in
 # place, so the catching tutorial, Route 102's wild Pokémon and Yaseen's teams all use it.
-# It still evolves into Kirlia and Gardevoir until it gets its own design.
+# It's a single-stage Pokémon: it doesn't evolve, and it gets Gardevoir's stats and moves.
+HEESHUPEESHU_STATS = (68, 65, 65, 80, 125, 115)  # HP, Atk, Def, Spe, SpA, SpD (Gardevoir's)
 HEESHUPEESHU_NAMES = [("Ralts", "Heeshupeeshu"), ("RALTS", "HEESHUPEESHU")]
 
 
@@ -187,6 +188,12 @@ def edit_heeshupeeshu(t, species_block, set_field):
     start, end = species_block(t, "RALTS")
     b = set_field(t[start:end], "speciesName", '_("Heeshupeeshu")')
     b = set_field(b, "categoryName", '_("Mystery")')
+    for field, v in zip(("baseHP", "baseAttack", "baseDefense", "baseSpeed", "baseSpAttack",
+                         "baseSpDefense"), HEESHUPEESHU_STATS):
+        b = set_field(b, field, str(v))
+    b = set_field(b, "levelUpLearnset", "sGardevoirLevelUpLearnset")
+    b = set_field(b, "teachableLearnset", "sGardevoirTeachableLearnset")
+    b = re.sub(r"\n        \.evolutions = EVOLUTION\(.*?\),\n", "\n", b)
     ds = b.index("        .description = COMPOUND_STRING(\n")
     de = b.index("),\n", ds) + 3
     b = b[:ds] + ('        .description = COMPOUND_STRING(\n'
@@ -195,3 +202,55 @@ def edit_heeshupeeshu(t, species_block, set_field):
                   '            "really looks like yet, not even\\n"\n'
                   '            "HEESHUPEESHU."),\n') + b[de:]
     return t[:start] + b + t[end:]
+
+
+# Yaseen's later teams had Gardevoir; Heeshupeeshu doesn't evolve, so it's Heeshupeeshu all the way.
+def edit_yaseen_parties(t):
+    blocks = t.split("\n=== ")
+    for i, b in enumerate(blocks):
+        if b.startswith("TRAINER_WALLY_"):
+            blocks[i] = b.replace("\nGardevoir\n", "\nRalts\n")
+    return "\n=== ".join(blocks)
+
+
+# Hisham's Champion team: all three starters fully evolved, and a Heeshupeeshu. Two more to come.
+def champion_mon(species, level, moves):
+    return "%s\nLevel: %d\nIVs: 31 HP / 31 Atk / 31 Def / 31 SpA / 31 SpD / 31 Spe\n%s" % (
+        species, level, "".join("- %s\n" % m for m in moves))
+
+
+HISHAM_CHAMPION_TEAM = [
+    champion_mon("Heeshef", 58, ["Toxic Fondue", "Flamethrower", "Sludge Bomb", "Crunch"]),
+    champion_mon("Omarauder", 58, ["Sticky Fingers", "Earthquake", "Sucker Punch", "Night Slash"]),
+    champion_mon("Ahmexec", 58, ["Lockdown", "Close Combat", "Iron Head", "Bullet Punch"]),
+    champion_mon("Ralts", 60, ["Moonblast", "Psychic", "Shadow Ball", "Calm Mind"]),  # Heeshupeeshu, his ace
+]
+
+
+def edit_champion_party(t):
+    blocks = t.split("\n=== ")
+    for i, b in enumerate(blocks):
+        if b.startswith("TRAINER_WALLACE ==="):
+            top = b[:b.index("\n\n") + 2].replace("Pic: Champion Wallace\n", "Pic: Leader Norman\n")
+            blocks[i] = top + "\n".join(HISHAM_CHAMPION_TEAM)
+    return "\n=== ".join(blocks)
+
+
+# TAHA (replaces Steven): A Song of Ice and Fire (the books are better than the show), waiting for a
+# PIRATE SOULS game, and MUAH. The villain admins: KROOMA and YAHYA wake HALEEB with Omar (Matt and
+# Shelly); HAMADA (Tabitha) and KHALI IBRAHIM (Tabitha's Magma Hideout battle) work for Ahmed.
+# Their scenes are in game/text/admins.inc.
+ADMIN_RENAMES = [(r"\bSTEVEN STONE\b", "TAHA"), (r"\bSTEVEN\b", "TAHA"), (r"\bMATT\b", "KROOMA"),
+                 (r"\bSHELLY\b", "YAHYA"), (r"\bTABITHA\b", "HAMADA")]
+
+
+def edit_admin_parties(t):
+    blocks = t.split("\n=== ")
+    for i, b in enumerate(blocks):
+        if b.startswith("TRAINER_TABITHA_MAGMA_HIDEOUT ==="):
+            b = b.replace("\nName: TABITHA\n", "\nName: K. IBRAHIM\n")
+        for old, new in (("STEVEN", "TAHA"), ("MATT", "KROOMA"), ("SHELLY", "YAHYA"), ("TABITHA", "HAMADA")):
+            if "\nName: %s\n" % old in b:
+                b = b.replace("\nName: %s\n" % old, "\nName: %s\n" % new).replace("Gender: Female\n", "Gender: Male\n")
+        blocks[i] = b
+    return "\n=== ".join(blocks)
