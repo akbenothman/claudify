@@ -52,10 +52,11 @@ below that Claude needs answered to build it.
       Adam Jaber, Omar Hafiz & Mo Abdu, Hany; the four Maliks; Hisham as Champion. Still open: their
       types, aces and teams (they use the originals' for now).
 - [ ] **Y19. Town and city names.** Done so far: **Sewer Rat Town** (Littleroot), **O'Toole Town**
-      (Oldale), **Chicago** (Mauville, Sammi B), **G Spot** (Lavaridge, the hot springs), **Crumble City**
-      (Fortree, Adam Jaber), **New Heesh City** (Lilycove), **Twin Mo's** (Mossdeep, Hafiz & Abdu),
-      **Da'apolis City** (Sootopolis, Hany).
-      Still Emerald's: Petalburg, Rustboro, Dewford, Slateport, Verdanturf, Fallarbor, Pacifidlog, Ever Grande.
+      (Oldale), **Concord** (Petalburg, Nabil's gym), **West of Westeros** (Rustboro), **Chicago** (Mauville),
+      **LA Gimmick** (Verdanturf), **Sunnyvale** (Mt. Chimney, the volcano), **G Spot** (Lavaridge),
+      **Crumble City** (Fortree), **New Heesh City** (Lilycove), **Twin Mo's** (Mossdeep),
+      **Da'apolis City** (Sootopolis).
+      Still Emerald's: Dewford, Slateport, Fallarbor, Pacifidlog, Ever Grande.
 - [ ] **Y21. Dialogue tone.** For the scenes you can't skip: how should it sound (funny, roasting each
       other, serious with jokes)? Any running jokes or catchphrases to include?
 

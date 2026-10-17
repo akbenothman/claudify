@@ -6,8 +6,8 @@ Usage: apply_to_expansion.py PATH/TO/pokeemerald-expansion [--debug-scripts]
 --debug-scripts fills the debug menu's Scripts 1-8 (debug builds only, R+START in the overworld):
 1 the starter choice; 2 a wild Omarauder; 3 Hamza's Route 103 battle for your starter; 4 a level-70
 Mewtwo and Anas Tresh's gym battle; 5 the three final forms at level 50 and a wild
-battle; 6 the three legendary cats at level 70 and a wild Haleeb; 7 a warp into the Safety Zone
-office in Mauville; 8 MESO in PETALBURG WOODS and RUSTBORO.
+battle; 6 the three legendary cats at level 70 and a wild Haleeb; 7 a warp into West of Westeros
+(to check the long town name); 8 MESO in PETALBURG WOODS and RUSTBORO.
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -409,7 +409,7 @@ def main():
                           "Debug_EventScript_Script_8::\n\tmsgbox PetalburgWoods_Text_ThatWasAwfullyClose, MSGBOX_DEFAULT\n"
                           "\tmsgbox RustboroCity_Text_HelpMeIWasRobbed, MSGBOX_DEFAULT\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_7::\n\trelease\n\tend\n",
-                          "Debug_EventScript_Script_7::\n\twarp MAP_MAUVILLE_CITY_HOUSE1, 4, 6\n"
+                          "Debug_EventScript_Script_7::\n\twarp MAP_RUSTBORO_CITY, 13, 20\n"
                           "\twaitstate\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_6::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_6::\n\tgivemon SPECIES_RAYQUAZA, 70\n"

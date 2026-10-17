@@ -538,9 +538,29 @@ TOWN_RENAMES = [
     (r"\bMAUVILLE CITY\b", "CHICAGO"), (r"\bMAUVILLE\b", "CHICAGO"),       # Sammi B's city
     (r"\bOLDALE TOWN\b", "O'TOOLE TOWN"), (r"\bOLDALE\b", "O'TOOLE TOWN"),  # for SNEAKERS O'TOOLE
     (r"\bLAVARIDGE TOWN\b", "G SPOT"), (r"\bLAVARIDGE\b", "G SPOT"),       # the hot springs
+    (r"\bRUSTBORO CITY\b", "WEST OF WESTEROS"), (r"\bRUSTBORO\b", "WEST OF WESTEROS"),  # far west
+    (r"\bPETALBURG CITY\b", "CONCORD"), (r"\bPETALBURG\b", "CONCORD"),     # NABIL's gym
+    (r"\bMT\. CHIMNEY\b", "SUNNYVALE"),                                       # the volcano
+    (r"\bVERDANTURF TOWN\b", "LA GIMMICK"), (r"\bVERDANTURF\b", "LA GIMMICK"),  # the pretty one
 ]
 
 TOWN_LINE_FIXES = [("NEW HEESH DEPARTMENT STORE's clear-out", "NEW HEESH DEPT. STORE's clear-out"),
                    # Route 101 split "OLDALE / TOWN" over two lines
                    ("There's a POKéMON CENTER in O'TOOLE TOWN", "There's a POKéMON CENTER in"),
-                   ("TOWN right close by.", "O'TOOLE TOWN, right close by.")]
+                   ("TOWN right close by.", "O'TOOLE TOWN, right close by."),
+                   # Names split over two lines in the original
+                   ("My beloved awaits me in LA GIMMICK", "My beloved awaits me in"),
+                   ("TOWN just beyond here…", "LA GIMMICK, just beyond here…"),
+                   ("Get a CONTEST PASS in LA GIMMICK", "Get a CONTEST PASS in"),
+                   ("CITY and enter anytime!", "LA GIMMICK and enter anytime!"),
+                   # WEST OF WESTEROS is long: reword or wrap
+                   ("That's the BADGE from WEST OF WESTEROS GYM!", "That's the WEST OF WESTEROS BADGE!"),
+                   ("It'll make it easy to visit WEST OF WESTEROS.", "It'd be easy to visit\\lWEST OF WESTEROS."),
+                   ("new DEVON products in WEST OF WESTEROS now.", "new DEVON products in\\lWEST OF WESTEROS now."),
+                   ("“Linking WEST OF WESTEROS and LA GIMMICK", "“Linking WEST OF WESTEROS\\land LA GIMMICK"),
+                   ("in WEST OF WESTEROS, we wouldn't be here!", "in WEST OF WESTEROS,\\lwe wouldn't be here!"),
+                   ("at the POKéMON MART in WEST OF WESTEROS.", "at the POKéMON MART in\\lWEST OF WESTEROS."),
+                   ("Hey, that's WEST OF WESTEROS's GYM BADGE!", "Hey, that's WEST OF WESTEROS's\\nGYM BADGE!"),
+                   ("WEST OF WESTEROS's is the coolest, I'd say.", "WEST OF WESTEROS's is the coolest!"),
+                   ("If WEST OF WESTEROS and LA GIMMICK were", "If these two towns were"),
+                   ("To get from WEST OF WESTEROS to LA GIMMICK,", "To get from here to LA GIMMICK,")]

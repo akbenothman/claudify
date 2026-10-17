@@ -40,7 +40,7 @@ later builds take seconds to a minute. The apply script is safe to re-run after 
 | Petalburg type-advice NPC | `game/petalburg_type_text.inc` | three text blocks replaced |
 | Legendary cats | `game/legends.py`, `graphics/legends/*` | Kyogre, Groudon and Rayquaza's species data, moves, sprites and names in text, replaced in place |
 | Tests | `game/tests/*.c` | copied into `test/`; run `make check TESTS="Remix"` |
-| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = Hamza's Route 103 battle, Script 4 = Lv 70 Mewtwo + Anas Tresh's gym battle, Script 5 = the three final forms at Lv 50 + a wild battle, Script 6 = the three legendary cats at Lv 70 + a wild Haleeb, Script 7 = warp into the Safety Zone office in Mauville, Script 8 = Meso in Petalburg Woods and Rustboro |
+| Debug hooks (`--debug-scripts`) | — | Script 1 = starter choice, Script 2 = wild Omarauder Lv 20, Script 3 = Hamza's Route 103 battle, Script 4 = Lv 70 Mewtwo + Anas Tresh's gym battle, Script 5 = the three final forms at Lv 50 + a wild battle, Script 6 = the three legendary cats at Lv 70 + a wild Haleeb, Script 7 = warp into West of Westeros (Rustboro), Script 8 = Meso in Petalburg Woods and Rustboro |
 
 Sprites are regenerated from the Gemini art with `tools/build_starters.sh` and `tools/build_legends.sh` (see `docs/ART_PROMPTS.md`).
 
