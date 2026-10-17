@@ -356,6 +356,13 @@ def main():
             edit(path, story.edit_postgame_gates)
         edit("src/gym_leader_rematch.c", story.edit_rematch_cut)
 
+    # 9n. Town and city names (game/story.py), in dialogue, signs, the map and the FLY menu.
+    for pattern, new in story.TOWN_RENAMES:
+        for path in text_files + ["src/data/region_map/region_map_sections.json"]:
+            edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
+    for old, new in story.TOWN_LINE_FIXES:
+        rename_in_strings(old, new, text_files)
+
     # 9i. The Potions are IDRIS's SOUSA (game/story.py).
     edit("src/data/items.h", story.edit_sousa_items)
     for pattern, new in story.SOUSA_TEXT_RENAMES:

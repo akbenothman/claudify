@@ -51,9 +51,10 @@ below that Claude needs answered to build it.
 - [x] **Y10. Gym leaders, Elite Four and Champion: names.** Kareem, Jelal, Sammi B, Nabil, Hisham,
       Adam Jaber, Omar Hafiz & Mo Abdu, Hany; the four Maliks; Hisham as Champion. Still open: their
       types, aces and teams (they use the originals' for now).
-- [ ] **Y19. Town and city names.** You want them all renamed. Is there a theme (New York neighborhoods,
-      places from your lives, food)? Give some names, and Claude fills in the rest.
-      *Default: NYC-inspired names drafted by Claude for you to approve.*
+- [ ] **Y19. Town and city names.** Done so far: **Sewer Rat Town** (Littleroot), **New Heesh City**
+      (Lilycove), **Crumble City** (Fortree, Adam Jaber's gym), **Twin Mo's** (Mossdeep, Hafiz & Abdu's gym).
+      Still Emerald's: Oldale, Petalburg, Rustboro, Dewford, Slateport, Mauville, Verdanturf, Fallarbor,
+      Lavaridge, Pacifidlog, Sootopolis, Ever Grande.
 - [ ] **Y21. Dialogue tone.** For the scenes you can't skip: how should it sound (funny, roasting each
       other, serious with jokes)? Any running jokes or catchphrases to include?
 

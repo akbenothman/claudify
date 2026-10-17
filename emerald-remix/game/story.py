@@ -525,3 +525,15 @@ def edit_rematch_cut(t):
     # Gym leader rematches start after you're CHAMPION; with the postgame cut, they never do.
     return t.replace("    if (!FlagGet(FLAG_SYS_GAME_CLEAR))\n",
                      "    if (TRUE) // Emerald Remix postgame cut: was if (!FlagGet(FLAG_SYS_GAME_CLEAR))\n")
+
+
+# Town and city names (more to come). Longest first, so "LITTLEROOT TOWN" doesn't become
+# "SEWER RAT TOWN TOWN".
+TOWN_RENAMES = [
+    (r"\bLITTLEROOT TOWN\b", "SEWER RAT TOWN"), (r"\bLITTLEROOT\b", "SEWER RAT TOWN"),
+    (r"\bLILYCOVE CITY\b", "NEW HEESH CITY"), (r"\bLILYCOVE\b", "NEW HEESH"),
+    (r"\bMOSSDEEP CITY\b", "TWIN MO'S"), (r"\bMOSSDEEP\b", "TWIN MO'S"),
+    (r"\bFORTREE CITY\b", "CRUMBLE CITY"), (r"\bFORTREE\b", "CRUMBLE"),
+]
+
+TOWN_LINE_FIXES = [("NEW HEESH DEPARTMENT STORE's clear-out", "NEW HEESH DEPT. STORE's clear-out")]
