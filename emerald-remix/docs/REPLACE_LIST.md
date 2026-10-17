@@ -48,10 +48,10 @@ Each has a type and an **ace**: their last, strongest Pokémon. You wanted every
 
 | Now | Type | Ace now | Your version | Your ace |
 |---|---|---|---|---|
-| Sidney | Dark | Absol | ✅ **Malik Shalluf** | |
-| Phoebe | Ghost | Dusclops | ✅ **Malik El Barasi** | |
-| Glacia | Ice | Walrein | ✅ **Malik Shagan** | |
-| Drake | Dragon | Salamence | ✅ **Malik Al Bakri** | |
+| Sidney | Dark | Absol | ✅ **Malik Shalluf**: goes to De Anza with Yahya; has to go study chemistry with him | |
+| Phoebe | Ghost | Dusclops | ✅ **Malik El Barasi**: hasn't seen you since the last Libyan wedding, habibi; wants Hamza's sister's number | |
+| Glacia | Ice | Walrein | ✅ **Malik Shagan**: "…" (only ever) | |
+| Drake | Dragon | Salamence | ✅ **Malik Al Bakri**: Taha is his little bro ("a little punk, love that kid"); last saw him in his uncle's chair in Abu Dhabi, watching Game of Thrones | |
 | **Champion** Wallace | Water | Milotic | ✅ **Hisham** again (also in Sootopolis and the Cave of Origin) | **Heeshupeeshu** Lv 60, with Heeshef, Omarauder and Ahmexec at 58. Two more to come |
 
 ## 4. Villains
