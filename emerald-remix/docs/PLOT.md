@@ -73,7 +73,7 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 | 1 | Moving to Littleroot; Birch chased by a Zigzagoon | Same; **Mo** is chased while carrying his drink of the day, and spills it |
 | 2 | Pick a starter from Birch's bag | Squeesh, Beanito or Guardpup. Mo's Ahmed and Omar are fighting in the background; your first job is breaking them up |
 | 3 | Rival battle on Route 103 | **Hamza**, with the starter that beats yours. He wins nothing and runs off in his sneakers |
-| 4 | Dad (Norman) is the Petalburg gym leader | **Hisham**, between Sequoia calls and pool nights |
+| 4 | Dad (Norman) is the Petalburg gym leader | "Hisham": "So LAYTH, I see you're all grown up. Sorry I didn't have time to play catch, I was busy playing pool with MO." After the battle he reveals he's really **Nabil**, a great father, filling in. The real Hisham is in **Libya** for Sequoia; to face him you must beat the rest of the **MoVerse** and the **Elite Maliks**. Nabil later drops by home (fixes Mom's sink, brings the ferry ticket) |
 | 5 | Wally catches his first Pokémon | **Yaseen** (no starter) catches a **Heeshupeeshu** on Route 102 while you watch |
 | 6 | Team Aqua steals Devon Goods in Rustboro | A **Team Beanie** grunt steals the package. "Omar said finders keepers" |
 | 7 | Steven in Dewford's Granite Cave | **Zaaby** (Devon's president, replacing Mr. Stone) sends you with a letter: he's sold **Villa 74** and Taha isn't getting the money he was promised. **Taha**: the books are better than the show, he's waiting for a Pirate Souls game, and he's obsessed with a mythical force called **MUAH** |
@@ -87,7 +87,7 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 | 15 | Seafloor Cavern: Kyogre awakens | Omar battle with Omarauder. **Haleeb wakes** from her nap, annoyed. Endless rain starts |
 | 16 | Sootopolis: Kyogre vs Groudon, extreme weather | **Haleeb and Ceaser argue over the weather** again: rain vs drought over the city. Mo, panicking: "Now the *legendaries* are fighting too?!" |
 | 17 | Sky Pillar: Rayquaza calms them | **Snickers** comes down from the storm clouds with red lightning and ends the fight with one swipe. **Peace talks #2**: with nowhere left to storm off to, Ahmed and Omar finally sit down with you and Mo |
-| 18 | Wallace becomes the 8th gym leader's reveal | **Hisham** turns up in the Cave of Origin: he's also the Champion ("Don't tell SEQUOIA"). **Hany** runs the Sootopolis gym for him |
+| 18 | Wallace becomes the 8th gym leader's reveal | The **real Hisham**, back from Libya, turns up in the Cave of Origin: he's also the Champion, and you'll talk at the League. **Hany** runs the Sootopolis gym for him |
 | 19 | Elite Four and Champion | The four **Maliks** (Shalluf, El Barasi, Shagan, Al Bakri), then **Hisham** again. New teams still to come |
 | 20 | Post-game: catch Haleeb in the Marine Cave, Ceaser in the Terra Cave | Same places. Snickers waits at the top of Sky Pillar |
 

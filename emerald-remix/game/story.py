@@ -123,7 +123,7 @@ CAST_RENAMES = [
     ("ROXANNE", "KAREEM"),            # gym 1, Rustboro
     ("BRAWLY", "JELAL"),              # gym 2, Dewford
     ("WATTSON", "SAMMI B"),           # gym 3, Mauville
-    ("FLANNERY", "NABIL"),            # gym 4, Lavaridge
+    ("FLANNERY", "ANAS TRESH"),       # gym 4, Lavaridge (a urologist; NABIL is the Petalburg twist)
     ("WINONA", "ADAM JABER"),         # gym 6, Fortree
     ("TATE", "OMAR HAFIZ"),           # gym 7, Mossdeep (the double battle)
     ("LIZA", "MO ABDU"),
@@ -153,7 +153,7 @@ CAST_LINE_FIXES = [
 
 # Trainer names in battle (10 letters at most).
 CAST_PARTY_NAMES = {
-    "ROXANNE": "KAREEM", "BRAWLY": "JELAL", "WATTSON": "SAMMI B", "FLANNERY": "NABIL",
+    "ROXANNE": "KAREEM", "BRAWLY": "JELAL", "WATTSON": "SAMMI B", "FLANNERY": "ANAS TRESH",
     "WINONA": "ADAM JABER", "TATE&LIZA": "HAFIZ&ABDU", "JUAN": "HANY",
     "SIDNEY": "SHALLUF", "PHOEBE": "EL BARASI", "GLACIA": "SHAGAN", "DRAKE": "AL BAKRI",
     "WALLACE": "HISHAM", "WALLY": "YASEEN",
@@ -169,6 +169,8 @@ def edit_cast_parties(t):
                 b = b.replace("\nName: %s\n" % old, "\nName: %s\n" % new)
                 if old in NOW_MALE:
                     b = b.replace("Gender: Female\n", "Gender: Male\n")
+                if old == "FLANNERY":  # ANAS TRESH is a doctor
+                    b = b.replace("Pic: Leader Flannery\n", "Pic: Scientist Frlg\n")
         blocks[i] = b
     return "\n=== ".join(blocks)
 
@@ -404,3 +406,8 @@ def edit_exp_share_config(t):
     # The modern EXP. SHARE remembers whether it's on in a save flag; 0x20 is unused in Emerald.
     t = t.replace("#define I_EXP_SHARE_FLAG        0 ", "#define I_EXP_SHARE_FLAG        FLAG_UNUSED_0x020 ")
     return t.replace("#define I_EXP_SHARE_ITEM        GEN_5", "#define I_EXP_SHARE_ITEM        GEN_6")
+
+
+def edit_lavaridge_gym_map(t):
+    # ANAS TRESH, the urologist, wears a lab coat in the overworld too.
+    return t.replace('"graphics_id": "OBJ_EVENT_GFX_FLANNERY"', '"graphics_id": "OBJ_EVENT_GFX_SCIENTIST_1"')

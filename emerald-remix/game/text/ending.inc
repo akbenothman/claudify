@@ -173,21 +173,34 @@ PlayersHouse_1F_Text_YouShouldRestABit:
 	.string "defeat itself.$"
 
 PlayersHouse_1F_Text_GotDadsBadgeHeresSomethingFromMom:
-	.string "MOM: Oh? You beat your father?\n"
-	.string "Good.\p"
-	.string "Then here's something from your MOM!$"
+	.string "MOM: You beat your father?\p"
+	.string "…It was NABIL? In a disguise?\p"
+	.string "Honestly, he'd be better at it.\n"
+	.string "Here's something from your MOM!$"
 
 PlayersHouse_1F_Text_BetterGetBackToGym:
 	.string "I'd better get back to PETALBURG.\n"
-	.string "The MOVERSE is at the pool table.\p"
-	.string "Thanks for looking after the house.$"
+	.string "Somebody has to run the GYM.\p"
+	.string "Thanks for having me, ma'am.$"
 
 PlayersHouse_1F_Text_DadShouldStayLonger:
-	.string "MOM: That father of yours…\p"
-	.string "Five minutes, then he runs back\n"
-	.string "to the MOVERSE.\p"
-	.string "He left me on the side of the road,\n"
-	.string "you know. I haven't forgotten.$"
+	.string "MOM: NABIL is a good man.\p"
+	.string "He fixes the sink. He remembers\n"
+	.string "birthdays. He shows up.\p"
+	.string "Your real father left me on the\n"
+	.string "side of the road. Go find him.$"
+
+PlayersHouse_1F_Text_TicketFromBrineyCameForYou:
+	.string "NABIL: Hey, LAYTH!\p"
+	.string "Just stopping by. I fixed your\n"
+	.string "mom's sink and mowed the lawn.\p"
+	.string "Oh, and this came for you. It's\n"
+	.string "from someone named MR. BRINEY.$"
+
+PlayersHouse_1F_Text_PortsInSlateportLilycove:
+	.string "NABIL: A TICKET for a ferry?\p"
+	.string "There are ferry ports in SLATEPORT\n"
+	.string "and LILYCOVE. Pack a jacket!$"
 
 @@ file: data/maps/RustboroCity_DevonCorp_3F/scripts.inc
 RustboroCity_DevonCorp_3F_Text_ExplainExpShare:

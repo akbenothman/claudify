@@ -57,10 +57,11 @@ PetalburgCity_Gym_Text_YouHaveGottenStronger:
 PetalburgCity_Gym_Text_NormanIntro:
 	.string "DAD: Hm…\n"
 	.string "So, you got four GYM BADGES.\p"
-	.string "As I promised, we'll battle.\p"
-	.string "{PLAYER}…\p"
-	.string "I'm so happy I get to battle my own\n"
-	.string "kid. HAMZA was here last week, too.\p"
+	.string "So, LAYTH. I see you're all\n"
+	.string "grown up.\p"
+	.string "Sorry I didn't have time to play\n"
+	.string "catch. I was busy playing pool\l"
+	.string "with MO.\p"
 	.string "But a battle is a battle! I'll play\n"
 	.string "it like a game of pool.\p"
 	.string "Every shot called. Give it your\n"
@@ -75,11 +76,21 @@ PetalburgCity_Gym_Text_NormanDefeat:
 	.string "Here, take this.$"
 
 PetalburgCity_Gym_Text_DadHappyAndSad:
-	.string "DAD: As a GYM LEADER, I'm upset…\p"
-	.string "But as a father, I'm proud.\n"
-	.string "I'm telling everyone at SEQUOIA.\p"
-	.string "And HAMZA. And IZZO. And MO.\n"
-	.string "I'll text LAYTH, too.$"
+	.string "DAD: …LAYTH.\n"
+	.string "I have to tell you something.\p"
+	.string "… … … … … …\p"
+	.string "I'm not HISHAM.\p"
+	.string "It's me. NABIL.\p"
+	.string "Somebody had to be your father\n"
+	.string "around here. So I filled in.\p"
+	.string "The real HISHAM is in LIBYA.\n"
+	.string "On a trip for SEQUOIA.\p"
+	.string "You're not ready to meet him yet.\p"
+	.string "To face HISHAM, you'll have to beat\n"
+	.string "the rest of the MOVERSE…\p"
+	.string "…and the ELITE MALIKS.\p"
+	.string "Until then, I'm here for you.\n"
+	.string "That's what fathers do.$"
 
 PetalburgCity_Gym_Text_PleaseComeWithMe:
 	.string "IZZO: Ah, there you are, {PLAYER}!\p"
@@ -87,24 +98,25 @@ PetalburgCity_Gym_Text_PleaseComeWithMe:
 	.string "I have something for you.$"
 
 PetalburgCity_Gym_Text_LetMeBorrowPlayer:
-	.string "IZZO: HISHAM, you don't mind,\n"
+	.string "IZZO: NABIL, you don't mind,\n"
 	.string "do you?\p"
 	.string "Let me borrow {PLAYER} for\n"
 	.string "a minute or two.$"
 
 PetalburgCity_Gym_Text_DadGoingToKeepTraining:
-	.string "DAD: Go visit your mother every\n"
-	.string "so often, {PLAYER}.\p"
-	.string "I'm going to stay here and train.\n"
-	.string "And practice my bank shots.\p"
-	.string "I have to avenge my loss to you!$"
+	.string "NABIL: Go visit your mother every\n"
+	.string "so often, LAYTH.\p"
+	.string "She deserves better.\n"
+	.string "We both know it.\p"
+	.string "I'll keep the GYM warm until HISHAM\n"
+	.string "gets back from LIBYA.$"
 
 PetalburgCity_Gym_Text_DadNoAmountOfTrainingIsEnough:
-	.string "DAD: {PLAYER}, how are things?\p"
-	.string "I called HAMZA today.\n"
-	.string "He didn't pick up.\p"
-	.string "The world of POKéMON is deep.\n"
-	.string "Like SEQUOIA's pockets.$"
+	.string "NABIL: LAYTH! How are things?\p"
+	.string "Eating well? Sleeping well?\n"
+	.string "Wearing a jacket?\p"
+	.string "Good. That's all a father needs\n"
+	.string "to know.$"
 
 @@ file: data/maps/PetalburgCity_WallysHouse/scripts.inc
 PetalburgCity_WallysHouse_Text_ThanksForPlayingWithWally:
@@ -123,10 +135,10 @@ PetalburgCity_WallysHouse_Text_WonderHowWallyIsDoing:
 PetalburgCity_WallysHouse_Text_PleaseExcuseUs:
 	.string "IZZO: {PLAYER}! Sorry for dragging\n"
 	.string "you over here.\p"
-	.string "You beat HISHAM! He called me right\n"
-	.string "away. He was so proud.\p"
-	.string "Well, first he called HAMZA.\n"
-	.string "Then MO. Then me.\p"
+	.string "So NABIL finally told you, huh?\n"
+	.string "HISHAM's in LIBYA.\p"
+	.string "NABIL called me crying. He's so\n"
+	.string "proud of you. Like a real dad.\p"
 	.string "Anyway, this isn't a bribe or\n"
 	.string "anything, but you should have this.$"
 

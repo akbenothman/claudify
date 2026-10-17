@@ -167,8 +167,8 @@ Route128_Text_StevenWholeWorldWillDrown:
 @@ file: data/maps/SootopolisCity/scripts.inc
 SootopolisCity_Text_HereWereAreHelpWallace:
 	.string "TAHA: Okay, here we are!\p"
-	.string "Inside, you'll find someone you\n"
-	.string "know. Your dad, HISHAM.\p"
+	.string "Inside, you'll find your dad.\n"
+	.string "The real HISHAM. Back from LIBYA.\p"
 	.string "I think you have what's needed\n"
 	.string "to help him…$"
 

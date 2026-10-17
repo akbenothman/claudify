@@ -35,14 +35,14 @@ Each has a type and an **ace**: their last, strongest Pokémon. You wanted every
 
 | Gym | Now | Type | Ace now | Your leader | Your ace |
 |---|---|---|---|---|---|
-| 1 Rustboro | Roxanne | Rock | Nosepass | ✅ **Kareem** | |
-| 2 Dewford | Brawly | Fighting | Makuhita | ✅ **Jelal** | |
-| 3 Mauville | Wattson | Electric | Manectric | ✅ **Sammi B** | |
-| 4 Lavaridge | Flannery | Fire | Torkoal | ✅ **Nabil** | |
-| 5 Petalburg | Norman (your dad) | Normal | Slaking | ✅ **Hisham** (Dad) | |
-| 6 Fortree | Winona | Flying | Altaria | ✅ **Adam Jaber** | |
-| 7 Mossdeep | Tate & Liza (twins) | Psychic | Lunatone + Solrock | ✅ **Omar Hafiz & Mo Abdu** (a duo, not twins; "HAFIZ" and "ABDU" in dialogue) | |
-| 8 Sootopolis | Juan | Water | Kingdra | ✅ **Hany** | |
+| 1 Rustboro | Roxanne | Rock | Nosepass | ✅ **Kareem**: a random guy (and a dentist), furious you called him a D-tier MoVerse character | |
+| 2 Dewford | Brawly | Fighting | Makuhita | ✅ **Jelal**: chain and scrubs; works with Mo at AllSupport and loves it | |
+| 3 Mauville | Wattson | Electric | Manectric | ✅ **Sammi B**: "SAMMI MUTHAFUCKIN B"; Pokémon card collector, always on about his pulls | |
+| 4 Lavaridge | Flannery | Fire | Torkoal | ✅ **Anas Tresh**: "Hello, my name is ANAS TRESH." Urologist (scientist sprite); "GIVE ME YOUR PISS!" | |
+| 5 Petalburg | Norman (your dad) | Normal | Slaking | ✅ **Hisham**... actually **Nabil** in disguise, revealed after the battle; the real Hisham is in Libya | |
+| 6 Fortree | Winona | Flying | Altaria | ✅ **Adam Jaber**: all energy and jokes; guns, Zareen's, and Yaseen's ant crumble cookies | |
+| 7 Mossdeep | Tate & Liza (twins) | Psychic | Lunatone + Solrock | ✅ **Omar Hafiz & Mo Abdu**: nobody knows anything about them. "… … …" "We're MO's friends." | |
+| 8 Sootopolis | Juan | Water | Kingdra | ✅ **Hany**: the leader of Egypt (Koshary, Daah); talks to his Meta glasses before and after battle | |
 
 ## 3. Elite Four and Champion
 

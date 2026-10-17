@@ -5,9 +5,9 @@ Usage: apply_to_expansion.py PATH/TO/pokeemerald-expansion [--debug-scripts]
 
 --debug-scripts fills the debug menu's Scripts 1-8 (debug builds only, R+START in the overworld):
 1 the starter choice; 2 a wild Omarauder; 3 Hamza's Route 103 battle for your starter; 4 a level-70
-Mewtwo and Hamada's Mt. Chimney battle; 5 the three final forms at level 50 and a wild
+Mewtwo and Anas Tresh's gym battle; 5 the three final forms at level 50 and a wild
 battle; 6 the three legendary cats at level 70 and a wild Haleeb; 7 a warp into the Safety Zone
-office in Mauville; 8 Mom's speech and the ending at Mt. Pyre.
+office in Mauville; 8 Kareem's intro, the Petalburg twist and Hany's intro.
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -310,6 +310,7 @@ def main():
     # with Heeshupeeshu (game/story.py, game/text/champion.inc).
     edit("src/data/trainers.party", story.edit_cast_parties)
     edit("src/battle_main.c", story.edit_class_names)
+    edit("data/maps/LavaridgeTown_Gym_1F/map.json", story.edit_lavaridge_gym_map)
     edit("src/data/pokemon/species_info/gen_3_families.h",
          lambda t: story.edit_heeshupeeshu(t, legends.species_block, legends.set_field))
     for pattern, new in story.CAST_RENAMES:
@@ -381,8 +382,9 @@ def main():
                           "\tgivemon SPECIES_OMARAUDER, 50\n\tgivemon SPECIES_AHMEXEC, 50\n"
                           "\tsetwildbattle SPECIES_ZIGZAGOON, 2\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_8::\n\trelease\n\tend\n",
-                          "Debug_EventScript_Script_8::\n\tmsgbox LittlerootTown_Text_WearTheseRunningShoes, MSGBOX_DEFAULT\n"
-                          "\tmsgbox MtPyre_Summit_Text_MaxieSilence, MSGBOX_DEFAULT\n\trelease\n\tend\n")
+                          "Debug_EventScript_Script_8::\n\tmsgbox RustboroCity_Gym_Text_RoxanneIntro, MSGBOX_DEFAULT\n"
+                          "\tmsgbox PetalburgCity_Gym_Text_DadHappyAndSad, MSGBOX_DEFAULT\n"
+                          "\tmsgbox SootopolisCity_Gym_1F_Text_JuanIntro, MSGBOX_DEFAULT\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_7::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_7::\n\twarp MAP_MAUVILLE_CITY_HOUSE1, 4, 6\n"
                           "\twaitstate\n\trelease\n\tend\n")
@@ -392,7 +394,7 @@ def main():
                           "\tsetwildbattle SPECIES_KYOGRE, 70\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_4::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_4::\n\tgivemon SPECIES_MEWTWO, 70, move1=MOVE_SHADOW_BALL, move2=MOVE_NONE, move3=MOVE_NONE, move4=MOVE_NONE\n"
-                          "\ttrainerbattle_no_intro TRAINER_TABITHA_MT_CHIMNEY, Debug_Text_RivalDefeated\n"
+                          "\tmsgbox LavaridgeTown_Gym_1F_Text_FlanneryIntro, MSGBOX_DEFAULT\n\ttrainerbattle_no_intro TRAINER_FLANNERY_1, LavaridgeTown_Gym_1F_Text_FlanneryDefeat\n"
                           "\trelease\n\tend\n")
             return t.replace("Debug_EventScript_Script_3::\n\trelease\n\tend\n",
                              "Debug_EventScript_Script_3::\n\tswitch VAR_STARTER_MON\n"
