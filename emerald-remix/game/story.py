@@ -411,3 +411,48 @@ def edit_exp_share_config(t):
 def edit_lavaridge_gym_map(t):
     # ANAS TRESH, the urologist, wears a lab coat in the overworld too.
     return t.replace('"graphics_id": "OBJ_EVENT_GFX_FLANNERY"', '"graphics_id": "OBJ_EVENT_GFX_SCIENTIST_1"')
+
+
+# MR. BRINEY is IZZO (game/text/izzo.inc).
+IZZO_RENAMES = [(r"\bMR\. BRINEY\b", "IZZO"), (r"\bCAPT\. BRINEY\b", "IZZO"),
+                (r"\bCAPTAIN BRINEY\b", "CAPTAIN IZZO"), (r"\bBRINEY\b", "IZZO")]
+
+# Beating OMAR HAFIZ and MO ABDU (gym 7) finishes the MOVERSE: MOSTAFA fell at the Magma Hideout, and
+# PROF. MO doesn't battle. Right after the badge, the game says so, and MO ABDU finally talks.
+MOVERSE_OLD = """	call MossdeepCity_Gym_EventScript_GiveCalmMind
+	closemessage
+	delay 30
+	playfanfare MUS_REGISTER_MATCH_CALL
+"""
+MOVERSE_NEW = """	call MossdeepCity_Gym_EventScript_GiveCalmMind
+	closemessage
+	delay 30
+	playfanfare MUS_OBTAIN_BADGE
+	message MossdeepCity_Gym_Text_MoverseDefeated
+	waitfanfare
+	msgbox MossdeepCity_Gym_Text_AbduSpeaks, MSGBOX_DEFAULT
+	closemessage
+	delay 30
+	playfanfare MUS_REGISTER_MATCH_CALL
+"""
+MOVERSE_TEXT = """
+MossdeepCity_Gym_Text_MoverseDefeated:
+	.string "{PLAYER} defeated the MOVERSE!$"
+
+MossdeepCity_Gym_Text_AbduSpeaks:
+	.string "HAFIZ: … … …\\p"
+	.string "ABDU: …MOSTAFA. And now us.\\n"
+	.string "That was the whole MOVERSE.\\p"
+	.string "Except PROF. MO. He doesn't battle.\\n"
+	.string "He eats.\\p"
+	.string "HISHAM is waiting for you at the\\n"
+	.string "POKéMON LEAGUE. Your mother was right.\\p"
+	.string "HAFIZ: … … …\\p"
+	.string "ABDU: We're still MO's friends.$"
+"""
+
+
+def edit_mossdeep_gym(t):
+    if "MossdeepCity_Gym_Text_MoverseDefeated" in t:
+        return t
+    return t.replace(MOVERSE_OLD, MOVERSE_NEW).rstrip("\n") + "\n" + MOVERSE_TEXT

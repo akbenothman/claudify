@@ -22,7 +22,7 @@ Order is roughly the order players meet things, so it's a good order to fill it 
 | ✅ | Wally | Rival 2: fights you in Mauville and Victory Road | **Yaseen**: no starter; you watch him catch a **Heeshupeeshu** (single stage, in Ralts's slot with Gardevoir's stats) |
 | ✅ | Steven Stone | Mysterious strong trainer, helps you through the story, post-game boss | **Taha**: A Song of Ice and Fire (books > show), waiting for Pirate Souls, obsessed with **MUAH**. 🎨 still Steven's look |
 | ✅ | Mr. Stone | Steven's dad, president of Devon Corp | **Zaaby**: selling Villa 74 and keeping all the money he promised Taha. 🎨 still Mr. Stone's look |
-| | Mr. Briney + Peeko | Old sailor and his Wingull; ferries you to Dewford and Slateport | |
+| ✅ | Mr. Briney + Peeko | Old sailor and his Wingull; ferries you to Dewford and Slateport | **Izzo** (Dad's friend) + Peeko: Top G videos, pushups, kickboxing. No Bugatti, but a small boat that'll be a yacht once he finishes his cybersecurity degree |
 | | Captain Stern | Ship captain at Slateport, the villains steal his submarine | |
 | | Professor Cozmo | Meteorite scientist in Fallarbor | |
 | | Scott | Talent scout who keeps showing up, runs the Battle Frontier | |

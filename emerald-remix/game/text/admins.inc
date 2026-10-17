@@ -331,8 +331,8 @@ MagmaHideout_4F_Text_Grunt13Intro:
 	.string "You're not getting by me!$"
 
 MagmaHideout_4F_Text_Grunt13Defeat:
-	.string "AHMED's going to change the\n"
-	.string "password again…$"
+	.string "One MO of the MOVERSE, down…\n"
+	.string "AHMED's changing the password again.$"
 
 MagmaHideout_4F_Text_Grunt13PostBattle:
 	.string "Don't tell HAMADA I lost.\n"

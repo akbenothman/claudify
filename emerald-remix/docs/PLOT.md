@@ -124,6 +124,13 @@ In the game (`game/text/ending.inc`):
 3. **After.** The old lady says they argued about a password for three hours and "perhaps they are
    friends after all". In the Mauville office, Omar is back at his desk doing "thinking work".
 
+## Defeating the MoVerse
+
+The MoVerse members you battle are **Mostafa** (Magma Hideout: "One MO of the MOVERSE, down…") and
+**Omar Hafiz & Mo Abdu** (gym 7). Prof. Mo doesn't battle; he eats. Beating gym 7 finishes it: the game
+announces "{PLAYER} defeated the MOVERSE!" with a fanfare, and Mo Abdu finally speaks: Hisham is waiting
+at the Pokémon League, and "your mother was right." Then: "We're still MO's friends."
+
 ## Mom
 
 Mom stays Mom, and she's done with Hisham: he **left her on the side of the road** (on a highway) and

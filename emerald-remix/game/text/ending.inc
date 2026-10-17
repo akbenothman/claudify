@@ -194,8 +194,8 @@ PlayersHouse_1F_Text_TicketFromBrineyCameForYou:
 	.string "NABIL: Hey, LAYTH!\p"
 	.string "Just stopping by. I fixed your\n"
 	.string "mom's sink and mowed the lawn.\p"
-	.string "Oh, and this came for you. It's\n"
-	.string "from someone named MR. BRINEY.$"
+	.string "Oh, and this came for you.\n"
+	.string "It's from IZZO.$"
 
 PlayersHouse_1F_Text_PortsInSlateportLilycove:
 	.string "NABIL: A TICKET for a ferry?\p"

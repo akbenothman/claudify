@@ -211,9 +211,10 @@ RustboroCity_Text_BrendanIWontGoEasy:
 
 RustboroCity_Text_MayMrBrineyHint:
 RustboroCity_Text_BrendanMrBrineyHint:
-	.string "HAMZA: By the way, MR. BRINEY was\n"
-	.string "once a famous sailor.\p"
-	.string "Boats. Now that's an old gimmick.\p"
+	.string "HAMZA: By the way, IZZO has a boat.\n"
+	.string "A small one.\p"
+	.string "He says it'll be a YACHT one day.\n"
+	.string "That's not a gimmick. That's a dream.\p"
 	.string "I'm not taking my sneakers off!\n"
 	.string "I am SNEAKERS O'TOOLE!$"
 

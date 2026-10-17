@@ -7,7 +7,7 @@ Usage: apply_to_expansion.py PATH/TO/pokeemerald-expansion [--debug-scripts]
 1 the starter choice; 2 a wild Omarauder; 3 Hamza's Route 103 battle for your starter; 4 a level-70
 Mewtwo and Anas Tresh's gym battle; 5 the three final forms at level 50 and a wild
 battle; 6 the three legendary cats at level 70 and a wild Haleeb; 7 a warp into the Safety Zone
-office in Mauville; 8 Kareem's intro, the Petalburg twist and Hany's intro.
+office in Mauville; 8 the MOVERSE falling, and IZZO's boat.
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -339,6 +339,12 @@ def main():
     edit("data/maps/RustboroCity_DevonCorp_3F/scripts.inc", story.edit_zaaby_gift)
     edit("include/config/item.h", story.edit_exp_share_config)
 
+    # 9l. MR. BRINEY is IZZO, and beating gym 7 defeats the MOVERSE (game/story.py, text/izzo.inc).
+    for pattern, new in story.IZZO_RENAMES:
+        for path in text_files:
+            edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
+    edit("data/maps/MossdeepCity_Gym/scripts.inc", story.edit_mossdeep_gym)
+
     # 9i. The Potions are IDRIS's SOUSA (game/story.py).
     edit("src/data/items.h", story.edit_sousa_items)
     for pattern, new in story.SOUSA_TEXT_RENAMES:
@@ -382,9 +388,9 @@ def main():
                           "\tgivemon SPECIES_OMARAUDER, 50\n\tgivemon SPECIES_AHMEXEC, 50\n"
                           "\tsetwildbattle SPECIES_ZIGZAGOON, 2\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_8::\n\trelease\n\tend\n",
-                          "Debug_EventScript_Script_8::\n\tmsgbox RustboroCity_Gym_Text_RoxanneIntro, MSGBOX_DEFAULT\n"
-                          "\tmsgbox PetalburgCity_Gym_Text_DadHappyAndSad, MSGBOX_DEFAULT\n"
-                          "\tmsgbox SootopolisCity_Gym_1F_Text_JuanIntro, MSGBOX_DEFAULT\n\trelease\n\tend\n")
+                          "Debug_EventScript_Script_8::\n\tmsgbox MossdeepCity_Gym_Text_MoverseDefeated, MSGBOX_DEFAULT\n"
+                          "\tmsgbox MossdeepCity_Gym_Text_AbduSpeaks, MSGBOX_DEFAULT\n"
+                          "\tmsgbox Route104_MrBrineysHouse_Text_ItsYouLetsSailToDewford, MSGBOX_DEFAULT\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_7::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_7::\n\twarp MAP_MAUVILLE_CITY_HOUSE1, 4, 6\n"
                           "\twaitstate\n\trelease\n\tend\n")
