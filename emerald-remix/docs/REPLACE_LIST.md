@@ -23,6 +23,7 @@ Order is roughly the order players meet things, so it's a good order to fill it 
 | ✅ | Steven Stone | Mysterious strong trainer, helps you through the story, post-game boss | **Taha**: A Song of Ice and Fire (books > show), waiting for Pirate Souls, obsessed with **MUAH**. 🎨 still Steven's look |
 | ✅ | Mr. Stone | Steven's dad, president of Devon Corp | **Zaaby**: selling Villa 74 and keeping all the money he promised Taha. 🎨 still Mr. Stone's look |
 | ✅ | Mr. Briney + Peeko | Old sailor and his Wingull; ferries you to Dewford and Slateport | **Izzo** (Dad's friend) + Peeko: Top G videos, pushups, kickboxing. No Bugatti, but a small boat that'll be a yacht once he finishes his cybersecurity degree |
+| ✅ | Devon employee (Petalburg Woods, Rustboro) | Robbed by the villains | **Meso**: LARPer, Smash tournament tonight, his Switch was in the stolen bag, Zaaby got him the job, add him on Spotify |
 | | Captain Stern | Ship captain at Slateport, the villains steal his submarine | |
 | | Professor Cozmo | Meteorite scientist in Fallarbor | |
 | | Scott | Talent scout who keeps showing up, runs the Battle Frontier | |

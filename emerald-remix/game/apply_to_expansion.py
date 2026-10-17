@@ -7,7 +7,7 @@ Usage: apply_to_expansion.py PATH/TO/pokeemerald-expansion [--debug-scripts]
 1 the starter choice; 2 a wild Omarauder; 3 Hamza's Route 103 battle for your starter; 4 a level-70
 Mewtwo and Anas Tresh's gym battle; 5 the three final forms at level 50 and a wild
 battle; 6 the three legendary cats at level 70 and a wild Haleeb; 7 a warp into the Safety Zone
-office in Mauville; 8 the MOVERSE falling, and IZZO's boat.
+office in Mauville; 8 MESO in PETALBURG WOODS and RUSTBORO.
 
 Safe to run more than once: every edit checks whether it is already there. New content lives in
 files under emerald-remix/game/ that get copied in; edits to existing expansion files are kept to
@@ -345,6 +345,17 @@ def main():
             edit(path, lambda t, p=pattern, n=new: story.regex_in_strings(p, n, t))
     edit("data/maps/MossdeepCity_Gym/scripts.inc", story.edit_mossdeep_gym)
 
+    # 9m. The postgame and the BATTLE FRONTIER are cut (story.CUT_POSTGAME; game/text/meso.inc is MESO).
+    if story.CUT_POSTGAME:
+        edit("data/scripts/hall_of_fame.inc", story.edit_hall_of_fame_cut)
+        gate_files = [path for path in text_files
+                      if path not in story.POSTGAME_GATE_SKIP and "frlg" not in path.lower()
+                      and "debug" not in path
+                      and "FLAG_SYS_GAME_CLEAR" in open(os.path.join(ROOT, path)).read()]
+        for path in gate_files:
+            edit(path, story.edit_postgame_gates)
+        edit("src/gym_leader_rematch.c", story.edit_rematch_cut)
+
     # 9i. The Potions are IDRIS's SOUSA (game/story.py).
     edit("src/data/items.h", story.edit_sousa_items)
     for pattern, new in story.SOUSA_TEXT_RENAMES:
@@ -388,9 +399,8 @@ def main():
                           "\tgivemon SPECIES_OMARAUDER, 50\n\tgivemon SPECIES_AHMEXEC, 50\n"
                           "\tsetwildbattle SPECIES_ZIGZAGOON, 2\n\tdowildbattle\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_8::\n\trelease\n\tend\n",
-                          "Debug_EventScript_Script_8::\n\tmsgbox MossdeepCity_Gym_Text_MoverseDefeated, MSGBOX_DEFAULT\n"
-                          "\tmsgbox MossdeepCity_Gym_Text_AbduSpeaks, MSGBOX_DEFAULT\n"
-                          "\tmsgbox Route104_MrBrineysHouse_Text_ItsYouLetsSailToDewford, MSGBOX_DEFAULT\n\trelease\n\tend\n")
+                          "Debug_EventScript_Script_8::\n\tmsgbox PetalburgWoods_Text_ThatWasAwfullyClose, MSGBOX_DEFAULT\n"
+                          "\tmsgbox RustboroCity_Text_HelpMeIWasRobbed, MSGBOX_DEFAULT\n\trelease\n\tend\n")
             t = t.replace("Debug_EventScript_Script_7::\n\trelease\n\tend\n",
                           "Debug_EventScript_Script_7::\n\twarp MAP_MAUVILLE_CITY_HOUSE1, 4, 6\n"
                           "\twaitstate\n\trelease\n\tend\n")

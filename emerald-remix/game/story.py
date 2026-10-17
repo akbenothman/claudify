@@ -456,3 +456,72 @@ def edit_mossdeep_gym(t):
     if "MossdeepCity_Gym_Text_MoverseDefeated" in t:
         return t
     return t.replace(MOVERSE_OLD, MOVERSE_NEW).rstrip("\n") + "\n" + MOVERSE_TEXT
+
+
+# The postgame and the BATTLE FRONTIER are cut: set this to False and re-apply (to a clean checkout)
+# to bring them back. Nothing is deleted: every cut line stays in the game's scripts as a comment
+# starting with POSTGAME_CUT_MARK, so they're easy to find too.
+CUT_POSTGAME = True
+POSTGAME_CUT_MARK = "@ Emerald Remix postgame cut: "
+
+# What becoming CHAMPION unlocks (data/scripts/hall_of_fame.inc). Kept: the save warp, the CHAMPION
+# flag, the ELITE FOUR reset, and hiding HAMZA/YASEEN. Cut: the S.S. TIDAL (the only way to the
+# BATTLE FRONTIER and the event islands), event legendaries, BELDUM, the ferry-ticket visit, the
+# SAFARI ZONE expansion, the fossil maniac's desert underpass, the motel designers, the fan club
+# update and the Johto-starter dex upgrade.
+HALL_OF_FAME_CUTS = [
+    "\tcall EverGrandeCity_HallOfFame_EventScript_ResetDefeatedEventLegendaries\n",
+    "\tcall_if_eq VAR_FOSSIL_MANIAC_STATE, 0, EverGrandeCity_HallOfFame_EventScript_SetDesertUnderpassCommentReady\n",
+    "\tclearflag FLAG_HIDE_LILYCOVE_MOTEL_GAME_DESIGNERS\n",
+    "\tsetflag FLAG_HIDE_SLATEPORT_CITY_STERNS_SHIPYARD_MR_BRINEY\n",
+    "\tclearflag FLAG_HIDE_SS_TIDAL_CORRIDOR_MR_BRINEY\n",
+    "\tclearflag FLAG_HIDE_MOSSDEEP_CITY_STEVENS_HOUSE_INVISIBLE_NINJA_BOY\n",
+    "\tsetvar VAR_STEVENS_HOUSE_STATE, 2\n",
+    "\tclearflag FLAG_HIDE_VICTORY_ROAD_EXIT_WALLY\n",
+    "\tclearflag FLAG_HIDE_SLATEPORT_CITY_HARBOR_SS_TIDAL\n",
+    "\tclearflag FLAG_HIDE_LILYCOVE_HARBOR_SSTIDAL\n",
+    "\tsetflag FLAG_HIDE_SAFARI_ZONE_SOUTH_CONSTRUCTION_WORKERS\n",
+    "\tclearflag FLAG_HIDE_SAFARI_ZONE_SOUTH_EAST_EXPANSION\n",
+    "\tspecial UpdateTrainerFanClubGameClear\n",
+    "\tcall_if_unset FLAG_RECEIVED_SS_TICKET, EverGrandeCity_HallOfFame_EventScript_ReadyReceiveSSTicketEvent\n",
+    "\tcall_if_unset FLAG_RECEIVED_BELDUM, EverGrandeCity_HallOfFame_EventScript_ShowStevensHouseBeldum\n",
+    "\tcall_if_eq VAR_DEX_UPGRADE_JOHTO_STARTER_STATE, 0, EverGrandeCity_HallOfFame_EventScript_ReadyDexUpgradeEvent\n",
+]
+
+
+def edit_hall_of_fame_cut(t):
+    for line in HALL_OF_FAME_CUTS:
+        t = t.replace(line, POSTGAME_CUT_MARK + line.lstrip("\t"))
+    return t
+
+
+def edit_postgame_gates(t):
+    """Everywhere a script checks whether you're CHAMPION: never take the postgame branch.
+
+    `goto/call_if_set FLAG_SYS_GAME_CLEAR, X` (postgame only) is commented out; `goto/call_if_unset
+    FLAG_SYS_GAME_CLEAR, X` (the "not yet" branch) becomes an unconditional goto/call, with the
+    original kept as a comment above it.
+    """
+    out = []
+    for line in t.split("\n"):
+        s = line.strip()
+        cmd = s.split(None, 1)[0] if s else ""
+        if ("FLAG_SYS_GAME_CLEAR" in s and cmd in ("goto_if_set", "call_if_set", "goto_if_unset", "call_if_unset")
+                and s.count(",") == 1):
+            target = s.split(",", 1)[1].strip()
+            if cmd in ("goto_if_set", "call_if_set"):
+                line = POSTGAME_CUT_MARK + s
+            elif cmd in ("goto_if_unset", "call_if_unset"):
+                line = "%s%s\n\t%s %s" % (POSTGAME_CUT_MARK, s, cmd.split("_")[0], target)
+        out.append(line)
+    return "\n".join(out)
+
+
+# Files with CHAMPION checks to cut. The PC's HALL OF FAME viewer stays.
+POSTGAME_GATE_SKIP = ("data/scripts/pc.inc", "data/scripts/hall_of_fame.inc")
+
+
+def edit_rematch_cut(t):
+    # Gym leader rematches start after you're CHAMPION; with the postgame cut, they never do.
+    return t.replace("    if (!FlagGet(FLAG_SYS_GAME_CLEAR))\n",
+                     "    if (TRUE) // Emerald Remix postgame cut: was if (!FlagGet(FLAG_SYS_GAME_CLEAR))\n")

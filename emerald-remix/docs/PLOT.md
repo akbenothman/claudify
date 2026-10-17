@@ -75,7 +75,7 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 | 3 | Rival battle on Route 103 | **Hamza**, with the starter that beats yours. He wins nothing and runs off in his sneakers |
 | 4 | Dad (Norman) is the Petalburg gym leader | "Hisham": "So LAYTH, I see you're all grown up. Sorry I didn't have time to play catch, I was busy playing pool with MO." After the battle he reveals he's really **Nabil**, a great father, filling in. The real Hisham is in **Libya** for Sequoia; to face him you must beat the rest of the **MoVerse** and the **Elite Maliks**. Nabil later drops by home (fixes Mom's sink, brings the ferry ticket) |
 | 5 | Wally catches his first Pokémon | **Yaseen** (no starter) catches a **Heeshupeeshu** on Route 102 while you watch |
-| 6 | Team Aqua steals Devon Goods in Rustboro | A **Team Beanie** grunt steals the package. "Omar said finders keepers" |
+| 6 | Team Aqua steals Devon Goods in Rustboro | **Meso** (the Devon employee): you save him in Petalburg Woods, where he was LARPing, then a **Team Beanie** grunt steals the Devon Goods in Rustboro, with his **Switch** in the bag. He has a **Smash tournament** to get to, Zaaby got him the job ("ZAABY is going to kill me"), and he wants you to add him on **Spotify** |
 | 7 | Steven in Dewford's Granite Cave | **Zaaby** (Devon's president, replacing Mr. Stone) sends you with a letter: he's sold **Villa 74** and Taha isn't getting the money he was promised. **Taha**: the books are better than the show, he's waiting for a Pirate Souls game, and he's obsessed with a mythical force called **MUAH** |
 | 8 | Slateport museum: Aqua shows up | Team Beanie tries to steal a submarine to reach Haleeb's sleeping place |
 | 9 | Mauville: Wally battle | **Yaseen** and his Heeshupeeshu. Plus the **Safety Zone office**: a guard checks your ID, the office manager gives you Rock Smash "for security drills", and you learn Ahmed has gone to Mt. Chimney for a Meteorite. Omar's empty desk is "evidence". Their lines change after Mt. Chimney and after the ending |
@@ -89,7 +89,7 @@ off, someone brings up the password, someone brings up Hamza's review. Mo's plan
 | 17 | Sky Pillar: Rayquaza calms them | **Snickers** comes down from the storm clouds with red lightning and ends the fight with one swipe. **Peace talks #2**: with nowhere left to storm off to, Ahmed and Omar finally sit down with you and Mo |
 | 18 | Wallace becomes the 8th gym leader's reveal | The **real Hisham**, back from Libya, turns up in the Cave of Origin: he's also the Champion, and you'll talk at the League. **Hany** runs the Sootopolis gym for him |
 | 19 | Elite Four and Champion | The four **Maliks** (Shalluf, El Barasi, Shagan, Al Bakri), then **Hisham** again. New teams still to come |
-| 20 | Post-game: catch Haleeb in the Marine Cave, Ceaser in the Terra Cave | Same places. Snickers waits at the top of Sky Pillar |
+| 20 | Post-game: catch Haleeb in the Marine Cave, Ceaser in the Terra Cave | **Cut**, with the Battle Frontier and the rest of the postgame: the game ends at the Hall of Fame. Everything is commented out, not deleted; set `CUT_POSTGAME = False` in `game/story.py` to bring it back |
 
 ## Solo venting
 
