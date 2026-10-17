@@ -534,6 +534,13 @@ TOWN_RENAMES = [
     (r"\bLILYCOVE CITY\b", "NEW HEESH CITY"), (r"\bLILYCOVE\b", "NEW HEESH"),
     (r"\bMOSSDEEP CITY\b", "TWIN MO'S"), (r"\bMOSSDEEP\b", "TWIN MO'S"),
     (r"\bFORTREE CITY\b", "CRUMBLE CITY"), (r"\bFORTREE\b", "CRUMBLE"),
+    (r"\bSOOTOPOLIS CITY\b", "DA'APOLIS CITY"), (r"\bSOOTOPOLIS\b", "DA'APOLIS"),
+    (r"\bMAUVILLE CITY\b", "CHICAGO"), (r"\bMAUVILLE\b", "CHICAGO"),       # Sammi B's city
+    (r"\bOLDALE TOWN\b", "O'TOOLE TOWN"), (r"\bOLDALE\b", "O'TOOLE TOWN"),  # for SNEAKERS O'TOOLE
+    (r"\bLAVARIDGE TOWN\b", "G SPOT"), (r"\bLAVARIDGE\b", "G SPOT"),       # the hot springs
 ]
 
-TOWN_LINE_FIXES = [("NEW HEESH DEPARTMENT STORE's clear-out", "NEW HEESH DEPT. STORE's clear-out")]
+TOWN_LINE_FIXES = [("NEW HEESH DEPARTMENT STORE's clear-out", "NEW HEESH DEPT. STORE's clear-out"),
+                   # Route 101 split "OLDALE / TOWN" over two lines
+                   ("There's a POKéMON CENTER in O'TOOLE TOWN", "There's a POKéMON CENTER in"),
+                   ("TOWN right close by.", "O'TOOLE TOWN, right close by.")]
